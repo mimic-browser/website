@@ -6,6 +6,7 @@ import {
   ChartNoAxesColumnIncreasing,
   CircleDot,
   CircleX,
+  Copy,
   Cpu,
   Download,
   Github,
@@ -41,26 +42,24 @@ try {
 } finally {
   await browser.disconnect();
 }`;
-const startCode = `# Windows
-.\\mimic.exe -listen 127.0.0.1:9222
-
-# Linux
-./mimic -listen 127.0.0.1:9222`;
+const windowsCommand = ".\\mimic.exe -listen 127.0.0.1:9222";
+const linuxCommand = "./mimic -listen 127.0.0.1:9222";
 ---
 
 <BaseLayout
   title="Mimic — Browser execution, without the browser"
-  description="Run website JavaScript and automate Chrome-visible state through CDP without embedding Chromium."
+  description="Run website JavaScript and automate Chrome-visible state through CDP, without embedding Chromium."
 >
   <section class="hero container">
     <div class="hero-copy">
       <span class="status"
-        ><span class="status-mark">✦</span> Public beta · Chrome 152 reference</span
+        ><span class="status-mark" aria-hidden="true"></span> Public beta · Chrome
+        152 reference</span
       >
       <h1>Browser execution,<br />without the browser.</h1>
       <p>
-        Mimic runs website JavaScript and exposes Chrome-visible state through
-        CDP, without embedding Chromium.
+        Run website JavaScript and automate Chrome-visible state through CDP,
+        without embedding Chromium.
       </p>
       <div class="hero-actions">
         <a
@@ -72,6 +71,9 @@ const startCode = `# Windows
           >Read the docs <ArrowRight size={16} strokeWidth={1.8} /></a
         >
       </div>
+      <a class="integration-link" href="#contact"
+        >Need help integrating? Get in touch <ArrowRight size={15} /></a
+      >
       <div class="hero-foot">
         <a href="https://github.com/moreveal/mimic"
           ><Github size={18} />Go to GitHub</a
@@ -118,23 +120,35 @@ const startCode = `# Windows
           <CodeWindow title="puppeteer.mjs" code={puppeteerCode} />
         </div>
       </div>
-      <div class="run-snippet">
-        <div class="run-heading">
-          <span>Start Mimic</span><span class="run-indicator"
-            ><i></i> Local endpoint</span
+      <div class="run-strip" aria-label="Start Mimic locally">
+        <span class="run-label">Start Mimic</span>
+        <div class="platform-options" aria-label="Operating system">
+          <button
+            type="button"
+            class="active"
+            data-platform="windows"
+            aria-pressed="true">Windows</button
+          >
+          <button type="button" data-platform="linux" aria-pressed="false"
+            >Linux</button
           >
         </div>
-        <div class="run-caption">
-          Download the executable for your system. Run one command, then connect
-          your client.
-        </div>
-        <CodeWindow title="terminal" code={startCode} lang="bash" />
-        <div class="run-bottom">
-          <span>Windows & Linux amd64</span><a
-            href={`${base}docs/#getting-started`}
-            >Setup guide <ArrowRight size={15} /></a
-          >
-        </div>
+        <code
+          class="run-command"
+          data-windows={windowsCommand}
+          data-linux={linuxCommand}>{windowsCommand}</code
+        >
+        <button
+          class="run-copy"
+          type="button"
+          aria-label="Copy Windows command"
+          data-copy={windowsCommand}
+        >
+          <Copy size={15} /><span class="copy-label">Copy</span>
+        </button>
+        <a class="run-guide" href={`${base}docs/#getting-started`}
+          >Setup guide <ArrowRight size={14} /></a
+        >
       </div>
     </div>
   </section>
@@ -193,9 +207,8 @@ const startCode = `# Windows
       <span class="metric-icon"
         ><Zap size={26} strokeWidth={1.8} fill="currentColor" /></span
       ><div>
-        <strong>6.0×</strong><span>throughput at 50 Pages</span><small
-          >108.67 vs 18.09 sessions/s</small
-        >
+        <strong>6.0×</strong><span>static-fixture throughput at 50 Pages</span
+        ><small>108.67 vs 18.09 sessions/s</small>
       </div>
     </div>
     <p class="metric-note">
@@ -274,35 +287,85 @@ const startCode = `# Windows
       </div>
     </div>
   </section>
-  <section class="closing container">
-    <div>
-      <span class="kicker">Get started</span><h2>
-        Try Mimic with your own scripts.
-      </h2><p>
-        Download a release, connect your client, and check the behavior your
-        project needs.
+  <section
+    class="closing container"
+    id="contact"
+    aria-labelledby="contact-title"
+  >
+    <div class="contact-copy">
+      <span class="kicker">Commercial use & integration</span>
+      <h2 id="contact-title">Bring your real workload.</h2>
+      <p>
+        Evaluate compatibility, compare resource usage, and integrate Mimic into
+        your existing infrastructure.
       </p>
-    </div><a
-      class="button button-primary"
-      href="https://github.com/moreveal/mimic/releases/latest"
-      ><Download size={18} />Download Mimic</a
-    >
+    </div>
+    <div class="contact-actions">
+      <a class="button button-primary" href="https://t.me/moreveal"
+        >Discuss your workload <ArrowRight size={16} /></a
+      >
+      <div class="contact-methods">
+        <a href="https://t.me/moreveal">Telegram <strong>@moreveal</strong></a>
+        <a href="https://discord.com/users/639562056915222573"
+          >Discord <strong>moreveal</strong></a
+        >
+      </div>
+    </div>
   </section>
 </BaseLayout>
 <script>
   const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
-  tabs.forEach((tab) =>
-    tab.addEventListener("click", () => {
-      tabs.forEach((item) => {
-        const selected = item === tab;
-        item.classList.toggle("active", selected);
-        item.setAttribute("aria-selected", String(selected));
+  const selectTab = (tab: HTMLButtonElement) => {
+    tabs.forEach((item) => {
+      const selected = item === tab;
+      item.classList.toggle("active", selected);
+      item.setAttribute("aria-selected", String(selected));
+      item.tabIndex = selected ? 0 : -1;
+      document
+        .getElementById(`panel-${item.dataset.tab}`)
+        ?.toggleAttribute("hidden", !selected);
+    });
+  };
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => selectTab(tab));
+    tab.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      const next =
+        tabs[(tabs.indexOf(tab) + direction + tabs.length) % tabs.length];
+      selectTab(next);
+      next.focus();
+    });
+  });
+  tabs
+    .find((tab) => tab.getAttribute("aria-selected") === "false")
+    ?.setAttribute("tabindex", "-1");
+
+  const command = document.querySelector<HTMLElement>(".run-command");
+  const commandCopy = document.querySelector<HTMLButtonElement>(".run-copy");
+  document
+    .querySelectorAll<HTMLButtonElement>("[data-platform]")
+    .forEach((button) => {
+      button.addEventListener("click", () => {
+        const platform = button.dataset.platform as "windows" | "linux";
+        const value = command?.dataset[platform];
+        if (!value || !commandCopy || !command) return;
+        command.textContent = value;
+        commandCopy.dataset.copy = value;
+        commandCopy.setAttribute(
+          "aria-label",
+          `Copy ${platform === "windows" ? "Windows" : "Linux"} command`,
+        );
         document
-          .getElementById(`panel-${item.dataset.tab}`)
-          ?.toggleAttribute("hidden", !selected);
+          .querySelectorAll<HTMLButtonElement>("[data-platform]")
+          .forEach((item) => {
+            const active = item === button;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", String(active));
+          });
       });
-    }),
-  );
+    });
 </script>
 <style>
   .hero {
@@ -331,14 +394,10 @@ const startCode = `# Windows
     white-space: nowrap;
   }
   .status-mark {
-    display: grid;
-    place-items: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
     background: var(--blue);
-    color: #10202d;
-    font-size: 0.65rem;
   }
   h1 {
     margin: 24px 0 18px;
@@ -360,6 +419,18 @@ const startCode = `# Windows
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 29px;
+  }
+  .integration-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 17px;
+    color: var(--blue-bright);
+    font-size: 0.82rem;
+  }
+  .integration-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .hero-foot {
     display: flex;
@@ -389,18 +460,13 @@ const startCode = `# Windows
     white-space: nowrap;
   }
   .hero-snippets {
-    display: grid;
-    grid-template-columns: 1.15fr 0.92fr;
-    gap: 10px;
     min-width: 0;
   }
-  .connect-snippet,
-  .run-snippet {
+  .connect-snippet {
     min-width: 0;
-    height: 347px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: linear-gradient(135deg, #1b2327, #151d20);
+    background: var(--surface);
     overflow: hidden;
   }
   .snippet-tabs {
@@ -425,7 +491,7 @@ const startCode = `# Windows
     color: var(--text);
   }
   .connect-snippet :global(.code-window),
-  .run-snippet :global(.code-window) {
+  .connect-snippet :global(.code-window) {
     border: 0;
     border-radius: 0;
     box-shadow: none;
@@ -437,67 +503,76 @@ const startCode = `# Windows
     padding-inline: 13px;
   }
   .connect-snippet :global(.highlighted pre) {
-    height: 277px;
+    max-height: 340px;
     overflow: auto;
-    padding: 10px 13px;
-    font-size: 0.71rem;
-    line-height: 1.73;
+    padding: 12px 16px 16px;
+    font-size: 0.77rem;
+    line-height: 1.6;
   }
-  .run-heading {
+  .run-strip {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    min-height: 39px;
-    gap: 4px;
-    padding: 0 12px;
-    border-bottom: 1px solid var(--line);
-    font-size: 0.78rem;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+    margin-top: 9px;
+    padding: 10px 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 0.75rem;
   }
-  .run-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--blue-bright);
-    font-size: 0.68rem;
+  .run-label {
+    color: var(--text);
+    font-weight: 650;
     white-space: nowrap;
   }
-  .run-indicator i {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--blue-bright);
+  .platform-options {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
   }
-  .run-caption {
-    padding: 15px 13px 10px;
-    color: var(--muted);
-    font-size: 0.79rem;
-    line-height: 1.5;
-  }
-  .run-snippet :global(.code-titlebar) {
-    height: 28px;
+  .platform-options button,
+  .run-copy {
     border: 0;
-    padding-inline: 13px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
   }
-  .run-snippet :global(.highlighted pre) {
-    overflow: auto;
-    padding: 8px 13px;
-    font-size: 0.69rem;
-    line-height: 1.65;
-  }
-  .run-bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px 13px 0;
-    border-top: 1px solid var(--line);
-    color: var(--quiet);
+  .platform-options button {
+    padding: 2px 6px;
+    border-radius: 3px;
     font-size: 0.72rem;
   }
-  .run-bottom a {
+  .platform-options button.active {
+    background: #293a43;
+    color: var(--text);
+  }
+  .run-command {
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    color: #dce8f3;
+    font-size: 0.72rem;
+  }
+  .run-copy {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    padding: 3px;
+  }
+  .run-copy:hover {
     color: var(--blue-bright);
+  }
+  .run-guide {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    color: var(--blue-bright);
+    white-space: nowrap;
   }
   [hidden] {
     display: none !important;
@@ -725,20 +800,41 @@ const startCode = `# Windows
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 30px;
+    gap: 40px;
     padding-top: 40px;
     padding-bottom: 64px;
     border-top: 1px solid var(--line);
   }
-  .closing .button {
-    flex: none;
+  .contact-copy {
+    max-width: 650px;
+  }
+  .contact-actions {
+    display: grid;
+    justify-items: start;
+    gap: 15px;
+  }
+  .contact-methods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+  .contact-methods a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .contact-methods strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .contact-methods a:hover {
+    color: var(--blue-bright);
   }
   @media (max-width: 1100px) {
     .hero {
       gap: 20px;
-    }
-    .hero-snippets {
-      gap: 8px;
     }
     .hero-foot p {
       white-space: normal;
@@ -754,7 +850,7 @@ const startCode = `# Windows
       gap: 30px;
     }
     .hero-snippets {
-      max-width: 700px;
+      max-width: 740px;
     }
     .hero-copy > p {
       max-width: 680px;
@@ -788,24 +884,18 @@ const startCode = `# Windows
     .hero-foot {
       margin-top: 13px;
     }
-    .hero-snippets {
-      grid-template-columns: 1fr;
-      gap: 9px;
-    }
-    .connect-snippet {
-      height: 230px;
-    }
     .connect-snippet :global(.highlighted pre) {
-      height: 165px;
+      max-height: 300px;
     }
-    .run-snippet {
-      height: auto;
+    .run-command {
+      order: 2;
+      flex-basis: calc(100% - 70px);
     }
-    .run-caption {
-      padding: 12px;
+    .run-copy {
+      order: 3;
     }
-    .run-bottom {
-      padding: 10px 13px 13px;
+    .run-guide {
+      margin-left: auto;
     }
     .steps ol {
       grid-template-columns: 1fr;
@@ -839,6 +929,7 @@ const startCode = `# Windows
       align-items: start;
       flex-direction: column;
     }
+    .contact-actions,
     .closing .button {
       width: 100%;
     }

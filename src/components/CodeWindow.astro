@@ -36,12 +36,14 @@ const highlighted = await codeToHtml(code, {
     .querySelectorAll<HTMLButtonElement>("[data-copy]")
     .forEach((button) => {
       button.addEventListener("click", async () => {
-        await navigator.clipboard.writeText(button.dataset.copy || "");
         const label = button.querySelector<HTMLElement>(".copy-label");
-        if (label) {
-          label.textContent = "Copied";
-          setTimeout(() => (label.textContent = "Copy"), 1500);
+        try {
+          await navigator.clipboard.writeText(button.dataset.copy || "");
+          if (label) label.textContent = "Copied";
+        } catch {
+          if (label) label.textContent = "Copy failed";
         }
+        if (label) setTimeout(() => (label.textContent = "Copy"), 1500);
       });
     });
 </script>
