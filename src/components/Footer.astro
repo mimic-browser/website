@@ -1,6 +1,6 @@
 ---
 import Logo from "./Logo.astro";
-import { Github, MessageCircle } from "lucide-astro";
+import { Github, Mail } from "lucide-astro";
 const base = import.meta.env.BASE_URL;
 const repo = "https://github.com/moreveal/mimic";
 ---
@@ -32,8 +32,9 @@ const repo = "https://github.com/moreveal/mimic";
     </nav><div class="footer-note">
       <span>Same internet.<br />Less overhead.</span><div>
         <a href={repo} aria-label="GitHub"><Github size={22} /></a><a
-          href="https://discord.com/users/639562056915222573"
-          aria-label="Discord contact"><MessageCircle size={22} /></a
+          href="mailto:slava@mimic.boo"
+          aria-label="Email Slava at slava@mimic.boo"
+          title="Email · slava@mimic.boo"><Mail size={22} /></a
         >
       </div>
     </div>

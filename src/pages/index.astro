@@ -2,6 +2,7 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import CodeWindow from "@/components/CodeWindow.astro";
 import LanguageIcon from "@/components/LanguageIcon.astro";
+import ContactOptions from "@/components/ContactOptions.astro";
 import {
   ArrowRight,
   Github,
@@ -407,14 +408,7 @@ const uses = [
       </p>
     </div>
     <div class="integration-actions">
-      <a class="button button-primary" href="https://t.me/moreveal"
-        >Discuss your workload</a
-      ><div>
-        <a href="https://t.me/moreveal">Telegram · @moreveal</a><a
-          href="https://discord.com/users/639562056915222573"
-          >Discord · moreveal</a
-        >
-      </div>
+      <ContactOptions />
     </div>
   </section>
 </BaseLayout>
@@ -478,22 +472,12 @@ const uses = [
   .integration-actions {
     justify-self: end;
   }
-  .integration-actions > div {
-    display: flex;
-    gap: 22px;
-    margin-top: 18px;
-    font-size: 13px;
-    color: var(--muted);
-  }
   @media (min-width: 1500px) {
     .integration-cta {
       padding-block: 48px 65px;
     }
     .integration-cta p {
       font-size: 19px;
-    }
-    .integration-actions > div {
-      font-size: 16px;
     }
   }
   @media (max-width: 760px) {
@@ -503,9 +487,6 @@ const uses = [
     }
     .integration-actions {
       justify-self: start;
-    }
-    .integration-actions > div {
-      flex-wrap: wrap;
     }
   }
   .hero-scene {
@@ -1188,22 +1169,9 @@ const uses = [
     width: 350px;
     max-width: 100%;
   }
-  .integration-actions > .button {
-    width: 100%;
-    font-weight: 720;
-    color: #070b20;
-  }
-  .integration-actions > div {
-    justify-content: space-between;
-    gap: 16px;
-    font-size: 14px;
-  }
   @media (min-width: 1500px) {
     .integration-actions {
       width: 420px;
-    }
-    .integration-actions > div {
-      font-size: 16px;
     }
   }
   @media (max-width: 760px) {
