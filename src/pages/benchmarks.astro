@@ -12,6 +12,7 @@ const rendered = (await marked.parse(summary)).replaceAll(
 <ArticleLayout
   title="Browser automation benchmarks"
   eyebrow="Performance"
+  icon="gauge"
   description="Mimic and Chrome 152 compared on controlled workloads. Measurements, methodology and limits."
   ><div set:html={rendered} /></ArticleLayout
 >
