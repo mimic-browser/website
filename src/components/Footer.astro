@@ -1,118 +1,160 @@
 ---
+import Logo from "./Logo.astro";
+import { Github, MessageCircle } from "lucide-astro";
 const base = import.meta.env.BASE_URL;
-const year = new Date().getFullYear();
+const repo = "https://github.com/moreveal/mimic";
 ---
 
 <footer>
   <div class="container footer-top">
     <div class="footer-brand">
-      <a href={base}>mimic</a><p>
-        Run the web without the weight of a full browser.
+      <a href={base}><Logo /></a><p>
+        A lightweight browser runtime<br />for modern automation.
       </p>
-    </div>
-    <nav aria-label="Footer navigation">
+    </div><nav aria-label="Footer navigation">
       <div>
-        <strong>Explore</strong><a href={base}>Product</a><a
-          href={`${base}docs/`}>Documentation</a
+        <strong>Product</strong><a href={`${base}download/`}>Download</a><a
+          href={`${base}#features`}>Features</a
         ><a href={`${base}#benchmarks`}>Benchmarks</a><a
+          href={`${base}#use-cases`}>Use cases</a
+        >
+      </div><div>
+        <strong>Developers</strong><a href={`${base}docs/`}>Documentation</a><a
+          href={`${base}examples/`}>Examples</a
+        ><a href={repo}>GitHub</a>
+      </div><div>
+        <strong>Project</strong><a href={`${base}about/`}>About</a><a
           href={`${base}changelog/`}>Changelog</a
+        ><a href={`${base}license/`}>License</a><a href={`${base}#contact`}
+          >Contact</a
         >
       </div>
-      <div>
-        <strong>Project</strong><a href="https://github.com/moreveal/mimic"
-          >GitHub</a
-        ><a href="https://github.com/moreveal/mimic/releases/latest"
-          >Downloads</a
-        ><a href="https://github.com/moreveal/mimic/issues">Issues</a><a
-          href="https://github.com/moreveal/mimic/blob/main/LICENSE">License</a
+    </nav><div class="footer-note">
+      <span>Same internet.<br />Less overhead.</span><div>
+        <a href={repo} aria-label="GitHub"><Github size={22} /></a><a
+          href="https://discord.com/users/639562056915222573"
+          aria-label="Discord contact"><MessageCircle size={22} /></a
         >
       </div>
-      <div>
-        <strong>More</strong><a href={`${base}privacy/`}>Privacy</a><a
-          href="https://github.com/moreveal/mimic/tree/main/examples"
-          >Examples</a
-        ><a href={`${base}#contact`}>Contact</a>
-      </div>
-    </nav>
-  </div>
-  <div class="container footer-bottom">
-    <span>© {year} Mimic</span><span>Public beta · Windows & Linux</span>
+    </div>
+  </div><div class="container footer-bottom">
+    <span>© 2026 Mimic</span><a href={`${base}privacy/`}>Privacy</a>
   </div>
 </footer>
 <style>
   footer {
-    border-top: 1px solid var(--line);
-    background: #101618;
+    background: linear-gradient(120deg, #0c111c, #0a0f18);
   }
   .footer-top {
     display: flex;
     justify-content: space-between;
-    gap: 70px;
-    padding-top: 62px;
-    padding-bottom: 70px;
-  }
-  .footer-brand {
-    max-width: 360px;
-  }
-  .footer-brand a {
-    color: var(--text);
-    font-size: 1.65rem;
-    font-weight: 750;
-    letter-spacing: -0.06em;
+    gap: 40px;
+    padding: 28px 0 48px;
   }
   .footer-brand p {
-    margin: 14px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 10px 0;
     color: var(--muted);
   }
   nav {
     display: grid;
-    grid-template-columns: repeat(3, minmax(120px, 1fr));
-    gap: 55px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 50px;
+    padding-top: 12px;
   }
   nav strong {
     display: block;
-    margin-bottom: 15px;
-    color: var(--text);
-    font-size: 0.83rem;
-    font-weight: 650;
+    margin-bottom: 8px;
+    font-size: 14px;
   }
   nav a {
     display: block;
-    padding: 4px 0;
     color: var(--muted);
-    font-size: 0.84rem;
+    font-size: 14px;
+    line-height: 1.8;
   }
   nav a:hover {
-    color: var(--blue-bright);
+    color: var(--blue);
+  }
+  .footer-note {
+    padding-top: 8px;
+  }
+  .footer-note > span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: #7c96ff;
+    text-transform: uppercase;
+    transform: rotate(-12deg);
+    line-height: 1.6;
+  }
+  .footer-note > div {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 26px;
+    color: #c2c4ed;
   }
   .footer-bottom {
     display: flex;
     justify-content: space-between;
-    gap: 15px;
-    padding-top: 21px;
-    padding-bottom: 25px;
     border-top: 1px solid var(--line);
-    color: var(--quiet);
-    font-size: 0.8rem;
+    padding-top: 18px;
+    padding-bottom: 55px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  @media (min-width: 1500px) {
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr 0.7fr;
+      gap: 70px;
+      padding-top: 32px;
+      padding-bottom: 60px;
+    }
+    nav {
+      gap: 65px;
+    }
+    nav strong {
+      font-size: 17px;
+      margin-bottom: 15px;
+    }
+    nav a {
+      font-size: 16px;
+      line-height: 2;
+    }
+    .footer-brand p {
+      font-size: 18px;
+      margin-top: 18px;
+    }
+    .footer-note > span {
+      font-size: 18px;
+    }
+    .footer-bottom {
+      font-size: 14px;
+      padding-top: 24px;
+      padding-bottom: 50px;
+    }
+  }
+  @media (max-width: 1000px) {
+    nav {
+      gap: 25px;
+    }
+    .footer-note {
+      display: none;
+    }
   }
   @media (max-width: 760px) {
     .footer-top {
-      display: block;
-      padding-top: 45px;
-      padding-bottom: 45px;
+      flex-direction: column;
+      gap: 16px;
     }
     nav {
-      gap: 18px;
-      margin-top: 34px;
+      gap: 20px;
     }
     .footer-bottom {
-      flex-wrap: wrap;
-    }
-  }
-  @media (max-width: 480px) {
-    nav {
-      grid-template-columns: repeat(2, 1fr);
-      row-gap: 30px;
+      padding-bottom: 28px;
     }
   }
 </style>

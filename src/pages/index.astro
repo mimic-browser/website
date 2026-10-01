@@ -1,363 +1,418 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import CodeWindow from "@/components/CodeWindow.astro";
+import LanguageIcon from "@/components/LanguageIcon.astro";
 import {
   ArrowRight,
-  ChartNoAxesColumnIncreasing,
-  CircleDot,
-  CircleX,
-  Copy,
-  Cpu,
-  Download,
   Github,
-  ImageOff,
-  Layers3,
-  Settings2,
-  TrendingUp,
   Zap,
+  Cpu,
+  LockKeyhole,
+  Puzzle,
+  Globe,
+  ChartNoAxesColumnIncreasing,
+  FlaskConical,
+  Settings,
+  Box,
+  Database,
+  Code,
+  Network,
+  Theater,
+  Bot,
 } from "lucide-astro";
-
 const base = import.meta.env.BASE_URL;
-const playwrightCode = `import { chromium } from "playwright-core";
+const repo = "https://github.com/moreveal/mimic";
+const benchmark = `${base}benchmarks/`;
+const codes = {
+  python: {
+    label: "Python",
+    lang: "python",
+    code: `from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.connect_over_cdp(
+        "http://127.0.0.1:9222"
+    )
+    page = browser.contexts[0].new_page()
+    page.goto("https://example.com/")
+
+    # Extract data from the live DOM
+    title = page.locator("h1").inner_text()
+    print(title)
+    browser.close()`,
+  },
+  node: {
+    label: "Node.js",
+    lang: "javascript",
+    code: `import { chromium } from "playwright-core";
+
 const browser = await chromium.connectOverCDP(
   "http://127.0.0.1:9222"
 );
-try {
-  const context = browser.contexts()[0];
-  const page = await context.newPage();
-  await page.goto("https://example.com/");
-  console.log(await page.locator("h1").innerText());
-} finally {
-  await browser.close();
-}`;
-const puppeteerCode = `import puppeteer from "puppeteer-core";
-const browser = await puppeteer.connect({
-  browserURL: "http://127.0.0.1:9222",
-  defaultViewport: null
-});
-try {
-  const page = await browser.newPage();
-  await page.goto("https://example.com/");
-  console.log(await page.$eval("h1", el => el.textContent));
-} finally {
-  await browser.disconnect();
-}`;
-const windowsCommand = ".\\mimic.exe -listen 127.0.0.1:9222";
-const linuxCommand = "./mimic -listen 127.0.0.1:9222";
+const page = await browser.contexts()[0].newPage();
+page.goto("https://example.com/");
+
+const links = await page.locator("a").evaluateAll(
+  nodes => nodes.map(a => ({ text: a.textContent, url: a.href }))
+);
+console.log(links);
+await browser.close();`,
+  },
+  cdp: {
+    label: "Raw CDP",
+    lang: "jsonc",
+    code: `{
+  "id": 1,
+  "method": "Runtime.evaluate",
+  "params": {
+    "expression": "({ title: document.title, url: location.href })",
+    "returnByValue": true
+  }
+}`,
+  },
+};
+const features = [
+  {
+    icon: Zap,
+    title: "Real browser behavior",
+    text: "JavaScript, DOM, navigation and browser state. Measured against Chrome 152.",
+  },
+  {
+    icon: Cpu,
+    title: "Resource efficient",
+    text: "Run independent Pages concurrently, without Chromium’s rendering pipeline.",
+  },
+  {
+    icon: LockKeyhole,
+    title: "Consistent observations",
+    text: "Coherent browser profiles and observable state across your workflow.",
+  },
+  {
+    icon: Puzzle,
+    title: "Fits your workflow",
+    text: "One standalone executable. Connect with the automation tools you already use.",
+  },
+];
+const metrics = [
+  {
+    icon: Zap,
+    value: "6.0×",
+    title: "Higher static throughput",
+    mimic: "108.67",
+    chrome: "18.09",
+    width: 17,
+    unit: "sessions/s",
+  },
+  {
+    icon: Cpu,
+    value: "8.3×",
+    title: "Less ready memory",
+    mimic: "45.79",
+    chrome: "379.54",
+    width: 12,
+    unit: "MiB RSS",
+  },
+  {
+    icon: Database,
+    value: "5.5×",
+    title: "Less active memory",
+    mimic: "748.11",
+    chrome: "4,102.04",
+    width: 18,
+    unit: "MiB RSS · 50 Pages",
+  },
+];
+const tools = [
+  {
+    icon: Theater,
+    title: "Playwright",
+    text: "Connect your existing scripts over CDP.",
+  },
+  {
+    icon: Bot,
+    title: "Puppeteer",
+    text: "Use your familiar automation workflow.",
+  },
+  {
+    icon: Code,
+    title: "Chrome DevTools Protocol",
+    text: "Control the supported browser surface.",
+  },
+  {
+    icon: Network,
+    title: "HTTP / HTTPS / SOCKS5",
+    text: "Use your own proxy infrastructure.",
+  },
+];
+const uses = [
+  {
+    icon: Globe,
+    title: "Data extraction",
+    text: "Read content from JavaScript-driven websites.",
+  },
+  {
+    icon: ChartNoAxesColumnIncreasing,
+    title: "Automation at scale",
+    text: "Run concurrent Pages with less overhead.",
+  },
+  {
+    icon: FlaskConical,
+    title: "Testing & QA",
+    text: "Check supported browser behavior in your workflow.",
+  },
+  {
+    icon: Settings,
+    title: "Web monitoring",
+    text: "Track changes and collect website data.",
+  },
+  {
+    icon: Box,
+    title: "Custom tools",
+    text: "Build browser automation into your product.",
+  },
+];
 ---
 
 <BaseLayout
-  title="Mimic — Browser execution, without the browser"
-  description="Run website JavaScript and automate Chrome-visible state through CDP, without embedding Chromium."
+  title="Mimic — Lightweight Browser Automation Without Chromium"
+  description="Reduce browser automation time and resource costs with Mimic, a lightweight runtime between HTTP clients and Chromium. JavaScript, browser state and CDP tooling."
 >
-  <section class="hero container">
-    <div class="hero-copy">
-      <span class="status"
-        ><span class="status-mark" aria-hidden="true"></span> Public beta · Chrome
-        152 reference</span
-      >
-      <h1>Browser execution,<br />without the browser.</h1>
+  <section class="hero-scene">
+    <img
+      class="hero-art"
+      src={`${base}images/mascot-hero.png`}
+      alt="A blue one-eyed Mimic mascot holding a browser window in a softly lit studio"
+      fetchpriority="high"
+    />
+    <div class="hero-shade"></div>
+    <div class="container hero-copy">
+      <span class="eyeline">A lightweight browser runtime</span>
+      <h1>Same web.<br /><em>Less weight.</em></h1>
       <p>
-        Run website JavaScript and automate Chrome-visible state through CDP,
-        without embedding Chromium.
+        Mimic runs website JavaScript for automation and data extraction without
+        Chromium’s rendering pipeline. Focus on your work, with less browser
+        overhead.
       </p>
-      <div class="hero-actions">
-        <a
-          class="button button-primary"
-          href="https://github.com/moreveal/mimic/releases/latest"
-          ><Download size={17} strokeWidth={1.8} />Download Mimic</a
-        >
-        <a class="button" href={`${base}docs/`}
-          >Read the docs <ArrowRight size={16} strokeWidth={1.8} /></a
-        >
+      <div class="actions">
+        <a class="button button-primary" href={`${base}download/`}
+          >Download Mimic <ArrowRight size={18} /></a
+        ><a class="button" href={repo}><Github size={20} /> View on GitHub</a>
       </div>
-      <a class="integration-link" href="#contact"
-        >Need help integrating? Get in touch <ArrowRight size={15} /></a
-      >
-      <div class="hero-foot">
-        <a href="https://github.com/moreveal/mimic"
-          ><Github size={18} />Go to GitHub</a
-        ><span></span><p>Lightweight. Observable. Source available.</p>
+      <div class="hero-tags">
+        <span><Code size={14} /> Source available</span><span
+          ><Zap size={14} /> Automation-first</span
+        ><span><Box size={14} /> Runs without Chromium</span>
       </div>
     </div>
-    <div
-      class="hero-snippets"
-      aria-label="Run Mimic and connect your automation"
+  </section>
+  <section class="feature-strip" id="features">
+    <div class="container feature-grid">
+      {
+        features.map(({ icon: Icon, title, text }) => (
+          <article>
+            <>
+              <Icon size={35} />
+              <div>
+                <>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                </>
+              </div>
+            </>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+  <div class="container content">
+    <section class="automation" id="about">
+      <div>
+        <h2>Built for automation,<br />not screenshots.</h2><p>
+          Mimic sits between an HTTP client and a full Chromium browser. Our
+          goal is faster, lower-cost automation that keeps its meaning:
+          executing JavaScript, maintaining page state and preserving the
+          observations that browser fingerprints depend on.
+        </p><div class="actions">
+          <a class="button button-primary" href={`${base}docs/`}
+            >Read the docs <ArrowRight size={17} /></a
+          ><a class="button" href={`${base}examples/`}
+            >See examples <Code size={16} /></a
+          >
+        </div>
+      </div>
+      <div class="example">
+        <div class="example-tabs" role="tablist" aria-label="Automation client">
+          {
+            Object.keys(codes).map((key, index) => (
+              <button
+                id={`tab-${key}`}
+                role="tab"
+                type="button"
+                data-tab={key}
+                aria-controls={`panel-${key}`}
+                aria-selected={index === 0}
+                tabindex={index === 0 ? 0 : -1}
+                class:list={{ active: index === 0 }}
+              >
+                <LanguageIcon language={key} />
+                {codes[key as keyof typeof codes].label}
+              </button>
+            ))
+          }
+        </div>{
+          Object.entries(codes).map(([key, code], index) => (
+            <div
+              id={`panel-${key}`}
+              role="tabpanel"
+              aria-labelledby={`tab-${key}`}
+              hidden={index !== 0}
+            >
+              <CodeWindow showcase code={code.code} lang={code.lang} />
+            </div>
+          ))
+        }
+      </div>
+    </section>
+    <section id="benchmarks" class="section-block">
+      <span class="eyeline">Benchmarks</span><div class="section-heading">
+        <h2>Real measurements. Less overhead.</h2><a href={benchmark}
+          >See benchmark details <ArrowRight size={16} /></a
+        >
+      </div><p class="section-intro">
+        Measured against Chrome 152. Lower memory usage and higher throughput in
+        the controlled static workload.
+      </p><div class="metric-grid">
+        {
+          metrics.map(
+            (
+              { icon: Icon, value, title, mimic, chrome, width, unit },
+              index,
+            ) => (
+              <article class="metric-card">
+                <>
+                  <div class="metric-title">
+                    <>
+                      <Icon size={40} />
+                      <div>
+                        <>
+                          <strong>{value}</strong>
+                          <h3>{title}</h3>
+                        </>
+                      </div>
+                    </>
+                  </div>
+                  <div class="bar-row">
+                    <>
+                      <span>Mimic</span>
+                      <div class="bar-track">
+                        <i style={`width:${index === 0 ? 100 : width}%`} />
+                      </div>
+                      <small>{mimic}</small>
+                    </>
+                  </div>
+                  <div class="bar-row">
+                    <>
+                      <span>Chrome</span>
+                      <div class="bar-track">
+                        <i
+                          class="chrome-bar"
+                          style={`width:${index === 0 ? width : 100}%`}
+                        />
+                      </div>
+                      <small>{chrome}</small>
+                    </>
+                  </div>
+                  <div class="metric-unit">{unit}</div>
+                </>
+              </article>
+            ),
+          )
+        }
+      </div><p class="benchmark-note">
+        September 29, 2026 · Windows 11 · 50 static Pages for throughput and
+        active memory.<br />Fixture- and machine-specific results; some
+        workloads favor Chrome. <a href={benchmark}>Results & methodology →</a>
+      </p>
+    </section>
+    <section class="section-block" id="compatibility">
+      <span class="eyeline">Compatibility</span><h2>
+        Works with your tools.
+      </h2><p class="section-intro">
+        Use Mimic with Playwright, Puppeteer or any CDP client. No special SDK
+        required.
+      </p><div class="tool-grid">
+        {
+          tools.map(({ icon: Icon, title, text }) => (
+            <article class="small-card tool-card">
+              <>
+                <Icon size={39} />
+                <div>
+                  <>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </>
+                </div>
+              </>
+            </article>
+          ))
+        }
+      </div><p class="boundary-note">
+        Public beta. Compatibility depends on your workload. Mimic does not
+        produce screenshots or rendered pixels. <a
+          href={`${base}docs/#compatibility`}>Check the supported surface →</a
+        >
+      </p>
+    </section>
+    <section class="section-block" id="use-cases">
+      <span class="eyeline">Use cases</span><h2>For real-world workflows.</h2><p
+        class="section-intro"
+      >
+        For data extraction, testing, monitoring and workflows that need browser
+        logic with less overhead.
+      </p><div class="use-grid">
+        {
+          uses.map(({ icon: Icon, title, text }) => (
+            <article class="small-card">
+              <>
+                <Icon size={28} />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+  <section class="closing-banner">
+    <img src={`${base}images/mascot-banner.png`} alt="" loading="lazy" /><div
+      class="closing-copy"
     >
-      <div class="connect-snippet">
-        <div class="snippet-tabs" role="tablist" aria-label="Automation client">
-          <button
-            class="active"
-            type="button"
-            role="tab"
-            id="tab-playwright"
-            aria-controls="panel-playwright"
-            aria-selected="true"
-            data-tab="playwright">Playwright</button
-          >
-          <button
-            type="button"
-            role="tab"
-            id="tab-puppeteer"
-            aria-controls="panel-puppeteer"
-            aria-selected="false"
-            data-tab="puppeteer">Puppeteer</button
-          >
-        </div>
-        <div
-          id="panel-playwright"
-          role="tabpanel"
-          aria-labelledby="tab-playwright"
-        >
-          <CodeWindow title="playwright.mjs" code={playwrightCode} />
-        </div>
-        <div
-          id="panel-puppeteer"
-          role="tabpanel"
-          aria-labelledby="tab-puppeteer"
-          hidden
-        >
-          <CodeWindow title="puppeteer.mjs" code={puppeteerCode} />
-        </div>
-      </div>
-      <div class="run-strip" aria-label="Start Mimic locally">
-        <span class="run-label">Start Mimic</span>
-        <div class="platform-options" aria-label="Operating system">
-          <button
-            type="button"
-            class="active"
-            data-platform="windows"
-            aria-pressed="true">Windows</button
-          >
-          <button type="button" data-platform="linux" aria-pressed="false"
-            >Linux</button
-          >
-        </div>
-        <code
-          class="run-command"
-          data-windows={windowsCommand}
-          data-linux={linuxCommand}>{windowsCommand}</code
-        >
-        <button
-          class="run-copy"
-          type="button"
-          aria-label="Copy Windows command"
-          data-copy={windowsCommand}
-        >
-          <Copy size={15} /><span class="copy-label">Copy</span>
-        </button>
-        <a class="run-guide" href={`${base}docs/#getting-started`}
-          >Setup guide <ArrowRight size={14} /></a
-        >
+      <h3>Ready to build with Mimic?</h3><p>
+        Source available. Standalone.<br />Built for real automation.
+      </p><div class="actions">
+        <a class="button button-primary" href={`${base}download/`}
+          >Download Mimic <ArrowRight size={17} /></a
+        ><a class="button" href={repo}><Github size={19} /> View on GitHub</a>
       </div>
     </div>
   </section>
-
-  <section class="steps container" aria-labelledby="steps-title">
-    <div class="section-label">
-      <h2 id="steps-title">Start in three steps</h2><span></span>
-    </div>
-    <ol>
-      <li>
-        <span class="step-number">1</span><div>
-          <strong>Download binary</strong><p>
-            Get the latest release for your platform from GitHub.
-          </p>
-        </div><ArrowRight class="step-arrow" size={18} />
-      </li>
-      <li>
-        <span class="step-number">2</span><div>
-          <strong>Start local endpoint</strong><p>
-            Run Mimic and start the CDP endpoint.
-          </p>
-        </div><ArrowRight class="step-arrow" size={18} />
-      </li>
-      <li>
-        <span class="step-number">3</span><div>
-          <strong>Connect Playwright or Puppeteer</strong><p>
-            Use your existing automation code.
-          </p>
-        </div>
-      </li>
-    </ol>
-  </section>
-
-  <section
-    class="metrics container"
-    id="benchmarks"
-    aria-labelledby="metrics-title"
-  >
-    <div class="metrics-heading">
-      <h2 id="metrics-title">Measured performance</h2>
-      <span>Controlled static fixture · September 29, 2026</span>
-    </div>
-    <div class="metric">
-      <span class="metric-icon"><Cpu size={24} strokeWidth={1.8} /></span><div>
-        <strong>8.3×</strong><span>less CDP-ready RSS</span><small
-          >45.79 MiB vs 379.54 MiB</small
-        >
-      </div>
-    </div>
-    <div class="metric">
-      <span class="metric-icon"
-        ><ChartNoAxesColumnIncreasing size={24} strokeWidth={1.9} /></span
-      ><div>
-        <strong>5.5×</strong><span>less active RSS at 50 Pages</span><small
-          >748.11 MiB vs 4,102.04 MiB</small
-        >
-      </div>
-    </div>
-    <div class="metric">
-      <span class="metric-icon"
-        ><Zap size={26} strokeWidth={1.8} fill="currentColor" /></span
-      ><div>
-        <strong>6.0×</strong><span>static-fixture throughput at 50 Pages</span
-        ><small>108.67 vs 18.09 sessions/s</small>
-      </div>
-    </div>
-    <p class="metric-note">
-      Results from a controlled static workload; see the setup, measurements,
-      and limitations. <a
-        href="https://github.com/moreveal/mimic/blob/main/benchmark/runs/13-rss-20260929/public-summary.md"
-        >Read methodology <ArrowRight size={14} /></a
-      >
-    </p>
-  </section>
-
-  <section class="real-world container" aria-labelledby="real-world-title">
-    <div class="real-world-main">
-      <div class="real-world-heading">
-        <span class="kicker">The compatibility difference</span>
-        <h2 id="real-world-title">The hard part is acting like Chrome.</h2>
-        <p>
-          A lightweight runtime is only useful when demanding workloads still
-          work. Mimic models the JavaScript, DOM, network, navigation, and CDP
-          behavior that anti-bot systems inspect.
-        </p>
-        <span class="real-world-reference"
-          >Measured against frozen Chrome 152</span
-        >
-      </div>
-      <div class="real-world-systems">
-        <span class="real-world-label">Where browser behavior matters</span>
-        <ul class="real-world-list">
-          <li class="real-world-featured">
-            <span>Challenge platform + widget</span>
-            <strong>Cloudflare <em>+ Turnstile</em></strong>
-          </li>
-          <li>
-            <span>Search</span>
-            <strong>Google SERP</strong>
-          </li>
-          <li>
-            <span>Bot protection</span>
-            <strong>DataDome</strong>
-          </li>
-          <li>
-            <span>Bot management</span>
-            <strong>Akamai</strong>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="real-world-footer">
-      <span>Chrome-visible behavior, without the Chromium footprint.</span>
-      <a
-        href="https://github.com/moreveal/mimic/blob/main/docs/compatibility/antibot-gate-methodology.md"
-        >Explore compatibility work <ArrowRight size={15} /></a
-      >
-    </div>
-  </section>
-
-  <section class="details container" id="product">
-    <div class="detail-column">
-      <span class="kicker">Product</span>
-      <h2>Built around observable behavior</h2>
-      <p>
-        Mimic executes website JavaScript and exposes Chrome-visible state
-        through CDP. It focuses on the parts that matter for automation without
-        embedding Chromium.
-      </p>
-      <div class="detail-list">
-        <div>
-          <span><CircleX size={20} strokeWidth={1.4} /></span><div>
-            <strong>Compatible with existing tooling</strong><p>
-              Use Playwright, Puppeteer, or another CDP client.
-            </p>
-          </div>
-        </div>
-        <div>
-          <span><TrendingUp size={20} strokeWidth={1.4} /></span><div>
-            <strong>Independent Pages</strong><p>
-              Run multiple Pages, each with its own event loop.
-            </p>
-          </div>
-        </div>
-        <div>
-          <span><CircleDot size={20} strokeWidth={1.4} /></span><div>
-            <strong>One executable</strong><p>
-              The release needs no Chrome, Go, or Rust installation.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="detail-column">
-      <span class="kicker">Compatibility</span>
-      <h2>Know the boundaries</h2>
-      <p>
-        Mimic is a public beta. Check that the browser features your project
-        uses are supported. Use a full browser when visual output matters.
-      </p>
-      <div class="boundary-panel">
-        <div>
-          <ImageOff size={22} strokeWidth={1.5} /><span
-            ><strong>No screenshots or rendered pixels</strong><p>
-              Mimic does not produce visual output.
-            </p></span
-          >
-        </div>
-        <div>
-          <Settings2 size={22} strokeWidth={1.5} /><span
-            ><strong>Some browser features are not supported</strong><p>
-              Compatibility depends on your workflow.
-            </p></span
-          >
-        </div>
-        <div>
-          <Layers3 size={22} strokeWidth={1.5} /><span
-            ><strong>Trusted local clients only</strong><p>
-              The CDP endpoint has no authentication.
-            </p></span
-          >
-        </div>
-        <a href={`${base}docs/#compatibility`}
-          >Read the documentation <ArrowRight size={16} /></a
-        >
-      </div>
-    </div>
-  </section>
-  <section
-    class="closing container"
-    id="contact"
-    aria-labelledby="contact-title"
-  >
-    <div class="contact-copy">
-      <span class="kicker">Commercial use & integration</span>
-      <h2 id="contact-title">Bring your real workload.</h2>
-      <p>
-        Evaluate compatibility, compare resource usage, and integrate Mimic into
-        your existing infrastructure.
+  <section class="container integration-cta" id="contact">
+    <div>
+      <span class="eyeline">Integration support</span><h2>
+        Bring your real workload.
+      </h2><p>
+        Need help integrating? We can help evaluate compatibility, compare
+        resource usage and fit Mimic into your existing infrastructure.
       </p>
     </div>
-    <div class="contact-actions">
+    <div class="integration-actions">
       <a class="button button-primary" href="https://t.me/moreveal"
-        >Discuss your workload <ArrowRight size={16} /></a
-      >
-      <div class="contact-methods">
-        <a href="https://t.me/moreveal">Telegram <strong>@moreveal</strong></a>
-        <a href="https://discord.com/users/639562056915222573"
-          >Discord <strong>moreveal</strong></a
+        >Discuss your workload</a
+      ><div>
+        <a href="https://t.me/moreveal">Telegram · @moreveal</a><a
+          href="https://discord.com/users/639562056915222573"
+          >Discord · moreveal</a
         >
       </div>
     </div>
@@ -365,781 +420,773 @@ const linuxCommand = "./mimic -listen 127.0.0.1:9222";
 </BaseLayout>
 <script>
   const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-tab]")];
-  const selectTab = (tab: HTMLButtonElement) => {
+  function selectTab(tab: HTMLButtonElement) {
     tabs.forEach((item) => {
-      const selected = item === tab;
-      item.classList.toggle("active", selected);
-      item.setAttribute("aria-selected", String(selected));
-      item.tabIndex = selected ? 0 : -1;
+      const active = item === tab;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-selected", String(active));
+      item.tabIndex = active ? 0 : -1;
       document
         .getElementById(`panel-${item.dataset.tab}`)
-        ?.toggleAttribute("hidden", !selected);
+        ?.toggleAttribute("hidden", !active);
     });
-  };
+  }
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => selectTab(tab));
     tab.addEventListener("keydown", (event) => {
-      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+        return;
       event.preventDefault();
-      const direction = event.key === "ArrowRight" ? 1 : -1;
-      const next =
-        tabs[(tabs.indexOf(tab) + direction + tabs.length) % tabs.length];
-      selectTab(next);
-      next.focus();
+      const index =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? tabs.length - 1
+            : (tabs.indexOf(tab) +
+                (event.key === "ArrowRight" ? 1 : -1) +
+                tabs.length) %
+              tabs.length;
+      selectTab(tabs[index]);
+      tabs[index].focus();
     });
   });
-  tabs
-    .find((tab) => tab.getAttribute("aria-selected") === "false")
-    ?.setAttribute("tabindex", "-1");
-
-  const command = document.querySelector<HTMLElement>(".run-command");
-  const commandCopy = document.querySelector<HTMLButtonElement>(".run-copy");
-  document
-    .querySelectorAll<HTMLButtonElement>("[data-platform]")
-    .forEach((button) => {
-      button.addEventListener("click", () => {
-        const platform = button.dataset.platform as "windows" | "linux";
-        const value = command?.dataset[platform];
-        if (!value || !commandCopy || !command) return;
-        command.textContent = value;
-        commandCopy.dataset.copy = value;
-        commandCopy.setAttribute(
-          "aria-label",
-          `Copy ${platform === "windows" ? "Windows" : "Linux"} command`,
-        );
-        document
-          .querySelectorAll<HTMLButtonElement>("[data-platform]")
-          .forEach((item) => {
-            const active = item === button;
-            item.classList.toggle("active", active);
-            item.setAttribute("aria-pressed", String(active));
-          });
-      });
-    });
 </script>
+
 <style>
-  .hero {
+  .integration-cta {
     display: grid;
-    grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.12fr);
-    align-items: start;
-    gap: 34px;
-    padding-top: 38px;
-    padding-bottom: 51px;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 60px;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    padding-block: 36px 50px;
+  }
+  .integration-cta p {
+    max-width: 670px;
+    line-height: 1.65;
+    margin-bottom: 0;
+  }
+  .integration-actions {
+    justify-self: end;
+  }
+  .integration-actions > div {
+    display: flex;
+    gap: 22px;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  @media (min-width: 1500px) {
+    .integration-cta {
+      padding-block: 48px 65px;
+    }
+    .integration-cta p {
+      font-size: 19px;
+    }
+    .integration-actions > div {
+      font-size: 16px;
+    }
+  }
+  @media (max-width: 760px) {
+    .integration-cta {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .integration-actions {
+      justify-self: start;
+    }
+    .integration-actions > div {
+      flex-wrap: wrap;
+    }
+  }
+  .hero-scene {
+    position: relative;
+    height: 540px;
+    margin-top: -76px;
+    padding-top: 76px;
+    overflow: hidden;
+    background: #0c1020;
+  }
+  .hero-art {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    inset: 0;
+    object-fit: cover;
+    object-position: center 56%;
+  }
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, #080d19e8 0%, #080d19b0 35%, transparent 66%),
+      linear-gradient(0deg, #080d14 0%, transparent 14%);
   }
   .hero-copy {
-    min-width: 0;
-    padding-top: 0;
+    position: relative;
+    padding-top: 58px;
   }
-  .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 4px 10px;
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    background: #1b252a;
-    color: var(--blue-bright);
-    font-size: 0.78rem;
-    line-height: 1.5;
-    white-space: nowrap;
-  }
-  .status-mark {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--blue);
+  .eyeline {
+    font-family: var(--mono);
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: #c5c9ed;
+    display: block;
   }
   h1 {
-    margin: 24px 0 18px;
     font-family: var(--display);
-    font-size: clamp(2.48rem, 3.7vw, 3.45rem);
-    font-weight: 760;
-    line-height: 1.17;
-    letter-spacing: -0.048em;
+    font-size: clamp(48px, 5.7vw, 72px);
+    letter-spacing: -0.05em;
+    line-height: 1.02;
+    margin: 14px 0 19px;
+    font-weight: 820;
+  }
+  h1 em {
+    font-style: normal;
+    color: #6a86ff;
   }
   .hero-copy > p {
-    max-width: 430px;
+    max-width: 450px;
+    color: #c4cbe4;
+    line-height: 1.55;
     margin: 0;
-    color: #c4cdd5;
-    font-size: 1.06rem;
-    line-height: 1.62;
+    font-size: 16px;
   }
-  .hero-actions {
+  .actions {
     display: flex;
+    gap: 16px;
+    margin-top: 25px;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 29px;
   }
-  .integration-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 17px;
-    color: var(--blue-bright);
-    font-size: 0.82rem;
+  .hero-tags {
+    display: flex;
+    gap: 26px;
+    margin-top: 32px;
+    font-size: 12px;
+    color: #c7cbe5;
   }
-  .integration-link:hover {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .hero-foot {
+  .hero-tags span {
     display: flex;
     align-items: center;
-    gap: 11px;
-    margin-top: 27px;
-    color: var(--quiet);
-    font-size: 0.78rem;
+    gap: 7px;
   }
-  .hero-foot a {
+  .hero-tags svg {
+    color: #8a9aff;
+  }
+  .feature-strip {
+    background: linear-gradient(90deg, #0e1421, #0c1019);
+    padding: 34px 0 39px;
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+  .feature-grid article {
+    display: flex;
+    gap: 20px;
+  }
+  .feature-grid svg {
+    flex-shrink: 0;
+    color: #7389ff;
+  }
+  .feature-grid h3 {
+    font-size: 14px;
+    margin: 3px 0 10px;
+  }
+  .feature-grid p {
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 0;
+    color: var(--muted);
+  }
+  .content {
+    padding-top: 36px;
+  }
+  h2 {
+    font-family: var(--display);
+    font-size: 35px;
+    line-height: 1.18;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    margin: 8px 0 12px;
+  }
+  p {
+    color: var(--muted);
+  }
+  .automation {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 76px;
+    align-items: start;
+    margin-bottom: 38px;
+  }
+  .automation > div > p {
+    font-size: 16px;
+    line-height: 1.55;
+    max-width: 465px;
+  }
+  .example {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    background: linear-gradient(120deg, #131724, #0b0f19);
+  }
+  .example-tabs {
+    display: flex;
+    padding: 8px;
+    gap: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .example-tabs button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: #b6c0ca;
-    white-space: nowrap;
-  }
-  .hero-foot a:hover {
-    color: var(--blue-bright);
-  }
-  .hero-foot > span {
-    width: 1px;
-    height: 15px;
-    background: var(--line-bright);
-  }
-  .hero-foot p {
-    margin: 0;
-    white-space: nowrap;
-  }
-  .hero-snippets {
-    min-width: 0;
-  }
-  .connect-snippet {
-    min-width: 0;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface);
-    overflow: hidden;
-  }
-  .snippet-tabs {
-    display: flex;
-    gap: 6px;
-    height: 39px;
-    padding: 0 12px;
-    border-bottom: 1px solid var(--line);
-  }
-  .snippet-tabs button {
-    padding: 0 4px;
-    margin-right: 10px;
     border: 0;
-    border-bottom: 2px solid transparent;
+    border-radius: 7px;
+    padding: 7px 18px;
     background: none;
     color: var(--muted);
-    font-size: 0.84rem;
+    font-size: 13px;
     cursor: pointer;
   }
-  .snippet-tabs button.active {
-    border-bottom-color: var(--blue);
-    color: var(--text);
+  .example-tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition:
+      color 140ms ease,
+      box-shadow 140ms ease;
   }
-  .connect-snippet :global(.code-window) {
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    background: transparent;
+  .example-tabs button:hover {
+    color: #eef0ff;
+    box-shadow: inset 0 0 0 100px #ffffff06;
   }
-  .connect-snippet :global(.code-titlebar) {
-    height: 34px;
-    border: 0;
-    padding-inline: 13px;
+  .example-tabs button:active {
+    color: #eef0ff;
+    box-shadow: inset 0 0 0 100px #00000016;
   }
-  .connect-snippet :global(.highlighted pre) {
-    max-height: 360px;
-    overflow: auto;
-    padding: 14px 16px 18px;
-    font-size: 0.85rem;
-    line-height: 1.65;
+  .example-tabs button.active {
+    background: #232954;
+    color: #e9eaff;
   }
-  .run-strip {
+  .section-block {
+    margin-bottom: 38px;
+  }
+  .section-heading {
+    max-width: none;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .section-heading h2 {
+    margin: 8px 0 12px;
+    font-size: 35px;
+    line-height: 1.18;
+    letter-spacing: -0.035em;
+  }
+  .section-heading a {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 13px;
+    color: var(--blue);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-intro {
+    margin: 0 0 18px;
+    font-size: 16px;
+    max-width: 770px;
+  }
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .metric-card,
+  .small-card {
+    background: linear-gradient(125deg, #131923, #0e131e);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .metric-title {
+    display: flex;
+    gap: 23px;
+    align-items: center;
+    color: var(--blue);
+    margin-bottom: 24px;
+  }
+  .metric-title strong {
+    font-size: 29px;
+    line-height: 1;
+    font-weight: 800;
+  }
+  .metric-title h3 {
+    font-size: 16px;
+    margin: 8px 0 0;
+    font-weight: 600;
+  }
+  .metric-title svg {
+    flex: none;
+  }
+  .bar-row {
+    display: flex;
+    align-items: center;
     gap: 10px;
-    min-width: 0;
-    margin-top: 9px;
-    padding: 10px 13px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--surface);
-    font-size: 0.8rem;
+    font-size: 12px;
+    margin-top: 11px;
   }
-  .run-label {
-    color: var(--text);
-    font-weight: 650;
-    white-space: nowrap;
+  .bar-row > span {
+    width: 55px;
   }
-  .platform-options {
-    display: inline-flex;
-    gap: 2px;
-    padding: 2px;
-    border: 1px solid var(--line);
+  .bar-row small {
+    width: 63px;
+    text-align: right;
+    font-size: 11px;
+  }
+  .bar-track {
+    height: 15px;
+    background: #171d29;
     border-radius: 5px;
+    flex: 1;
+    overflow: hidden;
   }
-  .platform-options button,
-  .run-copy {
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
+  .bar-track i {
+    display: block;
+    height: 100%;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #7796ff, #5e74f0);
   }
-  .platform-options button {
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.77rem;
+  .bar-track .chrome-bar {
+    background: linear-gradient(90deg, #858ba7, #5e647e);
   }
-  .platform-options button.active {
-    background: #293a43;
-    color: var(--text);
+  .metric-unit {
+    font-size: 11px;
+    color: var(--quiet);
+    text-align: right;
+    margin-top: 10px;
   }
-  .run-command {
-    min-width: 0;
-    overflow-x: auto;
-    white-space: nowrap;
-    color: #dce8f3;
-    font-size: 0.78rem;
+  .benchmark-note {
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+    margin-top: 14px;
   }
-  .run-copy {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px;
+  .benchmark-note a,
+  .boundary-note a {
+    color: var(--blue);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
-  .run-copy:hover {
-    color: var(--blue-bright);
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
   }
-  .run-guide {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: auto;
-    color: var(--blue-bright);
-    white-space: nowrap;
+  .tool-card {
+    display: flex;
+    gap: 20px;
+    padding: 22px 20px;
+    min-height: 140px;
+  }
+  .small-card svg {
+    color: var(--blue);
+    flex-shrink: 0;
+  }
+  .small-card h3 {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+  }
+  .small-card p {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .boundary-note {
+    font-size: 12px;
+    margin: 12px 0 0;
+  }
+  .use-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
+  .use-grid .small-card {
+    padding: 22px;
+    min-height: 162px;
+  }
+  .use-grid svg {
+    margin-bottom: 10px;
+  }
+  .closing-banner {
+    width: min(calc(100% - 64px), 1240px);
+    height: 194px;
+    position: relative;
+    margin: 0 auto 30px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #171c33;
+  }
+  .closing-banner > img {
+    position: absolute;
+    width: 64%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 80% 55%;
+    left: 0;
+    mask-image: linear-gradient(90deg, #000 70%, transparent);
+  }
+  .closing-copy {
+    position: relative;
+    margin-left: 61%;
+    padding-top: 21px;
+  }
+  .closing-copy h3 {
+    font-size: 19px;
+    margin: 0 0 5px;
+  }
+  .closing-copy p {
+    font-size: 15px;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .closing-copy .actions {
+    margin-top: 18px;
+    gap: 12px;
+  }
+  .closing-copy .button {
+    font-size: 12px;
+    padding: 0 16px;
+    min-height: 42px;
   }
   [hidden] {
     display: none !important;
   }
-  .steps {
-    padding-bottom: 35px;
-  }
-  .section-label {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-  .section-label h2 {
-    margin: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-  .section-label span {
-    flex: 1;
-    border-top: 1px solid var(--line);
-  }
-  .steps ol {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 23px;
-    margin: 0;
-    padding: 18px 0 0;
-    list-style: none;
-  }
-  .steps li {
-    display: flex;
-    align-items: start;
-    gap: 14px;
-    min-width: 0;
-  }
-  .step-number {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 29px;
-    height: 29px;
-    border: 1px solid var(--blue);
-    border-radius: 50%;
-    font-size: 0.84rem;
-  }
-  .steps li > div {
-    min-width: 0;
-  }
-  .step-arrow {
-    flex: none;
-    margin: 14px 0 0 auto;
-    color: var(--quiet);
-  }
-  .steps strong {
-    font-size: 0.88rem;
-    font-weight: 650;
-  }
-  .steps p {
-    margin: 4px 0 0;
-    color: var(--muted);
-    font-size: 0.79rem;
-    line-height: 1.5;
-  }
-  .metrics {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    padding-bottom: 62px;
-  }
-  .metrics-heading {
-    grid-column: 1/-1;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 4px 18px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--line);
-  }
-  .metrics-heading h2 {
-    margin: 0;
-    font-family: var(--display);
-    font-size: 1.23rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
-  }
-  .metrics-heading span {
-    color: var(--muted);
-    font-size: 0.82rem;
-  }
-  .metric {
-    display: flex;
-    align-items: start;
-    gap: 17px;
-    min-width: 0;
-    min-height: 150px;
-    padding: 22px;
-    border: 1px solid var(--line);
-    border-left: 2px solid var(--blue);
-    border-radius: 9px;
-    background: var(--surface);
-  }
-  .metric-icon {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 51px;
-    height: 51px;
-    border-radius: 50%;
-    background: #213345;
-    color: var(--blue);
-  }
-  .metric strong,
-  .metric span:not(.metric-icon),
-  .metric small {
-    display: block;
-  }
-  .metric strong {
-    font-family: var(--display);
-    font-size: clamp(2.3rem, 3vw, 2.7rem);
-    font-weight: 760;
-    line-height: 1;
-    letter-spacing: -0.055em;
-  }
-  .metric span:not(.metric-icon) {
-    margin-top: 9px;
-    font-size: 0.97rem;
-    font-weight: 650;
-  }
-  .metric small {
-    margin-top: 11px;
-    color: var(--muted);
-    font-size: 0.82rem;
-    line-height: 1.4;
-  }
-  .metric-note {
-    grid-column: 1/-1;
-    margin: 0;
-    padding: 11px 14px;
-    border: 1px solid var(--line);
-    border-radius: 7px;
-    background: #151e22;
-    color: var(--muted);
-    font-size: 0.82rem;
-    line-height: 1.5;
-  }
-  .metric-note a {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: var(--blue-bright);
-    white-space: nowrap;
-  }
-  .real-world {
-    margin-bottom: 62px;
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    background: var(--surface);
-  }
-  .real-world-main {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: clamp(30px, 5vw, 88px);
-    padding: 34px 38px 32px;
-  }
-  .real-world-heading h2 {
-    max-width: 520px;
-    margin: 20px 0 17px;
-    font-family: var(--display);
-    font-size: clamp(2rem, 3.1vw, 3.15rem);
-    line-height: 1.12;
-    letter-spacing: -0.052em;
-  }
-  .real-world-heading p {
-    max-width: 525px;
-    margin: 0 0 24px;
-    color: var(--muted);
-    font-size: 0.95rem;
-    line-height: 1.62;
-  }
-  .real-world-reference {
-    color: var(--quiet);
-    font-size: 0.78rem;
-  }
-  .real-world-label {
-    display: block;
-    margin: 2px 0 10px;
-    color: var(--muted);
-    font-size: 0.78rem;
-  }
-  .real-world-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .real-world-list li {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-width: 0;
-    min-height: 106px;
-    gap: 20px;
-    padding: 16px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: #1b2529;
-  }
-  .real-world-list li:first-child {
-    border-color: #47779c;
-    background: #1a272e;
-  }
-  .real-world-list li span {
-    color: var(--muted);
-    font-size: 0.72rem;
-    letter-spacing: 0.015em;
-  }
-  .real-world-list strong {
-    color: var(--text);
-    font-family: var(--display);
-    font-size: clamp(1.15rem, 1.7vw, 1.45rem);
-    font-weight: 720;
-    letter-spacing: -0.04em;
-  }
-  .real-world-list li:first-child strong {
-    font-size: clamp(1.15rem, 1.7vw, 1.45rem);
-  }
-  .real-world-list em {
-    color: var(--blue-bright);
-    font-style: normal;
-  }
-  .real-world-footer {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 4px 20px;
-    padding: 14px 38px;
-    border-top: 1px solid var(--line);
-    color: var(--quiet);
-    font-size: 0.78rem;
-  }
-  .real-world-footer a {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--blue-bright);
-  }
-  .details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 38px;
-    padding-bottom: 66px;
-  }
-  .detail-column + .detail-column {
-    padding-left: 35px;
-    border-left: 1px solid #26353b;
-  }
-  .kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #b0d3f5;
-    font-size: 0.8rem;
-  }
-  .kicker:before {
-    content: "";
-    width: 16px;
-    height: 2px;
-    background: var(--blue);
-  }
-  .details h2,
-  .closing h2 {
-    margin: 10px 0 11px;
-    font-family: var(--display);
-    font-size: clamp(1.55rem, 2.2vw, 2.1rem);
-    font-weight: 730;
-    line-height: 1.25;
-    letter-spacing: -0.04em;
-  }
-  .details p,
-  .closing p {
-    max-width: 480px;
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.91rem;
-    line-height: 1.62;
-  }
-  .detail-list {
-    display: grid;
-    gap: 17px;
-    margin-top: 25px;
-  }
-  .detail-list > div {
-    display: flex;
-    gap: 15px;
-  }
-  .detail-list > div > span {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--blue);
-    border-radius: 50%;
-    color: var(--text);
-  }
-  .detail-list strong,
-  .boundary-panel strong {
-    font-size: 0.85rem;
-    font-weight: 650;
-  }
-  .detail-list p,
-  .boundary-panel p {
-    margin: 3px 0 0;
-    color: var(--muted);
-    font-size: 0.76rem;
-    line-height: 1.45;
-  }
-  .boundary-panel {
-    margin-top: 20px;
-    padding: 5px 19px;
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    background: #1b2529;
-  }
-  .boundary-panel > div {
-    display: flex;
-    align-items: start;
-    gap: 17px;
-    padding: 12px 0;
-    border-bottom: 1px solid #334147;
-  }
-  .boundary-panel > div > svg {
-    flex: none;
-    color: var(--text);
-  }
-  .boundary-panel > a {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 14px 0;
-    color: var(--blue-bright);
-    font-size: 0.8rem;
-  }
-  .closing {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 40px;
-    padding-top: 40px;
-    padding-bottom: 64px;
-    border-top: 1px solid var(--line);
-  }
-  .contact-copy {
-    max-width: 650px;
-  }
-  .contact-actions {
-    display: grid;
-    justify-items: start;
-    gap: 15px;
-    width: 288px;
-    flex-shrink: 0;
-  }
-  .contact-actions .button {
-    width: 100%;
-  }
-  .contact-methods {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    width: 100%;
-    gap: 10px;
-    color: var(--muted);
-    font-size: 0.8rem;
-  }
-  .contact-methods a {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .contact-methods strong {
-    color: var(--text);
-    font-weight: 600;
-  }
-  .contact-methods a:hover {
-    color: var(--blue-bright);
-  }
-  @media (max-width: 1100px) {
-    .hero {
-      gap: 20px;
+  @media (min-width: 1500px) {
+    .hero-scene {
+      height: 640px;
     }
-    .hero-foot p {
-      white-space: normal;
-    }
-    .metric {
-      padding: 17px;
-      gap: 12px;
+    .hero-copy {
+      padding-top: 100px;
     }
   }
-  @media (max-width: 900px) {
-    .hero {
-      grid-template-columns: 1fr;
-      gap: 30px;
+  @media (min-width: 1500px) {
+    .hero-scene {
+      height: clamp(680px, 36vw, 900px);
+      margin-top: -90px;
+      padding-top: 90px;
     }
-    .hero-snippets {
-      max-width: 740px;
+    .hero-art {
+      width: min(100%, 2100px);
+      left: auto;
+      right: 0;
+      object-position: center 56%;
+    }
+    .hero-copy {
+      padding-top: clamp(110px, 7vw, 180px);
+    }
+    h1 {
+      font-size: clamp(78px, 4.2vw, 106px);
     }
     .hero-copy > p {
-      max-width: 680px;
+      font-size: 20px;
+      max-width: 600px;
+      line-height: 1.65;
     }
-    .details {
-      gap: 25px;
+    .hero-tags {
+      font-size: 14px;
+      gap: 30px;
+      margin-top: 36px;
+    }
+    .eyeline {
+      font-size: 14px;
+    }
+    .feature-strip {
+      padding: 44px 0 48px;
+    }
+    .feature-grid {
+      gap: 44px;
+    }
+    .feature-grid h3 {
+      font-size: 18px;
+    }
+    .feature-grid p {
+      font-size: 16px;
+    }
+    .content {
+      padding-top: 58px;
+    }
+    .automation {
+      gap: 100px;
+      margin-bottom: 64px;
+    }
+    h2,
+    .section-heading h2 {
+      font-size: clamp(38px, 2vw, 48px);
+    }
+    .automation > div > p {
+      font-size: 19px;
+      max-width: 650px;
+      line-height: 1.65;
+    }
+    .section-intro {
+      font-size: 19px;
+      max-width: 1100px;
+      margin-bottom: 25px;
+    }
+    .section-block {
+      margin-bottom: 58px;
+    }
+    .section-heading a {
+      font-size: 16px;
+    }
+    .example-tabs {
+      padding: 10px;
+    }
+    .example-tabs button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      padding: 9px 22px;
+    }
+    .metric-card,
+    .small-card {
+      padding: 28px;
+    }
+    .metric-title strong {
+      font-size: 36px;
+    }
+    .metric-title h3 {
+      font-size: 19px;
+    }
+    .bar-row {
+      font-size: 15px;
+      gap: 16px;
+    }
+    .bar-row > span {
+      width: 65px;
+    }
+    .bar-row small {
+      width: 80px;
+      font-size: 14px;
+    }
+    .metric-unit,
+    .benchmark-note,
+    .boundary-note {
+      font-size: 14px;
+    }
+    .tool-card {
+      min-height: 170px;
+      gap: 24px;
+    }
+    .small-card h3 {
+      font-size: 18px;
+    }
+    .small-card p {
+      font-size: 16px;
+    }
+    .use-grid {
+      gap: 22px;
+    }
+    .use-grid .small-card {
+      padding: 28px;
+      min-height: 198px;
+    }
+    .closing-banner {
+      width: min(calc(100% - 96px), calc(var(--page) + 80px));
+      height: 270px;
+      margin-bottom: 50px;
+    }
+    .closing-copy {
+      padding-top: 42px;
+      margin-left: 59%;
+    }
+    .closing-copy h3 {
+      font-size: 27px;
+    }
+    .closing-copy p {
+      font-size: 19px;
+    }
+    .closing-copy .actions {
+      margin-top: 25px;
+    }
+    .closing-copy .button {
+      font-size: 16px;
+      min-height: 50px;
+      padding-inline: 22px;
+    }
+  }
+  @media (max-width: 1000px) {
+    .hero-copy > p {
+      max-width: 390px;
+    }
+    .feature-grid {
+      gap: 20px;
+    }
+    .feature-grid article {
+      gap: 10px;
+    }
+    .automation {
+      gap: 35px;
+    }
+    .tool-card {
+      gap: 10px;
+      padding: 16px;
+    }
+    .tool-card svg {
+      width: 29px;
+    }
+    .use-grid {
+      gap: 10px;
+    }
+    .use-grid .small-card {
+      padding: 16px;
+    }
+    .closing-copy {
+      margin-left: 55%;
+    }
+    .closing-banner > img {
+      width: 61%;
     }
   }
   @media (max-width: 760px) {
-    .hero {
-      padding-top: 19px;
-      padding-bottom: 38px;
-      gap: 28px;
+    .hero-scene {
+      height: auto;
+      min-height: 700px;
+      margin-top: -64px;
+      padding-top: 64px;
+    }
+    .hero-copy {
+      padding-top: 35px;
+      padding-bottom: 300px;
+    }
+    .hero-art {
+      object-position: 70% bottom;
+    }
+    .hero-shade {
+      background: linear-gradient(
+        180deg,
+        #080d19 0%,
+        #080d19ed 42%,
+        transparent 72%
+      );
     }
     h1 {
-      margin: 13px 0 10px;
-      font-size: clamp(2rem, 8.6vw, 2.7rem);
-      line-height: 1.13;
+      font-size: 54px;
     }
     .hero-copy > p {
-      font-size: 0.94rem;
+      max-width: 100%;
     }
-    .hero-actions {
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 19px;
+    .hero-tags {
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 11px;
     }
-    .hero-actions .button {
+    .feature-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+    }
+    .feature-grid p {
+      font-size: 12px;
+    }
+    .automation {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .metric-grid {
+      grid-template-columns: 1fr;
+    }
+    .tool-grid,
+    .use-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .section-heading {
+      max-width: none;
+      margin-bottom: 0;
+      display: block;
+    }
+    .section-heading h2 {
+      margin: 8px 0 12px;
+      font-size: 35px;
+      line-height: 1.18;
+      letter-spacing: -0.035em;
+    }
+    .section-heading a {
+      flex-shrink: 0;
+      white-space: nowrap;
+      margin: 12px 0;
+    }
+    .closing-banner {
+      width: calc(100% - 32px);
+      height: 330px;
+    }
+    .closing-banner > img {
       width: 100%;
+      height: 100%;
+      opacity: 0.4;
+      mask-image: none;
     }
-    .hero-foot {
-      margin-top: 13px;
+    .closing-copy {
+      margin: 0;
+      padding: 170px 24px 0;
     }
-    .connect-snippet :global(.highlighted pre) {
-      max-height: 300px;
-      font-size: 0.82rem;
+    .closing-copy .actions {
+      margin-top: 12px;
     }
-    .run-command {
-      order: 2;
-      flex-basis: calc(100% - 70px);
-    }
-    .run-copy {
-      order: 3;
-    }
-    .run-guide {
-      margin-left: auto;
-    }
-    .steps ol {
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-    .step-arrow {
-      display: none;
-    }
-    .metrics {
-      grid-template-columns: 1fr;
-      gap: 9px;
-      padding-bottom: 42px;
-    }
-    .metric {
-      min-height: 0;
-      padding: 14px;
-    }
-    .metric-note {
-      margin-top: 3px;
-    }
-    .real-world {
-      margin-bottom: 48px;
-    }
-    .real-world-main {
-      grid-template-columns: 1fr;
-      gap: 30px;
-      padding: 25px 19px 24px;
-    }
-    .real-world-heading h2 {
-      margin: 15px 0 13px;
-    }
-    .real-world-heading p {
-      margin-bottom: 17px;
-    }
-    .real-world-footer {
-      padding: 14px 19px;
-    }
-    .details {
-      grid-template-columns: 1fr;
-      gap: 41px;
-      padding-bottom: 55px;
-    }
-    .detail-column + .detail-column {
-      padding: 0;
-      border: 0;
-    }
-    .closing {
-      align-items: start;
-      flex-direction: column;
-    }
-    .contact-actions,
-    .closing .button {
-      width: 100%;
+    h2,
+    .section-heading h2 {
+      font-size: 28px;
     }
   }
-  @media (max-width: 390px) {
-    .hero-foot {
-      flex-wrap: wrap;
+
+  .example-tabs button,
+  .example-tabs button:hover,
+  .example-tabs button:active {
+    transition: none;
+    box-shadow: none;
+  }
+  .example-tabs button:hover {
+    background: #1c2238;
+  }
+  .example-tabs button.active:hover {
+    background: #2c3365;
+  }
+  .example-tabs button:active {
+    background: #252d4a;
+  }
+
+  .integration-actions {
+    width: 350px;
+    max-width: 100%;
+  }
+  .integration-actions > .button {
+    width: 100%;
+    font-weight: 720;
+    color: #070b20;
+  }
+  .integration-actions > div {
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 14px;
+  }
+  @media (min-width: 1500px) {
+    .integration-actions {
+      width: 420px;
     }
-    .hero-foot > span {
-      display: none;
+    .integration-actions > div {
+      font-size: 16px;
     }
-    .status {
-      font-size: 0.69rem;
+  }
+  @media (max-width: 760px) {
+    .integration-actions {
+      width: 100%;
     }
   }
 </style>

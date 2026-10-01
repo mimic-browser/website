@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://moreveal.github.io/mimic-overview/sitemap-index.xml
+Sitemap: https://mimic.boo/sitemap-index.xml

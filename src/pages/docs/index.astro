@@ -89,8 +89,7 @@ try {
   <h2 id="getting-started">Getting started</h2>
   <p>
     Download the latest Windows or Linux archive from <a
-      href="https://github.com/moreveal/mimic/releases/latest"
-      >GitHub Releases</a
+      href={`${import.meta.env.BASE_URL}download/`}>the download page</a
     >, verify it against the included <code>SHA256SUMS</code>, and extract it.
     No Chrome, Go, Rust, display server, or GPU is required for the packaged
     executable.
@@ -506,7 +505,7 @@ try {
   <h3>Is Mimic open source?</h3><p>
     Mimic's source is public under the Prosperity Public License 3.0.0.
     Noncommercial use is free; commercial use has a 30-day trial. Read the <a
-      href="https://github.com/moreveal/mimic/blob/main/LICENSE">license</a
+      href={`${import.meta.env.BASE_URL}license/`}>license</a
     > for the full terms.
   </p>
 </DocsLayout>

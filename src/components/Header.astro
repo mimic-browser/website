@@ -1,60 +1,39 @@
 ---
 import Logo from "./Logo.astro";
-import { Download } from "lucide-astro";
+import { ArrowRight } from "lucide-astro";
 const base = import.meta.env.BASE_URL;
-const path = Astro.url.pathname;
 const links = [
-  { label: "Product", href: base },
-  { label: "Documentation", href: `${base}docs/` },
-  { label: "Benchmarks", href: `${base}#benchmarks` },
-  { label: "Contact", href: `${base}#contact` },
-  { label: "Changelog", href: `${base}changelog/` },
-  {
-    label: "GitHub",
-    href: "https://github.com/moreveal/mimic",
-    external: true,
-  },
+  { label: "Features", href: `${base}#features` },
+  { label: "Benchmarks", href: `${base}benchmarks/` },
+  { label: "Examples", href: `${base}examples/` },
+  { label: "Docs", href: `${base}docs/` },
+  { label: "About", href: `${base}about/` },
 ];
 ---
 
 <header class="site-header">
   <div class="container nav-wrap">
-    <a class="brand" href={base} aria-label="Mimic home"><Logo /></a>
-    <button
+    <a href={base} aria-label="Mimic home"><Logo /></a><button
       class="menu-button"
       type="button"
       aria-label="Open navigation"
       aria-expanded="false"
-      aria-controls="site-nav"
-    >
-      <span></span><span></span>
-    </button>
-    <nav id="site-nav" aria-label="Primary navigation">
-      {
-        links.map((link) => (
-          <a
-            href={link.href}
-            aria-current={
-              !link.external && path === link.href ? "page" : undefined
-            }
-          >
-            {link.label}
-          </a>
-        ))
-      }
-      <a
-        class="download"
-        href="https://github.com/moreveal/mimic/releases/latest"
-      >
-        <Download size={19} strokeWidth={2} />
-        Download
-      </a>
+      aria-controls="site-nav"><span></span><span></span></button
+    ><nav id="site-nav" aria-label="Primary navigation">
+      {links.map((link) => <a href={link.href}>{link.label}</a>)}<a
+        class="button button-primary download"
+        href={`${base}download/`}>Download <ArrowRight size={16} /></a>
     </nav>
   </div>
 </header>
 <script>
   const button = document.querySelector<HTMLButtonElement>(".menu-button");
   const nav = document.querySelector<HTMLElement>("#site-nav");
+  function closeMenu() {
+    nav?.removeAttribute("data-open");
+    button?.setAttribute("aria-expanded", "false");
+    button?.setAttribute("aria-label", "Open navigation");
+  }
   button?.addEventListener("click", () => {
     const open = button.getAttribute("aria-expanded") === "true";
     button.setAttribute("aria-expanded", String(!open));
@@ -64,65 +43,81 @@ const links = [
     );
     nav?.toggleAttribute("data-open", !open);
   });
+  nav
+    ?.querySelectorAll("a")
+    .forEach((link) => link.addEventListener("click", closeMenu));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu();
+  });
 </script>
 <style>
   .site-header {
-    height: 66px;
+    height: 76px;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 5;
+    background: #0b10202b;
   }
   .nav-wrap {
     display: flex;
     align-items: center;
   }
-  .brand {
-    display: inline-flex;
-  }
   nav {
     display: flex;
     align-items: center;
     flex: 1;
-    gap: 27px;
-    margin-left: 54px;
-    color: #c2cbd3;
-    font-size: 0.88rem;
+    gap: 30px;
+    margin-left: 80px;
+    color: #d5d8ef;
+    font-size: 13px;
   }
-  nav > a:not(.download):hover,
-  nav > a[aria-current="page"] {
-    color: #fff;
+  nav > a:not(.button):hover {
+    color: #8da0ff;
   }
   .download {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    min-height: 40px;
-    padding: 0 16px;
-    border-radius: 7px;
     margin-left: auto;
-    background: #6db6ff;
-    color: #081521;
-    font-weight: 670;
+    min-height: 40px;
+    padding-inline: 18px;
   }
   .menu-button {
     display: none;
-    width: 44px;
-    height: 44px;
-    padding: 0;
+    width: 40px;
+    height: 40px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--surface);
   }
   .menu-button span {
     display: block;
-    width: 19px;
+    width: 18px;
     height: 1px;
     margin: 5px auto;
-    background: #fff;
+    background: white;
+  }
+  @media (min-width: 1500px) {
+    .site-header {
+      height: 90px;
+    }
+    nav {
+      font-size: 16px;
+      gap: 36px;
+      margin-left: 100px;
+    }
+    .download {
+      min-height: 48px;
+      padding-inline: 23px;
+    }
+  }
+  @media (max-width: 1000px) {
+    nav {
+      margin-left: 40px;
+      gap: 22px;
+    }
   }
   @media (max-width: 760px) {
     .site-header {
-      height: 54px;
+      height: 64px;
     }
     .nav-wrap {
       justify-content: space-between;
@@ -134,18 +129,17 @@ const links = [
       display: none;
       position: absolute;
       z-index: 20;
-      top: 54px;
-      left: 12px;
-      right: 12px;
-      align-items: stretch;
+      top: 64px;
+      left: 16px;
+      right: 16px;
       flex-direction: column;
+      align-items: stretch;
       gap: 0;
       padding: 8px;
       border: 1px solid var(--line);
       border-radius: 10px;
       margin: 0;
       background: var(--surface);
-      box-shadow: 0 20px 60px #0008;
     }
     nav[data-open] {
       display: flex;
@@ -154,8 +148,7 @@ const links = [
       padding: 13px;
     }
     .download {
-      margin-top: 6px;
-      margin-left: 0;
+      margin: 6px 0 0;
       justify-content: center;
     }
   }

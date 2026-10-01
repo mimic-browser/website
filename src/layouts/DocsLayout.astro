@@ -66,9 +66,8 @@ const topics = [
       </p>
     </div>
     <div class="docs-intro-note">
-      <span>Current release</span><strong>v0.1.9</strong><small
-        >Windows & Linux amd64</small
-      >
+      <span>Current release</span><strong data-release-version>v0.1.9</strong
+      ><small>Windows & Linux amd64</small>
     </div>
   </div>
   <nav class="docs-cards container" aria-label="Start with a topic">
@@ -97,6 +96,7 @@ const topics = [
     </aside>
   </div>
 </BaseLayout>
+
 <style>
   .docs-intro {
     display: flex;
@@ -340,6 +340,136 @@ const topics = [
     }
     .card-icon {
       margin-bottom: 9px;
+    }
+  }
+
+  .docs-intro {
+    padding-top: 65px;
+    padding-bottom: 36px;
+  }
+  .docs-intro-copy h1 {
+    font-weight: 800;
+    letter-spacing: -0.045em;
+  }
+  .docs-intro-note {
+    background: #151a2a;
+    border-radius: 12px;
+  }
+  .docs-intro-note strong {
+    color: var(--blue-bright);
+  }
+  .docs-cards {
+    gap: 18px;
+    padding-bottom: 42px;
+  }
+  .docs-cards a {
+    background: linear-gradient(130deg, #141a29, #0e1420);
+    border-radius: 12px;
+    padding: 24px;
+    transition: none;
+  }
+  .docs-cards a:hover {
+    background: #1b2235;
+    border-color: #536397;
+  }
+  .card-icon {
+    background: #242b51;
+    color: #899dff;
+    border-radius: 10px;
+  }
+  .docs-cards strong {
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .docs-cards p {
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+  .docs-shell {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 64px;
+    padding-top: 38px;
+  }
+  .docs-content {
+    max-width: 1080px;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+  .docs-index {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #101625;
+    padding: 22px;
+  }
+  .docs-index a {
+    font-size: 14px;
+    padding-block: 7px;
+  }
+  .docs-content :global(.callout) {
+    background: #171e34;
+    border-radius: 10px;
+    color: var(--muted);
+  }
+  .docs-content :global(.doc-overview),
+  .docs-content :global(.api-card) {
+    background: #111827;
+    border-radius: 12px;
+  }
+  @media (min-width: 1500px) {
+    .docs-intro-copy h1 {
+      font-size: 72px;
+    }
+    .docs-intro-copy p {
+      font-size: 21px;
+      max-width: 850px;
+    }
+    .docs-cards a {
+      padding: 30px;
+      min-height: 190px;
+    }
+    .docs-cards strong {
+      font-size: 20px;
+    }
+    .docs-cards p {
+      font-size: 17px;
+    }
+    .docs-shell {
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 90px;
+    }
+    .docs-content {
+      font-size: 19px;
+      max-width: 1200px;
+    }
+    .docs-index a {
+      font-size: 16px;
+    }
+    .docs-content :global(h2) {
+      font-size: 36px;
+    }
+    .docs-content :global(.api-card p) {
+      font-size: 17px;
+    }
+  }
+  @media (max-width: 760px) {
+    .docs-intro {
+      padding-top: 36px;
+    }
+    .docs-cards {
+      gap: 12px;
+    }
+    .docs-cards a {
+      padding: 20px;
+    }
+    .docs-content {
+      font-size: 16px;
+    }
+    .docs-shell {
+      display: block;
+    }
+    .docs-index {
+      display: none;
     }
   }
 </style>

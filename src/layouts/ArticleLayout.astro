@@ -1,0 +1,63 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+interface Props {
+  title: string;
+  description: string;
+  eyebrow: string;
+}
+const { title, description, eyebrow } = Astro.props;
+---
+
+<BaseLayout title={`${title} — Mimic`} description={description}>
+  <section class="container article-head">
+    <span class="eyebrow">{eyebrow}</span><h1>{title}</h1><p>{description}</p>
+  </section>
+  <article class="container article-body prose"><slot /></article>
+</BaseLayout>
+<style>
+  .article-body :global(.page-actions) {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-block: 0 32px;
+  }
+  .article-head {
+    padding-block: 70px 40px;
+  }
+  .article-head h1 {
+    font-size: clamp(36px, 4vw, 64px);
+    line-height: 1.1;
+    letter-spacing: -0.045em;
+    margin: 16px 0;
+  }
+  .article-head p {
+    max-width: 800px;
+    color: var(--muted);
+    font-size: 18px;
+  }
+  .article-body {
+    padding-bottom: 90px;
+  }
+  .article-body :global(pre) {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .article-body :global(table) {
+    font-size: 14px;
+  }
+  .article-body :global(h1) {
+    font-size: 28px;
+  }
+  .article-body :global(.button) {
+    text-decoration: none;
+  }
+  @media (min-width: 1500px) {
+    .article-body {
+      font-size: 18px;
+    }
+    .article-head {
+      padding-top: 95px;
+    }
+  }
+</style>

@@ -3,6 +3,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import releaseNotes from "../../RELEASE_NOTES.md?raw";
 import { marked } from "marked";
 import { ArrowRight, Download } from "lucide-astro";
+const base = import.meta.env.BASE_URL;
 const rendered = await marked.parse(releaseNotes);
 ---
 
@@ -16,21 +17,26 @@ const rendered = await marked.parse(releaseNotes);
         Release notes for the public beta, with the details behind each update.
       </p>
     </div>
-    <a
-      class="button button-primary"
-      href="https://github.com/moreveal/mimic/releases/latest"
+    <a class="button button-primary" href={`${base}download/`}
       ><Download size={18} />Download latest</a
     >
   </section>
   <div class="release-layout container">
-    <article class="release-notes prose" set:html={rendered} />
+    <article
+      data-live-release-notes
+      data-version="v0.1.9"
+      class="release-notes prose"
+      set:html={rendered}
+    />
     <aside>
-      <span>Latest release</span><strong>v0.1.9</strong><a
+      <span>Latest release</span><strong data-release-version>v0.1.9</strong><a
         href="https://github.com/moreveal/mimic/releases"
-        >All releases <ArrowRight size={16} /></a>
+        >All releases <ArrowRight size={16} /></a
+      >
     </aside>
   </div>
 </BaseLayout>
+
 <style>
   .page-intro {
     display: flex;
@@ -112,6 +118,63 @@ const rendered = await marked.parse(releaseNotes);
     .release-layout aside {
       position: static;
       margin-top: 35px;
+    }
+  }
+
+  .page-intro {
+    padding-top: 65px;
+    padding-bottom: 38px;
+  }
+  .page-intro h1 {
+    font-weight: 800;
+    letter-spacing: -0.045em;
+  }
+  .release-layout {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 64px;
+    padding-top: 36px;
+  }
+  .release-notes {
+    max-width: 1080px;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+  .release-layout aside {
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #111827;
+  }
+  .release-layout aside strong {
+    color: var(--blue-bright);
+    font-size: 28px;
+  }
+  @media (min-width: 1500px) {
+    .release-notes {
+      font-size: 19px;
+      max-width: 1200px;
+    }
+    .page-intro h1 {
+      font-size: 72px;
+    }
+    .page-intro p {
+      font-size: 21px;
+    }
+    .release-layout {
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 90px;
+    }
+  }
+  @media (max-width: 760px) {
+    .release-layout {
+      display: block;
+    }
+    .release-layout aside {
+      position: static;
+      margin-top: 32px;
+    }
+    .release-notes {
+      font-size: 16px;
     }
   }
 </style>

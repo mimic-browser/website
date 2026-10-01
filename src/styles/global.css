@@ -1,22 +1,22 @@
 :root {
   color-scheme: dark;
-  --bg: #101719;
-  --surface: #182125;
-  --surface-raised: #1d282d;
-  --line: #344147;
-  --line-bright: #45565f;
+  --bg: #090e16;
+  --surface: #111723;
+  --surface-raised: #171e2c;
+  --line: #252c40;
+  --line-bright: #414965;
   --text: #f0f3f7;
-  --muted: #adb8c3;
+  --muted: #b6bfdc;
   --quiet: #8795a0;
-  --blue: #6bb5ff;
-  --blue-bright: #8ec6ff;
+  --blue: #718bff;
+  --blue-bright: #93a6ff;
   --blue-deep: #4c9ef4;
   --green: #6bb5ff;
   --cyan: #8ec6ff;
   --red: #e9888e;
   --radius: 10px;
-  --page: 1480px;
-  --display: "Manrope Variable", "Inter Variable", sans-serif;
+  --page: 1120px;
+  --display: "Inter Variable", Inter, sans-serif;
   --sans:
     "Inter Variable", Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
@@ -117,6 +117,7 @@ pre {
   color: var(--muted);
   font-size: 1.06rem;
 }
+/* Action styling is independent of prose links and has no animated states. */
 .button {
   display: inline-flex;
   align-items: center;
@@ -124,28 +125,38 @@ pre {
   gap: 10px;
   min-height: 46px;
   padding: 0 19px;
-  border: 1px solid var(--line-bright);
-  border-radius: 7px;
-  background: #1a2226;
-  color: var(--text);
+  border: 1px solid #444663;
+  border-radius: 11px;
+  background: #111522;
+  color: #eef0ff;
   font-size: 0.9rem;
-  font-weight: 620;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
+  font-weight: 650;
+  transition: none;
 }
 .button:hover {
-  border-color: #687a85;
-  background: #263137;
+  background: #20263b;
+  color: #eef0ff;
+  border-color: #7885c0;
+}
+.button:active {
+  background: #181e30;
+  color: #eef0ff;
+  border-color: #93a6ff;
 }
 .button-primary {
-  border-color: #83c2ff;
-  background: #6db6ff;
-  color: #081521;
+  background: #718bff;
+  border-color: #8395ff;
+  color: #080e25;
 }
 .button-primary:hover {
-  border-color: #a2d1ff;
-  background: #8ec6ff;
+  background: #859bff;
+  border-color: #a4b1ff;
+  color: #080e25;
+}
+.button-primary:active {
+  background: #617bef;
+  border-color: #a4b1ff;
+  color: #080e25;
 }
 .icon {
   width: 18px;
@@ -179,7 +190,7 @@ pre {
   margin-top: 30px;
   font-size: 1.2rem;
 }
-.prose a {
+.prose a:not(.button) {
   color: var(--blue-bright);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -191,7 +202,7 @@ pre {
   padding: 0.13em 0.34em;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: #1d272c;
+  background: #171d2d;
   color: #deebfa;
   font-size: 0.9em;
 }
@@ -200,7 +211,7 @@ pre {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #151d21;
+  background: #0e1420;
   color: #dbe5ef;
 }
 .prose pre code {
@@ -249,4 +260,75 @@ pre {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* Keep the mascot below the copy on compact screens. */
+@media (max-width: 760px) {
+  .hero-scene .hero-art {
+    top: auto;
+    bottom: 0;
+    height: 350px;
+    object-position: 75% center;
+  }
+  .hero-scene .hero-shade {
+    background: linear-gradient(
+      180deg,
+      #080d19 0%,
+      #080d19 58%,
+      transparent 78%
+    );
+  }
+  .hero-scene .hero-copy {
+    padding-bottom: 350px;
+  }
+}
+.closing-banner > img {
+  width: 100%;
+  object-position: center 53%;
+  mask-image: none;
+}
+@media (max-width: 760px) {
+  .closing-banner > img {
+    object-position: 25% center;
+  }
+}
+
+@media (min-width: 1500px) {
+  :root {
+    --page: clamp(1240px, 74vw, 1840px);
+  }
+  .button {
+    min-height: 52px;
+    padding-inline: 25px;
+    font-size: 16px;
+  }
+}
+
+a[href^="https://"]::after
+{
+  content: "↗";
+  display: inline-block;
+  margin-left: 0.3em;
+  font-size: 0.82em;
+  line-height: 1;
+}
+a[aria-label][href^="https://"]::after
+{
+  content: none;
+}
+.button[href^="https://"]::after
+{
+  content: "↗";
+  width: 14px;
+  flex: 0 0 14px;
+  font-size: 14px;
+  line-height: 1;
+  margin: 0;
+}
+.prose {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.prose table {
+  width: 100%;
 }

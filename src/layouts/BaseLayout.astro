@@ -1,6 +1,7 @@
 ---
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
+import ReleaseUpdater from "@/components/ReleaseUpdater.astro";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/manrope";
 import "@/styles/global.css";
@@ -31,18 +32,12 @@ const socialImage = new URL(
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta
-      property="og:image:alt"
-      content="Mimic — Browser execution, without the browser"
-    />
+    <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
-    <meta
-      name="twitter:image:alt"
-      content="Mimic — Browser execution, without the browser"
-    />
+    <meta name="twitter:image:alt" content={title} />
     <meta
       name="google-site-verification"
       content="spfGC2Oq1vrSBy3_qDk_rjoHh_0nViUYeg7eWMvtom8"
@@ -66,7 +61,7 @@ const socialImage = new URL(
     <div class="site-frame">
       <Header />
       <main id="main"><slot /></main>
-      <Footer />
+      <Footer /><ReleaseUpdater />
     </div>
   </body>
 </html>

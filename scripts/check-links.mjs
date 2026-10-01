@@ -2,7 +2,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
 const root = resolve("dist");
-if (!existsSync(root)) throw new Error("dist/ does not exist; run the build first");
+if (!existsSync(root))
+  throw new Error("dist/ does not exist; run the build first");
 
 const htmlFiles = [];
 const walk = (dir) => {
@@ -24,6 +25,7 @@ for (const file of htmlFiles) {
     let target;
     if (clean.startsWith("/mimic-overview/"))
       target = join(root, clean.slice("/mimic-overview/".length));
+    else if (clean.startsWith("/")) target = join(root, clean.slice(1));
     else target = resolve(dirname(file), clean);
     const candidates = [target, join(target, "index.html"), `${target}.html`];
     if (!candidates.some(existsSync)) failures.push(`${file}: ${value}`);
@@ -34,4 +36,6 @@ if (failures.length) {
   console.error(`Broken local references:\n${failures.join("\n")}`);
   process.exit(1);
 }
-console.log(`Checked ${htmlFiles.length} HTML files; local references resolve.`);
+console.log(
+  `Checked ${htmlFiles.length} HTML files; local references resolve.`,
+);
