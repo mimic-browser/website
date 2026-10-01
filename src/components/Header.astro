@@ -48,8 +48,15 @@ const links = [
       String(distance > 0 ? Math.min(1, y / distance) : 0),
     );
     header?.toggleAttribute("data-scrolled", y > 24);
+    const anchorTarget = document.getElementById(location.hash.slice(1));
+    const atAnchor =
+      anchorTarget &&
+      header &&
+      Math.abs(anchorTarget.getBoundingClientRect().top - header.offsetHeight) <
+        24;
     const keepVisible =
       y < 160 ||
+      atAnchor ||
       reducedMotion.matches ||
       nav?.hasAttribute("data-open") ||
       header?.querySelector(":focus-visible");

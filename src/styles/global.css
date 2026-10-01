@@ -33,6 +33,19 @@ html {
 main [id]:target {
   scroll-margin-top: 36vh;
 }
+main #features:target {
+  scroll-margin-top: 76px;
+}
+@media (min-width: 1500px) {
+  main #features:target {
+    scroll-margin-top: 90px;
+  }
+}
+@media (max-width: 760px) {
+  main #features:target {
+    scroll-margin-top: 64px;
+  }
+}
 body {
   margin: 0;
   min-width: 320px;
