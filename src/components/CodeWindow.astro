@@ -59,24 +59,31 @@ const highlighted = await codeToHtml(code, {
   <div class="highlighted" set:html={highlighted} />
 </div>
 <script>
-  document
-    .querySelectorAll<HTMLButtonElement>("[data-copy]")
-    .forEach((button) => {
-      button.addEventListener("click", async () => {
-        const label = button.querySelector<HTMLElement>(".copy-label");
-        try {
-          await navigator.clipboard.writeText(button.dataset.copy || "");
-          if (label) label.textContent = "Copied";
-          button.setAttribute("data-copied", "");
-        } catch {
-          if (label) label.textContent = "Failed";
-        }
-        setTimeout(() => {
-          if (label) label.textContent = "Copy";
-          button.removeAttribute("data-copied");
-        }, 1500);
+  const initialized = new WeakSet<HTMLButtonElement>();
+  function initializeCopyButtons() {
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-copy]")
+      .forEach((button) => {
+        if (initialized.has(button)) return;
+        initialized.add(button);
+        button.addEventListener("click", async () => {
+          const label = button.querySelector<HTMLElement>(".copy-label");
+          try {
+            await navigator.clipboard.writeText(button.dataset.copy || "");
+            if (label) label.textContent = "Copied";
+            button.setAttribute("data-copied", "");
+          } catch {
+            if (label) label.textContent = "Failed";
+          }
+          setTimeout(() => {
+            if (label) label.textContent = "Copy";
+            button.removeAttribute("data-copied");
+          }, 1500);
+        });
       });
-    });
+  }
+  initializeCopyButtons();
+  document.addEventListener("astro:page-load", initializeCopyButtons);
 </script>
 <style>
   .code-window {

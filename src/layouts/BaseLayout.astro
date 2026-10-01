@@ -2,6 +2,7 @@
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import ReleaseUpdater from "@/components/ReleaseUpdater.astro";
+import { ClientRouter, fade } from "astro:transitions";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/manrope";
 import "@/styles/global.css";
@@ -20,7 +21,7 @@ const socialImageAlt =
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" transition:animate="none">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -52,6 +53,7 @@ const socialImageAlt =
       href={`${import.meta.env.BASE_URL}favicon.svg`}
     />
     <title>{title}</title>
+    <ClientRouter fallback="swap" />
     <script
       is:inline
       type="module"
@@ -62,7 +64,13 @@ const socialImageAlt =
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="site-frame">
       <Header />
-      <main id="main"><slot /></main>
+      <main
+        id="main"
+        transition:name="page-content"
+        transition:animate={fade({ duration: "140ms" })}
+      >
+        <slot />
+      </main>
       <Footer /><ReleaseUpdater />
     </div>
   </body>

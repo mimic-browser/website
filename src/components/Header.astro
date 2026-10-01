@@ -11,7 +11,12 @@ const links = [
 ];
 ---
 
-<header class="site-header">
+<header
+  class="site-header"
+  transition:name="site-header"
+  transition:persist
+  transition:animate="none"
+>
   <div class="container nav-wrap">
     <a href={base} aria-label="Mimic home"><Logo /></a><button
       class="menu-button"
@@ -22,13 +27,60 @@ const links = [
     ><nav id="site-nav" aria-label="Primary navigation">
       {links.map((link) => <a href={link.href}>{link.label}</a>)}<a
         class="button button-primary download"
-        href={`${base}download/`}>Download <ArrowRight size={16} /></a>
+        href={`${base}download/`}>Download <ArrowRight size={16} /></a
+      >
     </nav>
   </div>
+  <span class="reading-progress" aria-hidden="true"></span>
 </header>
 <script>
   const button = document.querySelector<HTMLButtonElement>(".menu-button");
   const nav = document.querySelector<HTMLElement>("#site-nav");
+  const header = document.querySelector<HTMLElement>(".site-header");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  let scrollAnchor = window.scrollY;
+  let framePending = false;
+  function updateHeader() {
+    const y = Math.max(0, window.scrollY);
+    const distance = document.documentElement.scrollHeight - window.innerHeight;
+    header?.style.setProperty(
+      "--reading-progress",
+      String(distance > 0 ? Math.min(1, y / distance) : 0),
+    );
+    header?.toggleAttribute("data-scrolled", y > 24);
+    const keepVisible =
+      y < 160 ||
+      reducedMotion.matches ||
+      nav?.hasAttribute("data-open") ||
+      header?.querySelector(":focus-visible");
+    if (keepVisible) header?.removeAttribute("data-hidden");
+    else if (Math.abs(y - scrollAnchor) > 14)
+      header?.toggleAttribute("data-hidden", y > scrollAnchor);
+    if (keepVisible || Math.abs(y - scrollAnchor) > 14) scrollAnchor = y;
+    framePending = false;
+  }
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!framePending) {
+        framePending = true;
+        requestAnimationFrame(updateHeader);
+      }
+    },
+    { passive: true },
+  );
+  window.addEventListener("resize", updateHeader);
+  reducedMotion.addEventListener("change", updateHeader);
+  header?.addEventListener("focusin", () =>
+    header.removeAttribute("data-hidden"),
+  );
+  updateHeader();
+  document.addEventListener("astro:after-swap", () => {
+    closeMenu();
+    scrollAnchor = window.scrollY;
+    header?.removeAttribute("data-hidden");
+    updateHeader();
+  });
   function closeMenu() {
     nav?.removeAttribute("data-open");
     button?.setAttribute("aria-expanded", "false");
@@ -42,6 +94,7 @@ const links = [
       open ? "Open navigation" : "Close navigation",
     );
     nav?.toggleAttribute("data-open", !open);
+    header?.removeAttribute("data-hidden");
   });
   nav
     ?.querySelectorAll("a")
@@ -55,9 +108,30 @@ const links = [
     height: 76px;
     display: flex;
     align-items: center;
-    position: relative;
-    z-index: 5;
+    position: sticky;
+    top: 0;
+    z-index: 30;
     background: #0b10202b;
+    transition:
+      transform 220ms ease,
+      background-color 180ms ease;
+  }
+  .site-header[data-scrolled] {
+    background: #0b1020f2;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 0 #718bff20;
+  }
+  .site-header[data-hidden] {
+    transform: translateY(-100%);
+  }
+  .reading-progress {
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: #718bff;
+    transform: scaleX(var(--reading-progress, 0));
+    transform-origin: left;
+    pointer-events: none;
   }
   .nav-wrap {
     display: flex;
