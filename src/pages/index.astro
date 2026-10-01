@@ -1166,12 +1166,21 @@ const uses = [
   }
 
   .integration-actions {
-    width: 350px;
+    width: 440px;
     max-width: 100%;
+  }
+  @media (max-width: 380px) {
+    .tool-card {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .example-tabs {
+      flex-wrap: wrap;
+    }
   }
   @media (min-width: 1500px) {
     .integration-actions {
-      width: 420px;
+      width: 500px;
     }
   }
   @media (max-width: 760px) {

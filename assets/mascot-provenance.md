@@ -9,3 +9,10 @@ Final prompt: Generate only the landscape hero artwork, closely matching the ref
 ## Banner — public/images/mascot-banner.png
 
 Final prompt: Create a second landscape scene of the exact same mascot and browser board, with the character on the left behind an open dark laptop. Keep the mouth hidden. Detailed blue-violet studio, leafy plants, shelves and warm desk lamp; quiet dark right side for HTML copy. No slogans, sticky notes or labels; only tiny mimic.boo on the browser bar.
+
+## Minimal hero correction — October 1, 2026
+
+Saved to public/images/mascot-hero.png. Edited the original hero, preserving its leaning pose and tilted board. Removed only the extra lower left paw and switched off the background monitor. The symmetrical alternatives were discarded.
+
+Final prompt: Precise minimal edit of the existing artwork. Preserve the asymmetric leaning pose, tilted browser board, horns, eye, feet, fur, framing, lighting and props. Remove the extra lower paw below the upper left gripping hand, replace it with continuous blue body fur. Keep both existing gripping hands unchanged. Switch off the far-right monitor, preserving its frame and position. Do not straighten or redesign anything. Keep tiny mimic.boo title text.
+
