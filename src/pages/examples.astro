@@ -7,7 +7,7 @@ const python = `from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     browser = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
     page = browser.contexts[0].new_page()
-    page.goto("https://example.com/")
+    page.goto("https://books.toscrape.com/", wait_until="load")
     print(page.locator("h1").inner_text())
     browser.close()`;
 const node = `import { chromium } from "playwright-core";
@@ -15,9 +15,9 @@ const node = `import { chromium } from "playwright-core";
 const browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
 try {
   const page = await browser.contexts()[0].newPage();
-  await page.goto("https://example.com/");
-  const links = await page.locator("a").evaluateAll(
-    nodes => nodes.map(a => ({ text: a.textContent, url: a.href }))
+  await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
+  const links = await page.locator(".product_pod h3 a").evaluateAll(
+    nodes => nodes.map(a => ({ text: a.title, url: a.href }))
   );
   console.log(links);
 } finally {
@@ -43,6 +43,12 @@ const cdp = `{
     >
     <a class="button" href={`${base}docs/#getting-started`}>Setup guide →</a>
   </p>
+  <p>
+    These examples use <a href="https://books.toscrape.com/">Books to Scrape</a>,
+    a public scraping sandbox. Python prints <code>All products</code>; Node.js
+    collects the 20 book links on the first page. External sites can change or
+    become unavailable.
+  </p>
   <h2>Start the runtime</h2><CodeWindow
     title="Windows / Linux"
     lang="bash"
@@ -59,7 +65,9 @@ const cdp = `{
   </p><CodeWindow title="links.mjs" code={node} />
   <h2>Raw CDP · Read browser state</h2><p>
     Connect your WebSocket client to a Page’s <code>webSocketDebuggerUrl</code> from
-    <code>http://127.0.0.1:9222/json/list</code>, then send this JSON message.
+    <code>http://127.0.0.1:9222/json/list</code>, after loading <code>https://books.toscrape.com/</code> with either example
+    above. Then send this JSON message. The returned title is
+    <code>All products | Books to Scrape - Sandbox</code>.
   </p><CodeWindow title="CDP request" lang="json" code={cdp} />
   <p>
     CDP commands depend on the supported surface. <a

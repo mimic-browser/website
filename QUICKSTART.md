@@ -98,7 +98,7 @@ const browser = await puppeteer.connect({
 try {
   const page = await browser.newPage();
   try {
-    await page.goto('https://example.com/', { waitUntil: 'load' });
+    await page.goto('https://books.toscrape.com/', { waitUntil: 'load' });
     await page.waitForSelector('h1');
 
     console.log(await page.evaluate(() => ({
@@ -120,7 +120,8 @@ try {
 node automate.mjs
 ```
 
-The script reads the page's content and the environment you configured. For your
+The script reads `All products` from the public Books to Scrape sandbox and the
+environment you configured. External sites can change or become unavailable. For your
 own workflow, wait for the element or application state that indicates readiness,
 then use supported DOM interactions and evaluation. CDP coverage is evolving;
 this example does not imply support for every Puppeteer feature.

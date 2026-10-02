@@ -35,7 +35,7 @@ with sync_playwright() as p:
         "http://127.0.0.1:9222"
     )
     page = browser.contexts[0].new_page()
-    page.goto("https://example.com/")
+    page.goto("https://books.toscrape.com/", wait_until="load")
 
     # Extract data from the live DOM
     title = page.locator("h1").inner_text()
@@ -51,10 +51,10 @@ const browser = await chromium.connectOverCDP(
   "http://127.0.0.1:9222"
 );
 const page = await browser.contexts()[0].newPage();
-page.goto("https://example.com/");
+await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
 
-const links = await page.locator("a").evaluateAll(
-  nodes => nodes.map(a => ({ text: a.textContent, url: a.href }))
+const links = await page.locator(".product_pod h3 a").evaluateAll(
+  nodes => nodes.map(a => ({ text: a.title, url: a.href }))
 );
 console.log(links);
 await browser.close();`,
@@ -272,6 +272,13 @@ const uses = [
             </div>
           ))
         }
+        <p>
+          The Python and Node.js examples use <a href="https://books.toscrape.com/"
+            >Books to Scrape</a>, a public scraping sandbox. Python prints
+          <code>All products</code>; Node.js collects 20 book links. Send the
+          Raw CDP request to a Page loaded by either example. External sites
+          can change or become unavailable.
+        </p>
       </div>
     </section>
     <section id="benchmarks" class="section-block">

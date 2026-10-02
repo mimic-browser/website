@@ -14,7 +14,7 @@ const browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
 try {
   const context = browser.contexts()[0];
   const page = await context.newPage();
-  await page.goto("https://example.com/", { waitUntil: "load" });
+  await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
   console.log(await page.locator("h1").textContent());
 } finally {
   // This disconnects the client; it does not own the Mimic process.
@@ -28,7 +28,7 @@ const browser = await puppeteer.connect({
   defaultViewport: null
 });
 const page = await browser.newPage();
-await page.goto("https://example.com/", { waitUntil: "load" });
+await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
 console.log(await page.$eval("h1", node => node.textContent));
 await page.close();
 await browser.disconnect();`;
@@ -120,6 +120,12 @@ try {
   </p>
   <CodeWindow title="Install Playwright" lang="bash" code={playwrightInstall} />
   <CodeWindow title="playwright.mjs" lang="javascript" code={playwrightCode} />
+  <p>
+    The examples read <code>All products</code> from <a
+      href="https://books.toscrape.com/">Books to Scrape</a>, a public scraping
+    sandbox. External sites can change or become unavailable; inspect the
+    response and DOM if the expected element is missing.
+  </p>
   <p>
     Wait for an application-specific element or state when hydration continues
     after the load event. Supported workflows include locators, forms,
