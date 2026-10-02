@@ -43,11 +43,8 @@ const cdp = `{
     >
     <a class="button" href={`${base}docs/#getting-started`}>Setup guide →</a>
   </p>
-  <p>
-    These examples use <a href="https://books.toscrape.com/">Books to Scrape</a>,
-    a public scraping sandbox. Python prints <code>All products</code>; Node.js
-    collects the 20 book links on the first page. External sites can change or
-    become unavailable.
+  <p class="example-note">
+    Demo site: <a href="https://books.toscrape.com/">Books to Scrape</a>.
   </p>
   <h2>Start the runtime</h2><CodeWindow
     title="Windows / Linux"
@@ -65,8 +62,10 @@ const cdp = `{
   </p><CodeWindow title="links.mjs" code={node} />
   <h2>Raw CDP · Read browser state</h2><p>
     Connect your WebSocket client to a Page’s <code>webSocketDebuggerUrl</code> from
-    <code>http://127.0.0.1:9222/json/list</code>, after loading <code>https://books.toscrape.com/</code> with either example
-    above. Then send this JSON message. The returned title is
+    <code>http://127.0.0.1:9222/json/list</code>, after loading <code
+      >https://books.toscrape.com/</code
+    > with either example above. Then send this JSON message. The returned title
+    is
     <code>All products | Books to Scrape - Sandbox</code>.
   </p><CodeWindow title="CDP request" lang="json" code={cdp} />
   <p>

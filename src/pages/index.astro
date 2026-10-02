@@ -272,12 +272,9 @@ const uses = [
             </div>
           ))
         }
-        <p>
-          The Python and Node.js examples use <a href="https://books.toscrape.com/"
-            >Books to Scrape</a>, a public scraping sandbox. Python prints
-          <code>All products</code>; Node.js collects 20 book links. Send the
-          Raw CDP request to a Page loaded by either example. External sites
-          can change or become unavailable.
+        <p class="example-note">
+          Demo: <a href="https://books.toscrape.com/">Books to Scrape</a>. Raw
+          CDP uses an already loaded Page.
         </p>
       </div>
     </section>
@@ -463,6 +460,11 @@ const uses = [
 </script>
 
 <style>
+  .automation .example > p.example-note {
+    font-size: 12px;
+    color: #7e899c;
+    line-height: 1.5;
+  }
   .integration-cta {
     display: grid;
     grid-template-columns: 1.4fr 1fr;

@@ -346,3 +346,23 @@ a[aria-label][href^="https://"]::after
 .prose table {
   width: 100%;
 }
+/* Secondary demo captions share spacing and stay below the code hierarchy. */
+p.example-note,
+.prose p.example-note {
+  margin: 16px 0 24px;
+  color: #7e899c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+p.example-note a,
+.prose p.example-note a {
+  color: inherit;
+  text-decoration-color: #475166;
+}
+main .example > p.example-note {
+  margin: 0;
+  padding: 16px 28px 22px;
+  color: #7e899c;
+  font-size: 12px;
+  line-height: 1.5;
+}
