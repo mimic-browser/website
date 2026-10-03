@@ -23,7 +23,10 @@ for (const file of htmlFiles) {
     if (/^(?:https?:|mailto:|#|data:|\/\/)/.test(value)) continue;
     const clean = value.split(/[?#]/)[0];
     let target;
-    if (clean.startsWith("/mimic-overview/"))
+    const base = process.env.PAGES_BASE_PATH;
+    if (base && clean.startsWith(`${base}/`))
+      target = join(root, clean.slice(base.length + 1));
+    else if (clean.startsWith("/mimic-overview/"))
       target = join(root, clean.slice("/mimic-overview/".length));
     else if (clean.startsWith("/")) target = join(root, clean.slice(1));
     else target = resolve(dirname(file), clean);

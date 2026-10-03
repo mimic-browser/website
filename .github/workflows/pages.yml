@@ -27,12 +27,17 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
       - name: Check and build
         run: npm run build
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - name: Check internal links
         run: npm run test:links
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

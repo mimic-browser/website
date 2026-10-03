@@ -23,7 +23,7 @@
           typeof asset.name === "string" &&
           typeof asset.browser_download_url === "string" &&
           asset.browser_download_url.startsWith(
-            "https://github.com/moreveal/mimic/releases/download/",
+            "https://github.com/mimic-browser/runtime/releases/download/",
           ),
       )
     );
@@ -73,7 +73,7 @@
     }
     try {
       const response = await fetch(
-        "https://api.github.com/repos/moreveal/mimic/releases/latest",
+        "https://api.github.com/repos/mimic-browser/runtime/releases/latest",
         {
           headers: { Accept: "application/vnd.github+json" },
           signal: AbortSignal.timeout(8000),
