@@ -176,7 +176,7 @@ const uses = [
 
 <BaseLayout
   title="Mimic — Lightweight Browser Automation Without Chromium"
-  description="Reduce browser automation time and resource costs with Mimic, a lightweight runtime between HTTP clients and Chromium. JavaScript, browser state and CDP tooling."
+  description="Lightweight browser automation without Chromium. A source-available public beta for JavaScript automation and web scraping with Playwright, Puppeteer and CDP."
 >
   <section class="hero-scene">
     <img
@@ -414,6 +414,18 @@ const uses = [
     <div class="integration-actions">
       <ContactOptions />
     </div>
+  </section>
+  <section class="container prose" aria-label="Automation guides">
+    <h2>Guides for nonvisual automation</h2>
+    <p>
+      Read <a href={`${base}playwright-without-chromium/`}
+        >Run Playwright without Chromium</a
+      >
+      for a complete extraction example, or <a
+        href={`${base}mimic-vs-chromium/`}>Mimic versus Chromium</a
+      >
+      for workload selection and measured memory boundaries.
+    </p>
   </section>
 </BaseLayout>
 <script>
