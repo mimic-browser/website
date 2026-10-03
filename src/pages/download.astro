@@ -29,7 +29,8 @@ const sums = release.assets.find((asset) => asset.name === "SHA256SUMS");
   description="One standalone executable for Windows and Linux amd64. No Chromium, Go or Rust installation required."
 >
   <p class="release-status">
-    Latest stable beta: <strong data-release-version>{release.tag_name}</strong>
+    Latest stable beta: <strong data-release-version>{release.tag_name}</strong
+    >{" "}
     <span data-release-status></span>
   </p>
   <div class="download-grid">
@@ -66,7 +67,7 @@ const sums = release.assets.find((asset) => asset.name === "SHA256SUMS");
   <p class="download-details">
     <a data-release-asset="SHA256SUMS" href={sums?.browser_download_url}
       ><ShieldCheck size={17} />Download checksums</a
-    >
+    >{" "}
     <a href={`${base}license/`}><Scale size={17} />License</a>
   </p>
   <h2 class="icon-heading"><Cable size={26} />Connect your automation</h2><p>
@@ -75,7 +76,7 @@ const sums = release.assets.find((asset) => asset.name === "SHA256SUMS");
   </p><p class="page-actions">
     <a class="button button-primary" href={`${base}examples/`}
       ><Code2 size={18} />Try an example →</a
-    >
+    >{" "}
     <a class="button" href={`${base}docs/`}
       ><BookOpen size={18} />Read the docs →</a
     >
@@ -86,7 +87,7 @@ const sums = release.assets.find((asset) => asset.name === "SHA256SUMS");
     Bring your workload. We can help evaluate compatibility and integrate Mimic
     into your infrastructure. <a href="mailto:slava@mimic.boo"
       >Email slava@mimic.boo</a
-    >
+    >{" "}
     or <a href={`${base}#contact`}>choose Telegram or Discord</a>.
   </p>
 </ArticleLayout>

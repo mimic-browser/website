@@ -29,8 +29,9 @@ const rendered = await marked.parse(releaseNotes);
       set:html={rendered}
     />
     <aside>
-      <span>Latest release</span><strong data-release-version>v0.1.9</strong><a
-        href="https://github.com/moreveal/mimic/releases"
+      <span>Latest release</span>{" "}<strong data-release-version
+        >v0.1.9</strong
+      >{" "}<a href="https://github.com/moreveal/mimic/releases"
         >All releases <ArrowRight size={16} /></a
       >
     </aside>

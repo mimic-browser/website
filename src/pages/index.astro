@@ -197,12 +197,14 @@ const uses = [
       <div class="actions">
         <a class="button button-primary" href={`${base}download/`}
           >Download Mimic <ArrowRight size={18} /></a
-        ><a class="button" href={repo}><Github size={20} /> View on GitHub</a>
+        >{" "}<a class="button" href={repo}
+          ><Github size={20} /> View on GitHub</a
+        >
       </div>
       <div class="hero-tags">
-        <span><Code size={14} /> Source available</span><span
+        <span><Code size={14} /> Source available</span>{" "}<span
           ><Zap size={14} /> Automation-first</span
-        ><span><Box size={14} /> Runs without Chromium</span>
+        >{" "}<span><Box size={14} /> Runs without Chromium</span>
       </div>
     </div>
   </section>
@@ -236,7 +238,7 @@ const uses = [
         </p><div class="actions">
           <a class="button button-primary" href={`${base}docs/`}
             >Read the docs <ArrowRight size={17} /></a
-          ><a class="button" href={`${base}examples/`}
+          >{" "}<a class="button" href={`${base}examples/`}
             >See examples <Code size={16} /></a
           >
         </div>
@@ -398,7 +400,9 @@ const uses = [
       </p><div class="actions">
         <a class="button button-primary" href={`${base}download/`}
           >Download Mimic <ArrowRight size={17} /></a
-        ><a class="button" href={repo}><Github size={19} /> View on GitHub</a>
+        >{" "}<a class="button" href={repo}
+          ><Github size={19} /> View on GitHub</a
+        >
       </div>
     </div>
   </section>
@@ -420,10 +424,10 @@ const uses = [
     <p>
       Read <a href={`${base}playwright-without-chromium/`}
         >Run Playwright without Chromium</a
-      >
+      >{" "}
       for a complete extraction example, or <a
         href={`${base}mimic-vs-chromium/`}>Mimic versus Chromium</a
-      >
+      >{" "}
       for workload selection and measured memory boundaries.
     </p>
   </section>

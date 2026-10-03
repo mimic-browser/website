@@ -89,11 +89,11 @@ try {
   <p>
     Read <a href={`${import.meta.env.BASE_URL}playwright-without-chromium/`}
       >Run Playwright without Chromium</a
-    >
+    >{" "}
     for a complete extraction example, or <a
       href={`${import.meta.env.BASE_URL}mimic-vs-chromium/`}
       >Mimic versus Chromium</a
-    >
+    >{" "}
     for workload selection and measured memory boundaries.
   </p>
 
@@ -282,7 +282,7 @@ try {
   <div class="command-grid">
     <div class="api-card">
       <h3>
-        <code>Mimic.getProfileSchema</code><span class="tag core"
+        <code>Mimic.getProfileSchema</code>{" "}<span class="tag core"
           >configuration</span
         >
       </h3><p>
@@ -294,7 +294,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.validateProfile</code><span class="tag core"
+        <code>Mimic.validateProfile</code>{" "}<span class="tag core"
           >configuration</span
         >
       </h3><p>
@@ -307,7 +307,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.createContext</code><span class="tag core"
+        <code>Mimic.createContext</code>{" "}<span class="tag core"
           >configuration</span
         >
       </h3><p>
@@ -320,7 +320,9 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getProfile</code><span class="tag core">configuration</span>
+        <code>Mimic.getProfile</code>{" "}<span class="tag core"
+          >configuration</span
+        >
       </h3><p>
         Returns a defensive projection of the effective Context profile or a
         target profile including Page overrides.
@@ -331,7 +333,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.updateProfile</code><span class="tag core"
+        <code>Mimic.updateProfile</code>{" "}<span class="tag core"
           >configuration</span
         >
       </h3><p>
@@ -343,7 +345,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.resetProfileOverrides</code><span class="tag core"
+        <code>Mimic.resetProfileOverrides</code>{" "}<span class="tag core"
           >configuration</span
         >
       </h3><p>Restores a Page to its BrowserContext profile baseline.</p><div
@@ -354,7 +356,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.captureSnapshot</code><span class="tag">capture</span>
+        <code>Mimic.captureSnapshot</code>{" "}<span class="tag">capture</span>
       </h3><p>
         Captures current static DOM and available assets from canonical Page
         state. This is not a screenshot and excludes scripts, embedded frames,
@@ -365,7 +367,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.setViewport</code><span class="tag">page control</span>
+        <code>Mimic.setViewport</code>{" "}<span class="tag">page control</span>
       </h3><p>
         Applies supported viewport changes through the same Page environment
         used by standard Emulation commands.
@@ -375,7 +377,7 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getCompatibilityMatrix</code><span class="tag"
+        <code>Mimic.getCompatibilityMatrix</code>{" "}<span class="tag"
           >introspection</span
         >
       </h3><p>
@@ -386,22 +388,26 @@ try {
       </div>
     </div>
     <div class="api-card">
-      <h3><code>Mimic.getStatus</code><span class="tag">diagnostic</span></h3><p
-      >
+      <h3>
+        <code>Mimic.getStatus</code>{" "}<span class="tag">diagnostic</span>
+      </h3><p>
         Returns a lightweight snapshot of current Page execution and navigation
         state for progress monitoring.
       </p><div class="signature">params: &#123;&#125; → current status</div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getDiagnostics</code><span class="tag">diagnostic</span>
+        <code>Mimic.getDiagnostics</code>{" "}<span class="tag">diagnostic</span
+        >
       </h3><p>
         Returns runtime and navigation diagnostics useful when a workflow stops
         making progress.
       </p><div class="signature">params: &#123;&#125; → diagnostic state</div>
     </div>
     <div class="api-card">
-      <h3><code>Mimic.getTrace</code><span class="tag">diagnostic</span></h3><p>
+      <h3>
+        <code>Mimic.getTrace</code>{" "}<span class="tag">diagnostic</span>
+      </h3><p>
         Returns retained scheduler, resource, and semantic events for debugging
         supported workflows.
       </p><div class="signature">
@@ -410,14 +416,14 @@ try {
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.clearTrace</code><span class="tag">diagnostic</span>
+        <code>Mimic.clearTrace</code>{" "}<span class="tag">diagnostic</span>
       </h3><p>
         Clears the retained diagnostic trace for the selected session/Page.
       </p><div class="signature">params: &#123;&#125; → acknowledgement</div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.cancelExecution</code><span class="tag">advanced</span>
+        <code>Mimic.cancelExecution</code>{" "}<span class="tag">advanced</span>
       </h3><p>
         Requests cancellation of current Page execution when a client needs to
         recover from a busy turn.
@@ -426,12 +432,13 @@ try {
       </div>
     </div>
     <div class="api-card">
-      <h3><code>Mimic.pause</code><span class="tag">advanced</span></h3><p>
+      <h3><code>Mimic.pause</code>{" "}<span class="tag">advanced</span></h3><p>
         Pauses supported Page processing at the runtime control boundary.
       </p><div class="signature">params: &#123;&#125; → acknowledgement</div>
     </div>
     <div class="api-card">
-      <h3><code>Mimic.resume</code><span class="tag">advanced</span></h3><p>
+      <h3><code>Mimic.resume</code>{" "}<span class="tag">advanced</span></h3><p
+      >
         Resumes Page processing after a matching pause.
       </p><div class="signature">params: &#123;&#125; → acknowledgement</div>
     </div>

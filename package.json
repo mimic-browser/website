@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && npm run test:spacing",
     "preview": "astro preview",
     "check": "astro check",
-    "test:links": "node scripts/check-links.mjs"
+    "test:links": "node scripts/check-links.mjs",
+    "test:spacing": "node scripts/check-text-spacing.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "parse5": "8.0.0",
     "typescript": "^5.9.2"
   }
 }

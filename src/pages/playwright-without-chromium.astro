@@ -35,16 +35,16 @@ const base = import.meta.env.BASE_URL;
 npm install playwright-core@1.63.0`}
   />
   <p>
-    There is no Playwright browser download in this workflow. Use
+    There is no Playwright browser download in this workflow. Use{" "}
     <code>chromium.connectOverCDP()</code> to attach to Mimic's endpoint.
     <code>chromium.launch()</code> would launch a separate Chromium executable.
   </p>
   <h2>Extract book titles and URLs as JSON</h2>
   <p>
-    Save this as <code>playwright-books.mjs</code> and run
+    Save this as <code>playwright-books.mjs</code> and run{" "}
     <code>node playwright-books.mjs</code>. <a
       href="https://books.toscrape.com/">Books to Scrape</a
-    >
+    >{" "}
     is a public scraping sandbox. Its catalog is static: this example validates navigation,
     DOM extraction and a JavaScript evaluation, not compatibility with an arbitrary
     JavaScript application.
@@ -57,7 +57,7 @@ npm install playwright-core@1.63.0`}
     separately when finished.
   </p>
   <p>
-    This example was checked with the Mimic v0.1.9 Windows release and
+    This example was checked with the Mimic v0.1.9 Windows release and{" "}
     <code>playwright-core 1.63.0</code>. That is a checkpoint for this script,
     not a guarantee for other sites or all client methods.
   </p>
@@ -66,7 +66,7 @@ npm install playwright-core@1.63.0`}
     <a
       href="https://playwright.dev/docs/api/class-browsertype#browser-type-connect-over-cdp"
       >Playwright documents CDP attachment</a
-    >
+    >{" "}
     as lower fidelity than its native protocol connection. Mimic implements a subset
     of the browser behavior expected by that CDP client.
   </p>
@@ -81,11 +81,11 @@ npm install playwright-core@1.63.0`}
     Check the <a
       href="https://github.com/moreveal/mimic/blob/main/docs/cdp-compatibility.md"
       >CDP compatibility notes</a
-    >
+    >{" "}
     and <a
       href="https://github.com/moreveal/mimic/blob/main/docs/cdp-coverage-generated.md"
       >semantic support matrix</a
-    >
+    >{" "}
     for your commands. Mimic does not provide rendered screenshots, video or PDF
     rendering, or full Blink behavior. Modeled geometry and browser observations
     do not establish visual fidelity.

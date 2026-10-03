@@ -40,7 +40,7 @@ const cdp = `{
 >
   <p class="page-actions">
     <a class="button button-primary" href={`${base}download/`}>Download Mimic</a
-    >
+    >{" "}
     <a class="button" href={`${base}docs/#getting-started`}>Setup guide →</a>
   </p>
   <p class="example-note">
@@ -61,11 +61,13 @@ const cdp = `{
     > file.
   </p><CodeWindow title="links.mjs" code={node} />
   <h2>Raw CDP · Read browser state</h2><p>
-    Connect your WebSocket client to a Page’s <code>webSocketDebuggerUrl</code> from
+    Connect your WebSocket client to a Page’s <code>webSocketDebuggerUrl</code> from{
+      " "
+    }
     <code>http://127.0.0.1:9222/json/list</code>, after loading <code
       >https://books.toscrape.com/</code
     > with either example above. Then send this JSON message. The returned title
-    is
+    is{" "}
     <code>All products | Books to Scrape - Sandbox</code>.
   </p><CodeWindow title="CDP request" lang="json" code={cdp} />
   <p>
@@ -76,10 +78,10 @@ const cdp = `{
   <p>
     Read <a href={`${base}playwright-without-chromium/`}
       >Run Playwright without Chromium</a
-    >
+    >{" "}
     for a complete extraction example, or <a href={`${base}mimic-vs-chromium/`}
       >Mimic versus Chromium</a
-    >
+    >{" "}
     for workload selection and measured memory boundaries.
   </p>
 </ArticleLayout>
