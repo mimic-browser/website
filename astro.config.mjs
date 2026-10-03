@@ -4,6 +4,7 @@ import sitemap from "@astrojs/sitemap";
 export default defineConfig({
   site: "https://mimic.boo",
   base: process.env.PAGES_BASE_PATH || "/",
+  trailingSlash: "always",
   output: "static",
   integrations: [sitemap({
     serialize(item) {
