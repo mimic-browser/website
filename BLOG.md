@@ -27,3 +27,20 @@ There are no additional dependencies or remote content services.
 
 Run `npm run dev -- --host 127.0.0.1` for local development.
 Before publishing, run `npm run build` and `npm run test:links`.
+
+## Social preview images
+
+Every post gets a 1200 × 630 PNG at `/blog/og/<slug>.png`, generated during
+`astro build` from its title, author, date and language. No image needs to be
+designed or uploaded per post. The template is in `src/lib/blog-og.ts`;
+`src/pages/blog/og/[...slug].png.ts` renders each content entry.
+Inter is bundled in `assets/fonts` under the included OFL license, so rendering
+does not depend on installed fonts or remote services. Sharp is already used
+by Astro and is declared directly for this generator.
+
+The title balances complete words and adapts its type size; text is never
+truncated. Very long titles that cannot fit safely fail the build with a clear
+error. Author and date are also checked for overlap. `cover` remains an optional
+list thumbnail, independent of the generated social image. PNGs are build output
+in `dist`, not manually maintained content. Run `npm run test:og` to check
+short, long and Russian titles, safe areas, contrast and repeatable output.
