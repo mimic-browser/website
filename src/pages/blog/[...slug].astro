@@ -1,0 +1,46 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BlogSourceLink from "@/components/BlogSourceLink.astro";
+import ArticleToc from "@/components/ArticleToc.astro";
+import { getCollection, render } from "astro:content";
+import { ArrowLeft } from "lucide-astro";
+import { formatDate } from "@/lib/blog";
+import "@/styles/blog.css";
+export async function getStaticPaths() {
+  return (await getCollection("blog")).map(post => ({ params: { slug: post.id }, props: { post } }));
+}
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const toc = [{ slug: "article-start", text: "Introduction" }, ...headings.filter(heading => heading.depth === 2)];
+const { title, description, author, authorRole, published, lang, category, cover, coverAlt } = post.data;
+const base = import.meta.env.BASE_URL;
+const canonical = new URL(`/blog/${post.id}/`, Astro.site).href;
+const schema = {
+  "@context": "https://schema.org", "@type": "BlogPosting",
+  headline: title, description, datePublished: published.toISOString(), inLanguage: lang,
+  author: { "@type": "Person", name: author, ...(authorRole ? { jobTitle: authorRole } : {}) },
+  publisher: { "@type": "Organization", name: "Mimic", url: "https://mimic.boo/" },
+  mainEntityOfPage: canonical, image: new URL(cover ? `/${cover}` : "/og-image.png", Astro.site).href,
+};
+---
+
+<BaseLayout title={title} description={description} lang={lang} article={{ published: published.toISOString(), author }} image={cover ? `/${cover}` : undefined} imageAlt={coverAlt || undefined} imageWidth={cover ? 1400 : undefined} imageHeight={cover ? 788 : undefined}>
+  <script is:inline slot="head" type="application/ld+json" set:html={JSON.stringify(schema).replaceAll("<", "\\u003c")} />
+  <div class="blog-surface"><article class="container blog-article">
+    <a class="blog-back" href={`${base}blog/`}><ArrowLeft size={17} aria-hidden="true" />All posts</a>
+    <header class="reading-head">
+      <div class="reading-title">
+      <span class="post-category">{category}</span>
+      <h1>{title.endsWith("without Chromium") ? <>{title.slice(0, -16)}<span class="title-accent">without Chromium</span></> : title}</h1>
+      <div class="reading-meta"><span>{author}{authorRole && ` · ${authorRole}`}</span><time datetime={published.toISOString()}>{formatDate(published, lang)}</time></div>
+      <div class="reading-source"><BlogSourceLink /></div>
+      </div>
+    </header>
+    <div class:list={["reading-layout", { "reading-layout-solo": headings.length === 0 }]}>
+      {headings.length > 0 && <ArticleToc items={toc} />}
+      <div class="reading-body prose" id="article-start"><Content />
+      <footer class="reading-end"><a href={`${base}blog/`}><ArrowLeft size={17} aria-hidden="true" /> Back to the blog</a></footer>
+      </div>
+    </div>
+  </article></div>
+</BaseLayout>

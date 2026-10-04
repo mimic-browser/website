@@ -1,0 +1,36 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BlogSourceLink from "@/components/BlogSourceLink.astro";
+import { getCollection } from "astro:content";
+import { ArrowUpRight } from "lucide-astro";
+import { formatDate } from "@/lib/blog";
+import "@/styles/blog.css";
+const posts = (await getCollection("blog")).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Blog — Mimic" description="Development notes on Mimic, browser automation, and compatibility." lang="en">
+  <div class="blog-surface"><div class="container blog-index">
+    <header class="blog-intro">
+      <div>
+      <h1>Blog</h1>
+      <p>Development notes on Mimic, browser automation, and compatibility.</p>
+      </div>
+      <BlogSourceLink />
+    </header>
+    <section class="blog-posts" aria-label="Blog posts">
+      {posts.map((post) => (
+        <a class:list={["post-card", { "post-card-text": !post.data.cover }]} href={`${base}blog/${post.id}/`}>
+          <div class="post-copy">
+            <span class="post-category">{post.data.category}</span>
+            <h2>{post.data.title.endsWith("without Chromium") ? <>{post.data.title.slice(0, -16)}<span class="title-accent">without Chromium</span></> : post.data.title}</h2>
+            <p>{post.data.description}</p>
+            <div class="post-meta"><span>{post.data.author}{post.data.authorRole && ` · ${post.data.authorRole}`}</span><time datetime={post.data.published.toISOString()}>{formatDate(post.data.published, post.data.lang)}</time></div>
+            <span class="post-read">Read article <ArrowUpRight size={17} aria-hidden="true" /></span>
+          </div>
+          {post.data.cover && <div class="post-art" aria-hidden="true"><img src={`${base}${post.data.cover}`} alt="" width="1400" height="788" /></div>}
+        </a>
+      ))}
+    </section>
+  </div></div>
+</BaseLayout>

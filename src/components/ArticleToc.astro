@@ -1,0 +1,105 @@
+---
+import { ChevronDown } from "lucide-astro";
+interface Props { items: { slug: string; text: string }[]; }
+const { items } = Astro.props;
+---
+
+<aside class="article-toc" data-article-toc>
+  <details open>
+    <summary>On this page <ChevronDown size={16} aria-hidden="true" /></summary>
+    <nav aria-label="Table of contents">
+      <ol>{items.map((item, index) => <li><a href={`#${item.slug}`} aria-current={index === 0 ? "location" : undefined}>{item.text}</a></li>)}</ol>
+    </nav>
+  </details>
+</aside>
+
+<script>
+  let dispose = () => {};
+  function setupToc() {
+    dispose();
+    const aside = document.querySelector<HTMLElement>("[data-article-toc]");
+    const details = aside?.querySelector<HTMLDetailsElement>("details");
+    if (!aside || !details) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    const media = matchMedia("(max-width: 1000px)");
+    const links = [...aside.querySelectorAll<HTMLAnchorElement>("nav a")];
+    const sections = links.map(link => document.getElementById(decodeURIComponent(link.hash.slice(1))));
+    let offset = 112;
+    let pending = 0;
+    const updateActive = () => {
+      pending = 0;
+      let active = 0;
+      sections.forEach((section, index) => {
+        if (section && section.getBoundingClientRect().top <= offset + 8) active = index;
+      });
+      links.forEach((link, index) => {
+        if (index === active) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    };
+    const requestUpdate = () => {
+      if (!pending) pending = requestAnimationFrame(updateActive);
+    };
+    const updateOffset = () => {
+      offset = (document.querySelector<HTMLElement>(".site-header")?.offsetHeight ?? 76) + 20;
+      aside.closest<HTMLElement>(".blog-article")?.style.setProperty("--reading-offset", `${offset}px`);
+      requestUpdate();
+    };
+    const updateLayout = () => {
+      details.open = !media.matches;
+      updateOffset();
+    };
+    links.forEach((link, index) => {
+      link.addEventListener("click", () => {
+        if (media.matches) details.open = false;
+        const target = sections[index];
+        if (target) {
+          target.setAttribute("tabindex", "-1");
+          requestAnimationFrame(() => target.focus({ preventScroll: true }));
+        }
+        requestUpdate();
+      }, { signal });
+    });
+    window.addEventListener("scroll", requestUpdate, { passive: true, signal });
+    window.addEventListener("hashchange", requestUpdate, { signal });
+    window.addEventListener("resize", updateOffset, { signal });
+    media.addEventListener("change", updateLayout, { signal });
+    updateLayout();
+    // Font loading and the mobile disclosure can move a native fragment target.
+    const initialHash = location.hash;
+    const initialTarget = sections.find(section => section && `#${section.id}` === initialHash);
+    if (initialTarget) {
+      document.fonts.ready.then(() => requestAnimationFrame(() => {
+        if (signal.aborted || location.hash !== initialHash) return;
+        initialTarget.scrollIntoView({ behavior: "instant", block: "start" });
+        requestUpdate();
+      }));
+    }
+    dispose = () => {
+      controller.abort();
+      cancelAnimationFrame(pending);
+    };
+  }
+  document.addEventListener("astro:page-load", setupToc);
+  setupToc();
+</script>
+
+<style>
+  .article-toc { min-width: 0; align-self: start; position: sticky; top: var(--reading-offset, 112px); padding-left: 24px; border-left: 1px solid #718bff36; max-height: calc(100vh - var(--reading-offset, 112px) - 24px); overflow-y: auto; }
+  summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; list-style: none; cursor: pointer; color: var(--text); font-size: 13px; font-weight: 650; padding-block: 4px 14px; }
+  summary::-webkit-details-marker { display: none; }
+  summary svg { color: var(--quiet); }
+  details[open] summary svg { transform: rotate(180deg); }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li + li { margin-top: 3px; }
+  nav a { display: block; border-left: 2px solid transparent; padding: 8px 10px 8px 13px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+  nav a:hover { color: var(--blue-bright); }
+  nav a[aria-current] { border-left-color: var(--blue); color: var(--blue-bright); background: #718bff0c; }
+  @media (max-width: 1000px) {
+    .article-toc { position: static; padding: 12px 16px; border: 1px solid #718bff36; border-radius: 10px; background: #111a2b80; max-height: none; overflow: visible; }
+    summary { padding: 2px 0; min-height: 24px; }
+    details[open] summary { padding-bottom: 14px; }
+    nav a { padding-block: 9px; }
+  }
+</style>

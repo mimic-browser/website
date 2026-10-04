@@ -1,0 +1,14 @@
+---
+import { Github } from "lucide-astro";
+const label = "Source code, builds and benchmarks → GitHub";
+---
+
+<a class="blog-source-link" href="https://github.com/mimic-browser/runtime" aria-label={label}>
+  <Github size={18} aria-hidden="true" /><span>Source code, builds and benchmarks <span class="github-destination">→ GitHub</span></span>
+</a>
+<style>
+  .blog-source-link { display: inline-flex; align-items: center; gap: 11px; width: fit-content; max-width: 100%; min-height: 44px; padding: 11px 16px; border: 1px solid #8395ff; border-radius: 10px; background: var(--blue); color: #080e25; font-size: 13px; font-weight: 650; line-height: 1.45; }
+  .blog-source-link:hover { background: #859bff; border-color: #a4b1ff; }
+  .blog-source-link > svg { flex: none; }
+  .github-destination { white-space: nowrap; }
+</style>
