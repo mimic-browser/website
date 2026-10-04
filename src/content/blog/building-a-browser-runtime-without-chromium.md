@@ -1,8 +1,7 @@
 ---
 title: "Building a browser runtime for automation without Chromium"
 description: "Vyacheslav on building Mimic: from the idea of more affordable browser automation to a first prototype and real-world workflows."
-author: "Vyacheslav"
-authorRole: "Founder"
+author: "Vyacheslav Lavrov"
 cover: "images/blog-building-runtime.webp"
 coverAlt: "The blue Mimic mascot assembling a small glowing cube at a workbench."
 published: 2026-10-04
@@ -42,7 +41,7 @@ The first implementation had plenty of quick solutions, so before expanding the 
 
 ## Discovering Lightpanda
 
-Early in development (yes, already after the PoC), I decided to see whether anyone else had built something similar. The last time I’d looked into this was quite a while ago, and I hadn’t found a suitable solution back then. That’s how I came across Lightpanda — a genuinely cool project. Its popularity was more encouraging than discouraging to me. There is some overlap between what we’re doing, but on my side I’m especially focused on matching Chrome’s observable behavior, including the things anti-bot systems check.
+Early in development (yes, already after the PoC), I decided to see whether anyone else had built something similar. The last time I’d looked into this was quite a while ago, and I hadn’t found a suitable solution back then. That’s how I came across Lightpanda — a genuinely cool project. It even identifies itself to websites as Lightpanda in its default User-Agent. Its popularity was more encouraging than discouraging to me. There is some overlap between what we’re doing, but on my side I’m especially focused on matching Chrome’s observable behavior, including the things anti-bot systems check.
 
 ## Where Mimic is now
 

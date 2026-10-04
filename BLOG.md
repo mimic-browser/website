@@ -6,8 +6,7 @@ Posts live in `src/content/blog/*.md`. Add a Markdown file with this frontmatter
 ---
 title: "Post title"
 description: "A short description for the card and search results."
-author: "Vyacheslav"
-authorRole: "Founder"
+author: "Vyacheslav Lavrov"
 cover: "images/blog-building-runtime.webp"
 coverAlt: "Describe what the cover shows."
 published: 2026-10-04
