@@ -98,7 +98,7 @@ const capabilities = [
       <div class="container hero-layout">
         <div class="hero-content">
           <span class="eyeline">Browser automation, without the excess.</span>
-          <h1>Same web.<br /><em>Less weight.</em></h1>
+          <h1>Same web.<br /><em data-text="Less weight.">Less weight.</em></h1>
           <p>
             Run browser automation with less memory, compute and network
             traffic. Mimic keeps the browser behavior your workload needs —
@@ -417,9 +417,38 @@ const capabilities = [
     font-weight: 800;
   }
   h1 em {
+    position: relative;
+    display: inline-block;
     font-style: normal;
     color: var(--blue);
     text-shadow: 0 2px 28px #395bfa27;
+  }
+  h1 em::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    color: transparent;
+    text-shadow: none;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.34;
+    background: radial-gradient(
+      ellipse at center,
+      #b9c9ff 0%,
+      #9db3ff 38%,
+      transparent 74%
+    );
+    background-size: 48% 155%;
+    background-repeat: no-repeat;
+    background-position: -60% 50%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: weight-glimmer 7s ease-in-out infinite alternate;
+  }
+  @keyframes weight-glimmer {
+    to {
+      background-position: 160% 50%;
+    }
   }
   h2 {
     font-size: clamp(32px, 3.3vw, 44px);
@@ -1307,6 +1336,9 @@ const capabilities = [
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    h1 em::after {
+      animation: none;
+    }
     .impact-card,
     .tool-chips > a,
     .support-email,

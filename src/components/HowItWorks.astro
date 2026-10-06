@@ -705,7 +705,9 @@ const base = import.meta.env.BASE_URL;
   .loading i {
     display: block;
     height: 100%;
-    width: var(--progress, 0%);
+    width: 100%;
+    transform: scaleX(var(--progress-scale, 0));
+    transform-origin: left center;
     border-radius: 6px;
     background: linear-gradient(90deg, #b96885, #efa6b9);
   }
@@ -1527,7 +1529,6 @@ const base = import.meta.env.BASE_URL;
     const paint = (pane: HTMLElement, value: number) => {
       if (pane.dataset.value === String(value)) return;
       pane.dataset.value = String(value);
-      pane.style.setProperty("--progress", `${value}%`);
       const stage = Math.min(3, Math.floor(value / 25));
       pane.dataset.stage = String(stage);
       const event = pane.querySelector("[data-runtime-event]");
@@ -1568,14 +1569,13 @@ const base = import.meta.env.BASE_URL;
       dialog.toggleAttribute("data-resetting", resetting);
       panes.forEach((pane) => {
         const duration = pane.dataset.load === "mimic" ? 4600 : 7200;
-        paint(
-          pane,
-          preference.matches
-            ? 100
-            : elapsed > 10400
-              ? 0
-              : Math.min(100, Math.floor((elapsed / duration) * 100)),
-        );
+        const progress = preference.matches
+          ? 100
+          : elapsed > 10400
+            ? 0
+            : Math.min(100, (elapsed / duration) * 100);
+        pane.style.setProperty("--progress-scale", String(progress / 100));
+        paint(pane, Math.floor(progress));
       });
       if (!preference.matches) frame = requestAnimationFrame(tick);
     };
@@ -1583,8 +1583,16 @@ const base = import.meta.env.BASE_URL;
       cancelAnimationFrame(frame);
       started = undefined;
       if (dialog.open) {
-        panes.forEach((pane) => paint(pane, preference.matches ? 100 : 0));
-        frame = requestAnimationFrame(tick);
+        panes.forEach((pane) => {
+          pane.style.setProperty(
+            "--progress-scale",
+            preference.matches ? "1" : "0",
+          );
+          paint(pane, preference.matches ? 100 : 0);
+        });
+        frame = requestAnimationFrame(() => {
+          frame = requestAnimationFrame(tick);
+        });
       }
     };
     const observer = new MutationObserver(restart);
