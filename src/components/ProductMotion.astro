@@ -1,0 +1,20 @@
+<script>
+  let dispose = () => {};
+  function initializeMotion() {
+    dispose();
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach(({ target, isIntersecting }) => {
+          target.toggleAttribute("data-active", isIntersecting);
+        }),
+      { threshold: 0.15 },
+    );
+    document
+      .querySelectorAll(".comparison")
+      .forEach((element) => observer.observe(element));
+    dispose = () => observer.disconnect();
+  }
+  initializeMotion();
+  document.addEventListener("astro:page-load", initializeMotion);
+  document.addEventListener("astro:before-swap", () => dispose());
+</script>

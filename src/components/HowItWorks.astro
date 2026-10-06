@@ -1,0 +1,1605 @@
+---
+import {
+  X,
+  ArrowRight,
+  Check,
+  Headphones,
+  ShoppingBag,
+  MousePointer2,
+} from "lucide-astro";
+import Logo from "./Logo.astro";
+const base = import.meta.env.BASE_URL;
+---
+
+<dialog id="how-dialog" aria-labelledby="how-title">
+  <form method="dialog">
+    <button class="dialog-close" aria-label="Close explanation"
+      ><X size={23} /></button
+    >
+  </form>
+  <header>
+    <span class="eyeline">How Mimic works</span><h2 id="how-title">
+      Run the page.<br /><em>Skip the rendering.</em>
+    </h2><p class="desktop-intro">
+      Both add the item to the cart. Chrome also draws the page for a person to
+      see. Mimic runs the page and gives automation its state and data, without
+      rendering it.
+    </p>
+    <p class="mobile-intro">
+      Chrome draws the page. Mimic runs its behavior and keeps the same page
+      state.
+    </p>
+  </header>
+  <div class="demonstration" aria-label="Illustrated shopping workload">
+    <article class="chrome-window" data-load="chrome" data-stage="0">
+      <div class="tab-bar">
+        <svg viewBox="0 0 48 48" width="27" height="27" aria-label="Chrome"
+          ><circle cx="24" cy="24" r="23" fill="#ea4335"></circle><path
+            d="M24 24 44 13A23 23 0 0 1 21 47Z"
+            fill="#fbbc05"></path><path
+            d="m24 24-3 23A23 23 0 0 1 4 12Z"
+            fill="#34a853"></path><circle
+            cx="24"
+            cy="24"
+            r="10"
+            fill="#4285f4"
+            stroke="#fff"
+            stroke-width="2"></circle></svg
+        ><strong>Chrome</strong><span>×</span>
+      </div>
+      <div class="url">
+        <span>‹ &nbsp; › &nbsp; ↻</span><span class="url-field"
+          >shop.example / studio-headphones</span
+        ><span>⋮</span>
+      </div>
+      <div class="shop-preview">
+        <div class="shop-nav">
+          <strong>FIELD<span> / AUDIO</span></strong><span class="shop-bag"
+            ><ShoppingBag size={18} /><b data-cart-count>0</b></span
+          >
+        </div>
+        <div class="shop-product">
+          <div class="product-art">
+            <Headphones size={116} stroke-width={1.3} /><span>STUDIO / 01</span>
+          </div><div class="product-details">
+            <small>EVERYDAY SOUND</small><h3>Studio<br />headphones</h3><strong
+              >$129</strong
+            ><p>Color · <span class="color-name">Midnight</span></p><div
+              class="swatches"
+            >
+              <i></i><i></i><i></i>
+            </div><span class="shop-action">Add to bag <span>+</span></span>
+          </div>
+        </div>
+        <div class="cart-receipt">
+          <Check size={15} /><span>Studio headphones · Midnight</span><strong
+            >$129</strong
+          >
+        </div>
+        <span class="demo-pointer" aria-hidden="true"
+          ><MousePointer2 size={23} fill="white" /></span
+        >
+      </div>
+      <div class="browser-pipeline">
+        <span>JavaScript</span><ArrowRight size={12} /><span>Page state</span
+        ><ArrowRight size={12} /><span class="render-cost">Layout</span
+        ><ArrowRight size={12} /><span class="render-cost">Paint</span>
+      </div>
+      <div class="load-progress">
+        <div class="load-heading">
+          <span data-load-status>Open product</span><strong data-load-percent
+            >0%</strong
+          >
+        </div><div
+          class="loading"
+          role="progressbar"
+          aria-label="Illustrated Chrome workload"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <i></i>
+        </div>
+      </div>
+    </article>
+    <article class="mimic-window" data-load="mimic" data-stage="0">
+      <div class="tab-bar">
+        <Logo compact /><strong>Mimic</strong><span class="runtime-label"
+          >CDP runtime</span
+        >
+      </div>
+      <div class="runtime-caption">
+        Inside Mimic <span>JavaScript + page state</span>
+      </div>
+      <div class="runtime-model">
+        <div class="state-document">
+          <div class="state-title">
+            <span>Page state</span><span>DOM</span>
+          </div><dl>
+            <div><dt>Product</dt><dd>Studio headphones</dd></div><div>
+              <dt>Price</dt><dd>$129</dd>
+            </div><div>
+              <dt>Selected color</dt><dd data-selected-color>—</dd>
+            </div><div class="cart-state-row">
+              <dt>Cart items</dt><dd data-cart-count>0</dd>
+            </div>
+          </dl>
+        </div>
+        <div class="runtime-event">
+          <span class="action-caption"
+            >Current action <span data-action-number>01 / 04</span></span
+          >
+          <strong data-runtime-event>Open product</strong>
+          <span class="action-detail" data-action-detail
+            >Run JavaScript and build page state</span
+          >
+        </div>
+        <div class="no-render">
+          <span>No layout pass</span><span>No painting</span><span
+            >No pixels to draw</span
+          >
+        </div>
+        <div class="task-result">
+          <Check size={19} /><div>
+            <span>Returned to your automation</span><strong
+              >Cart contains <b data-cart-count>0</b> item</strong
+            >
+          </div><span class="result-price">$<b data-cart-total>0</b></span>
+        </div>
+      </div>
+      <div class="load-progress">
+        <div class="load-heading">
+          <span data-load-status>Open product</span><strong data-load-percent
+            >0%</strong
+          >
+        </div><div
+          class="loading"
+          role="progressbar"
+          aria-label="Illustrated Mimic workload"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <i></i>
+        </div>
+      </div>
+    </article>
+  </div>
+  <div class="mobile-demo" aria-label="Illustrated shopping workload">
+    <article class="mobile-phone" data-load="chrome" data-stage="0">
+      <div class="mobile-browser-name">
+        <svg viewBox="0 0 48 48" width="20" height="20" aria-label="Chrome">
+          <circle cx="24" cy="24" r="23" fill="#ea4335"></circle>
+          <path d="M24 24 44 13A23 23 0 0 1 21 47Z" fill="#fbbc05"></path>
+          <path d="m24 24-3 23A23 23 0 0 1 4 12Z" fill="#34a853"></path>
+          <circle
+            cx="24"
+            cy="24"
+            r="10"
+            fill="#4285f4"
+            stroke="#fff"
+            stroke-width="2"></circle>
+        </svg>
+        <strong>Chrome</strong><span>Draws the page</span>
+      </div>
+      <div class="mobile-phone-screen">
+        <div class="mobile-address">shop.example<span>↻</span></div>
+        <div class="mobile-store">
+          <div class="mobile-store-nav">
+            <strong>FIELD / AUDIO</strong>
+            <span><ShoppingBag size={14} /><b data-cart-count>0</b></span>
+          </div>
+          <div class="mobile-product">
+            <div class="mobile-product-art">
+              <Headphones size={64} stroke-width={1.3} />
+            </div>
+            <div class="mobile-product-details">
+              <h3>Studio headphones</h3><strong>$129</strong>
+              <div class="mobile-color">
+                <span>Midnight</span><div class="swatches">
+                  <i></i><i></i><i></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mobile-bag-action">
+            <span class="mobile-add">Add to bag <span>+</span></span>
+            <span class="mobile-added"
+              ><Check size={14} /> Added to bag <strong>$129</strong></span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="load-progress">
+        <div class="load-heading">
+          <span data-load-status>Open product</span><strong data-load-percent
+            >0%</strong
+          >
+        </div>
+        <div
+          class="loading"
+          role="progressbar"
+          aria-label="Illustrated Chrome workload"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <i></i>
+        </div>
+      </div>
+    </article>
+    <article
+      class="mobile-runtime mimic-window"
+      data-load="mimic"
+      data-stage="0"
+    >
+      <div class="mobile-current-action">
+        <span class="action-caption"
+          >Current action <span data-action-number>01 / 04</span></span
+        >
+        <strong data-runtime-event>Open product</strong>
+      </div>
+      <div class="mobile-state-surface">
+        <div class="mobile-runtime-name">
+          <Logo compact /><strong>Mimic</strong><span>No rendering</span>
+        </div>
+        <div class="mobile-state-summary">
+          <span>Studio headphones</span><strong>$129</strong>
+        </div>
+        <dl class="mobile-state-values">
+          <div><dt>Color</dt><dd data-selected-color>—</dd></div>
+          <div><dt>Cart</dt><dd><b data-cart-count>0</b> item</dd></div>
+          <div><dt>Total</dt><dd>$<b data-cart-total>0</b></dd></div>
+        </dl>
+        <div class="load-progress">
+          <div class="load-heading">
+            <span data-load-status>Open product</span><strong data-load-percent
+              >0%</strong
+            >
+          </div>
+          <div
+            class="loading"
+            role="progressbar"
+            aria-label="Illustrated Mimic workload"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <i></i>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+  <div class="demo-controls">
+    <span><Check size={16} /> Same result: one item in the cart.</span>
+  </div>
+  <footer>
+    <p>
+      Illustrative shop and timing. Mimic does not use Chromium or draw the
+      page. Compatibility depends on the behavior your workload needs.
+    </p><div class="dialog-actions">
+      <a class="button button-primary" href={`${base}docs/`}
+        >Explore the runtime <ArrowRight size={17} /></a
+      >
+    </div>
+  </footer>
+</dialog>
+<style>
+  dialog {
+    width: min(1320px, calc(100vw - 48px));
+    max-height: calc(100dvh - 40px);
+    overflow: auto;
+    padding: 38px;
+    border: 1px solid #647daa70;
+    border-radius: 24px;
+    color: #eff4ff;
+    background:
+      radial-gradient(ellipse at 85% 5%, #273e705c, transparent 55%),
+      linear-gradient(140deg, #111c2d, #080f1b);
+    box-shadow:
+      0 35px 120px #000b,
+      inset 0 1px #bdcfff28;
+  }
+  dialog::backdrop {
+    background: #020611bc;
+    backdrop-filter: blur(12px);
+  }
+  header {
+    max-width: 850px;
+  }
+  .eyeline {
+    font-family: var(--mono);
+    color: #98b4ff;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+  }
+  .mobile-intro,
+  .mobile-demo {
+    display: none;
+  }
+  h2 {
+    font-family: var(--display);
+    font-size: 42px;
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+    margin: 12px 0 16px;
+    font-weight: 750;
+  }
+  h2 em {
+    font-style: normal;
+    color: #8da9ff;
+  }
+  header p {
+    max-width: 800px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #b5c4df;
+  }
+  .dialog-close {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid #57709c55;
+    border-radius: 10px;
+    background: #18243c;
+    color: #c7d5ee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .dialog-close:hover {
+    background: #2a3c61;
+  }
+  .demonstration {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    margin: 26px 0 14px;
+    gap: 22px;
+  }
+  article {
+    min-width: 0;
+    border: 1px solid #58749e65;
+    border-radius: 14px;
+    background: #0b1525;
+    overflow: hidden;
+    box-shadow:
+      0 18px 35px #0005,
+      inset 0 1px #c1d5ff15;
+    display: flex;
+    flex-direction: column;
+  }
+  .mimic-window {
+    border-color: #769aff80;
+  }
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 17px;
+    background: linear-gradient(120deg, #22324c, #132038);
+    font-size: 17px;
+  }
+  .tab-bar > span {
+    margin-left: auto;
+    color: #8ba0be;
+  }
+  .tab-bar .runtime-label {
+    font-size: 11px;
+  }
+  .tab-bar :global(svg) {
+    width: 25px;
+    height: 25px;
+  }
+  .url {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 13px;
+    background: #17243a;
+    font-size: 14px;
+    color: #a7b8d2;
+  }
+  .url-field {
+    flex: 1;
+    min-width: 0;
+    border-radius: 20px;
+    padding: 6px 10px;
+    background: #0c1627;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .shop-preview {
+    background: #f1eee8;
+    color: #283331;
+    position: relative;
+    flex: 1;
+    min-height: 345px;
+  }
+  .shop-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 17px 20px;
+    border-bottom: 1px solid #d5d4cb;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .shop-nav strong > span {
+    font-weight: 400;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+  }
+  .shop-bag {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .shop-bag b {
+    font-size: 11px;
+  }
+  .shop-product {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 23px 20px;
+  }
+  .product-art {
+    min-height: 204px;
+    border-radius: 90px 90px 12px 12px;
+    background: radial-gradient(ellipse at 50% 40%, #e0c6a4, #c5b49c);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    box-shadow: inset 0 1px #fff9;
+  }
+  .product-art :global(svg) {
+    color: #27343b;
+    filter: drop-shadow(3px 9px 4px #29303335);
+    transform: rotate(-12deg);
+  }
+  .product-art > span {
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    color: #615644;
+  }
+  .product-details small {
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    color: #7d837a;
+  }
+  .product-details h3 {
+    font-size: 23px;
+    line-height: 1.15;
+    letter-spacing: -0.04em;
+    margin: 9px 0 11px;
+    font-weight: 650;
+  }
+  .product-details > strong {
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .product-details p {
+    font-size: 11px;
+    margin: 18px 0 9px;
+  }
+  .swatches {
+    display: flex;
+    gap: 8px;
+  }
+  .swatches i {
+    width: 17px;
+    height: 17px;
+    background: #293942;
+    border-radius: 50%;
+    border: 3px solid #f1eee8;
+    box-shadow: 0 0 0 1px #bbbbb5;
+    transition: box-shadow 0.3s;
+  }
+  .swatches i:nth-child(2) {
+    background: #bda98e;
+  }
+  .swatches i:nth-child(3) {
+    background: #a5ac9e;
+  }
+  .shop-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 17px;
+    background: #293c37;
+    color: #f4f3ee;
+    font-size: 11px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    transition:
+      background-color 0.3s,
+      box-shadow 0.3s;
+  }
+  .cart-receipt {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px;
+    margin: 0 16px 16px;
+    border-radius: 5px;
+    background: #e3e6dc;
+    border: 1px solid #b5c4ae;
+    font-size: 10px;
+    opacity: 0;
+    transform: translateY(5px);
+    transition:
+      opacity 0.3s,
+      transform 0.3s;
+  }
+  .cart-receipt strong {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .demo-pointer {
+    position: absolute;
+    left: 62%;
+    top: 65%;
+    color: #293943;
+    filter: drop-shadow(1px 2px 2px #0005);
+    transition:
+      top 0.55s ease,
+      left 0.55s ease,
+      opacity 0.3s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  [data-stage="1"] .demo-pointer {
+    opacity: 1;
+    left: 60%;
+    top: 64%;
+  }
+  [data-stage="2"] .demo-pointer {
+    opacity: 1;
+    left: 76%;
+    top: 77%;
+  }
+  [data-stage="1"] .swatches i:first-child,
+  [data-stage="2"] .swatches i:first-child,
+  [data-stage="3"] .swatches i:first-child {
+    box-shadow: 0 0 0 2px #354d41;
+  }
+  [data-stage="2"] .shop-action {
+    background: #47634f;
+    box-shadow: 0 0 0 3px #506c4320;
+  }
+  [data-stage="3"] .cart-receipt {
+    opacity: 1;
+    transform: none;
+  }
+  .runtime-caption {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 15px 17px;
+    color: #cad7ee;
+    font-size: 12px;
+    border-bottom: 1px solid #33496650;
+  }
+  .runtime-caption > span {
+    color: #8399ba;
+    font-size: 11px;
+  }
+  .runtime-code {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding: 11px 13px;
+  }
+  .code-step {
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 7px 9px;
+    opacity: 0.4;
+    transition:
+      opacity 0.3s,
+      background-color 0.3s,
+      border-color 0.3s;
+  }
+  .code-step > div {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    font-size: 10px;
+    color: #8fa7ce;
+  }
+  .code-step > div :global(svg) {
+    margin-left: auto;
+    opacity: 0;
+    color: #8baaff;
+  }
+  .line-number {
+    color: #647d9f;
+    font-variant-numeric: tabular-nums;
+  }
+  .code-step pre {
+    font-family: var(--mono);
+    margin: 5px 0 0;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    color: #c4d5ef;
+    background: none;
+    padding: 0;
+    border: 0;
+  }
+  .code-step code {
+    font-family: var(--mono);
+    background: none;
+    padding: 0;
+  }
+  .code-step[data-active] {
+    opacity: 1;
+    background: #223b6050;
+    border-color: #658bca50;
+  }
+  .code-step[data-done] {
+    opacity: 0.8;
+  }
+  .code-step[data-done] > div :global(svg) {
+    opacity: 1;
+  }
+  .runtime-state {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 11px 17px;
+    border-top: 1px solid #33496650;
+    color: #8ba3c6;
+    font-size: 11px;
+  }
+  .runtime-state code {
+    font-size: 11px;
+    color: #aec5ec;
+    background: none;
+  }
+  .runtime-state b {
+    font-weight: 500;
+    color: #d2e2ff;
+  }
+  .load-progress {
+    padding: 17px;
+    margin-top: auto;
+  }
+  .load-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #a7b9d8;
+    margin-bottom: 10px;
+  }
+  .load-heading strong {
+    font-family: var(--sans);
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 650;
+    color: #efa6b9;
+  }
+  .mimic-window .load-heading strong {
+    color: #9fc2ff;
+  }
+  .loading {
+    height: 8px;
+    border-radius: 6px;
+    background: #253650;
+    box-shadow: inset 0 1px 3px #0005;
+    overflow: hidden;
+  }
+  .loading i {
+    display: block;
+    height: 100%;
+    width: var(--progress, 0%);
+    border-radius: 6px;
+    background: linear-gradient(90deg, #b96885, #efa6b9);
+  }
+  .mimic-window .loading i {
+    background: linear-gradient(90deg, #4c75e6, #9fc2ff);
+  }
+  .demo-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    color: #9fb3d4;
+    font-size: 12px;
+  }
+  .demo-controls > span {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+  }
+  .demo-controls button {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    background: #1b2b43;
+    border: 1px solid #54729b50;
+    border-radius: 7px;
+    padding: 8px 12px;
+    color: #c3d4ef;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .demo-controls button:hover {
+    background: #2a4164;
+  }
+  footer {
+    border-top: 1px solid #38517150;
+    padding-top: 20px;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  footer p {
+    font-size: 12px;
+    line-height: 1.65;
+    color: #97abc9;
+    flex: 1;
+  }
+  .dialog-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 760px) {
+    dialog {
+      padding: 28px 18px;
+    }
+    h2 {
+      font-size: 31px;
+    }
+    header p {
+      font-size: 15px;
+    }
+    .demonstration {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .shop-preview {
+      min-height: 345px;
+    }
+    .runtime-code {
+      min-height: 340px;
+    }
+    .product-details h3 {
+      font-size: 21px;
+    }
+    .product-art :global(svg) {
+      width: 95px;
+    }
+    .shop-product {
+      gap: 14px;
+      padding-inline: 16px;
+    }
+    .url > span:first-child {
+      display: none;
+    }
+    .demo-controls {
+      align-items: flex-start;
+    }
+    .demo-controls > span {
+      max-width: 180px;
+    }
+    .demo-controls button {
+      white-space: nowrap;
+    }
+    footer {
+      display: block;
+    }
+    .dialog-actions {
+      margin-top: 16px;
+    }
+  }
+  @media (max-width: 480px) {
+    dialog {
+      width: calc(100vw - 24px);
+      padding-inline: 14px;
+    }
+    .shop-product {
+      grid-template-columns: 80px minmax(0, 1fr);
+      gap: 12px;
+      padding-inline: 12px;
+    }
+    .product-art :global(svg) {
+      width: 70px;
+    }
+    .product-details h3 {
+      font-size: 18px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .demo-pointer {
+      display: none;
+    }
+    .swatches i,
+    .shop-action,
+    .cart-receipt,
+    .code-step,
+    .demo-controls button {
+      transition: none;
+    }
+  }
+  .runtime-model {
+    flex: 1;
+    padding: 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 390px;
+  }
+  .runtime-event {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 156px;
+    text-align: center;
+    background: radial-gradient(ellipse at center, #426bc328, transparent 70%);
+  }
+  .action-caption {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: #8d9fbc;
+  }
+  .action-caption > span {
+    color: #7595d1;
+    font-variant-numeric: tabular-nums;
+  }
+  .runtime-event strong {
+    font-size: 27px;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+    color: #ecf2ff;
+  }
+  .action-detail {
+    font-size: 12px;
+    color: #9eb2d3;
+  }
+  [data-stage="1"] [data-selected-color],
+  [data-stage="3"] .cart-state-row dd {
+    color: #aacaff;
+    text-shadow: 0 0 18px #709dff70;
+  }
+  .state-document dd {
+    transition:
+      color 0.35s,
+      text-shadow 0.35s;
+  }
+  .state-document {
+    border: 1px solid #405a804f;
+    border-radius: 10px;
+    background: linear-gradient(130deg, #15263f, #0c192b);
+    overflow: hidden;
+  }
+  .state-title {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-bottom: 1px solid #405a8040;
+    color: #bdcfee;
+    font-size: 12px;
+  }
+  .state-title > span:last-child {
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    color: #809bc4;
+  }
+  .state-document dl {
+    padding: 10px 15px;
+    margin: 0;
+  }
+  .state-document dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 9px 0;
+    font-size: 13px;
+  }
+  .state-document dt {
+    color: #8fa4c5;
+  }
+  .state-document dd {
+    margin: 0;
+    color: #d5e2f8;
+  }
+  .cart-state-row {
+    border-top: 1px solid #31476460;
+    margin-top: 6px;
+  }
+  .runtime-path {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 12px;
+    color: #7f95b8;
+  }
+  .runtime-path > span {
+    padding: 7px 9px;
+    border: 1px solid #37517850;
+    border-radius: 6px;
+    transition:
+      background-color 0.3s,
+      color 0.3s,
+      border-color 0.3s;
+  }
+  .runtime-path > span[data-current] {
+    color: #dbe6ff;
+    background: #29457780;
+    border-color: #6487c780;
+  }
+  .no-render {
+    display: flex;
+    gap: 13px;
+    justify-content: center;
+    font-size: 11px;
+    color: #7c90ac;
+  }
+  .no-render > span + span {
+    border-left: 1px solid #3d52715c;
+    padding-left: 13px;
+  }
+  .task-result {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid #46668f50;
+    border-radius: 9px;
+    opacity: 0.35;
+    transition:
+      opacity 0.4s,
+      background-color 0.4s;
+  }
+  .task-result > svg {
+    color: #9fb9f3;
+  }
+  .task-result div > span {
+    display: block;
+    font-size: 10px;
+    color: #8fa7cd;
+    margin-bottom: 5px;
+  }
+  .task-result strong {
+    font-size: 14px;
+    font-weight: 500;
+    color: #d2e1fa;
+  }
+  .task-result b {
+    font-weight: 600;
+  }
+  .result-price {
+    margin-left: auto;
+    color: #b9d0fa;
+    font-size: 17px;
+  }
+  [data-stage="3"] .task-result {
+    opacity: 1;
+    background: #1b325330;
+  }
+  .browser-pipeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+    padding: 13px 17px;
+    color: #8499b8;
+    font-size: 10px;
+    border-top: 1px solid #3b547640;
+  }
+  .render-cost {
+    color: #e5a2b5;
+  }
+  .browser-pipeline svg {
+    color: #657b9d;
+  }
+  @media (max-width: 760px) {
+    .runtime-model {
+      padding: 18px 14px;
+      min-height: 370px;
+      gap: 17px;
+    }
+    .state-document dl > div {
+      font-size: 12px;
+    }
+    .runtime-path {
+      font-size: 11px;
+    }
+    .runtime-path > span {
+      padding: 6px;
+    }
+    .no-render {
+      font-size: 9px;
+      gap: 7px;
+    }
+    .no-render > span + span {
+      padding-left: 7px;
+    }
+    .browser-pipeline {
+      font-size: 9px;
+      padding-inline: 12px;
+    }
+    .result-price {
+      font-size: 15px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .runtime-path > span,
+    .task-result {
+      transition: none;
+    }
+  }
+  .shop-preview,
+  .runtime-model,
+  .load-progress {
+    transition: opacity 0.35s ease;
+  }
+  dialog[data-resetting] .shop-preview,
+  dialog[data-resetting] .runtime-model,
+  dialog[data-resetting] .load-progress {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shop-preview,
+    .runtime-model,
+    .load-progress {
+      transition: none;
+    }
+  }
+  @media (min-width: 1000px) {
+    dialog {
+      padding: 28px 32px;
+    }
+    header {
+      max-width: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 40px;
+      padding-right: 36px;
+    }
+    header .eyeline {
+      grid-column: 1 / -1;
+    }
+    header h2 {
+      margin: 10px 0 0;
+      font-size: 36px;
+    }
+    header p {
+      margin: 10px 0 0;
+      align-self: center;
+      font-size: 15px;
+    }
+    .demonstration {
+      margin-top: 22px;
+    }
+    .runtime-model {
+      padding: 16px 20px;
+      gap: 12px;
+      min-height: 0;
+    }
+    .state-document dl {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+      padding: 12px 15px;
+    }
+    .state-document dl > div {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 0;
+    }
+    .cart-state-row {
+      border: 0;
+      margin: 0;
+    }
+    .runtime-event {
+      min-height: 115px;
+    }
+    .task-result {
+      padding: 12px;
+    }
+    .load-progress {
+      padding: 12px 17px;
+    }
+    footer {
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+  }
+  @media (max-width: 600px) {
+    dialog {
+      width: calc(100vw - 20px);
+      max-height: calc(100dvh - 20px);
+      padding: 22px 16px 18px;
+      border-radius: 22px;
+      scrollbar-width: thin;
+    }
+    .dialog-close {
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+    }
+    .eyeline {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+    }
+    header h2 {
+      margin: 10px 36px 10px 0;
+      font-size: clamp(27px, 7.5vw, 34px);
+      line-height: 1.08;
+    }
+    .desktop-intro,
+    .demonstration {
+      display: none;
+    }
+    header .mobile-intro {
+      display: block;
+      max-width: 350px;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .mobile-demo {
+      display: grid;
+      max-width: 340px;
+      margin: 20px auto 12px;
+    }
+    .mobile-phone {
+      width: min(100%, 304px);
+      justify-self: center;
+      border-radius: 20px;
+      border-color: #8a98b24d;
+      background: #172238;
+      box-shadow:
+        0 12px 32px #0004,
+        inset 0 1px #d5e1f825;
+    }
+    .mobile-browser-name,
+    .mobile-runtime-name {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .mobile-browser-name > span:last-child,
+    .mobile-runtime-name > span:last-child {
+      margin-left: auto;
+      color: #b1bdd3;
+      font-size: 10px;
+    }
+    .mobile-phone-screen {
+      overflow: hidden;
+      margin: 0 5px;
+      border: 1px solid #ffffff15;
+      border-radius: 5px;
+    }
+    .mobile-address {
+      position: relative;
+      padding: 5px 10px;
+      text-align: center;
+      color: #687589;
+      background: #dfe3e9;
+      font-size: 10px;
+    }
+    .mobile-address > span {
+      position: absolute;
+      right: 10px;
+    }
+    .mobile-store {
+      padding: 9px 12px 11px;
+      background: #f1eee8;
+      color: #293b36;
+    }
+    .mobile-store-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+    .mobile-store-nav > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      letter-spacing: 0;
+    }
+    .mobile-product {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 13px;
+      margin: 10px 0;
+      align-items: center;
+    }
+    .mobile-product-art {
+      display: grid;
+      place-items: center;
+      align-self: stretch;
+      min-height: 84px;
+      border-radius: 42px 42px 8px 8px;
+      background: radial-gradient(ellipse at 50% 35%, #e6cfb0, #c6b497);
+      box-shadow: inset 0 1px #fff9;
+    }
+    .mobile-product-art :global(svg) {
+      transform: rotate(-12deg);
+      color: #25333c;
+      filter: drop-shadow(2px 4px 2px #29303330);
+    }
+    .mobile-product-details h3 {
+      margin: 0 0 5px;
+      max-width: 125px;
+      font-size: 15px;
+      line-height: 1.15;
+      letter-spacing: -0.035em;
+    }
+    .mobile-product-details > strong {
+      font-size: 13px;
+      font-weight: 550;
+    }
+    .mobile-color {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 9px;
+      font-size: 9px;
+      color: #687267;
+    }
+    .mobile-color .swatches {
+      gap: 5px;
+    }
+    .mobile-color .swatches i {
+      width: 12px;
+      height: 12px;
+      border-width: 2px;
+    }
+    .mobile-bag-action {
+      position: relative;
+      height: 27px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #2c423a;
+      color: #fff;
+      font-size: 10px;
+    }
+    .mobile-add,
+    .mobile-added {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      transition:
+        opacity 0.25s,
+        transform 0.25s;
+    }
+    .mobile-add > span,
+    .mobile-added > strong {
+      margin-left: auto;
+    }
+    .mobile-added {
+      opacity: 0;
+      transform: translateY(5px);
+      background: #e3e6dc;
+      color: #304437;
+    }
+    [data-stage="3"] .mobile-add {
+      opacity: 0;
+    }
+    [data-stage="3"] .mobile-added {
+      opacity: 1;
+      transform: none;
+    }
+    .mobile-demo .load-progress {
+      padding: 9px 12px 11px;
+    }
+    .mobile-demo .load-heading {
+      margin-bottom: 6px;
+      font-size: 10px;
+    }
+    .mobile-demo .load-heading strong {
+      font-size: 12px;
+    }
+    .mobile-demo .loading {
+      height: 4px;
+    }
+    .mobile-runtime {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      overflow: visible;
+    }
+    .mobile-current-action {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 68px;
+      padding: 13px 0;
+      text-align: center;
+      background: radial-gradient(ellipse, #416bc522, transparent 72%);
+    }
+    .mobile-current-action::before,
+    .mobile-current-action::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      width: 1px;
+      height: 9px;
+      background: linear-gradient(#89aaff60, #89aaff00);
+    }
+    .mobile-current-action::before {
+      top: 0;
+    }
+    .mobile-current-action::after {
+      bottom: 0;
+      transform: rotate(180deg);
+    }
+    .mobile-current-action .action-caption {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      gap: 10px;
+    }
+    .mobile-current-action > strong {
+      font-size: 23px;
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+    }
+    .mobile-state-surface {
+      overflow: hidden;
+      border: 1px solid #799aff69;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #1b2d48e6, #0c192dd9);
+      box-shadow:
+        0 12px 32px #0003,
+        inset 0 1px #c7dcff16;
+    }
+    .mobile-runtime-name {
+      border-bottom: 1px solid #5978a12e;
+    }
+    .mobile-runtime-name :global(svg) {
+      width: 20px;
+      height: 20px;
+    }
+    .mobile-runtime-name > span:last-child {
+      color: #8ca8dc;
+    }
+    .mobile-state-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px 0;
+      font-size: 12px;
+      color: #c8d8f2;
+    }
+    .mobile-state-summary > strong {
+      font-weight: 550;
+    }
+    .mobile-state-values {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 8px;
+      margin: 0;
+      padding: 10px 12px 3px;
+    }
+    .mobile-state-values > div {
+      min-width: 0;
+    }
+    .mobile-state-values dt {
+      margin-bottom: 4px;
+      color: #8da4c7;
+      font-size: 10px;
+    }
+    .mobile-state-values dd {
+      margin: 0;
+      font-size: 13px;
+      color: #dce8ff;
+      transition: color 0.3s;
+    }
+    .mobile-state-values b {
+      font-weight: 550;
+    }
+    [data-stage="3"] .mobile-state-values dd {
+      color: #a9c7ff;
+    }
+    .mobile-store,
+    .mobile-current-action,
+    .mobile-state-surface {
+      transition: opacity 0.35s ease;
+    }
+    dialog[data-resetting] .mobile-store,
+    dialog[data-resetting] .mobile-current-action,
+    dialog[data-resetting] .mobile-state-surface {
+      opacity: 0;
+    }
+    .demo-controls {
+      max-width: 340px;
+      margin-inline: auto;
+      font-size: 11px;
+    }
+    .demo-controls > span {
+      max-width: none;
+    }
+    footer {
+      margin-top: 14px;
+      padding-top: 12px;
+    }
+    footer p {
+      margin: 0;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+    .dialog-actions {
+      margin-top: 9px;
+    }
+    .dialog-actions .button {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: none;
+      box-shadow: none;
+      color: #b6caff;
+      font-size: 12px;
+    }
+  }
+  @media (max-width: 350px) {
+    dialog {
+      padding-inline: 12px;
+    }
+    header h2 {
+      font-size: 26px;
+    }
+    .mobile-product {
+      grid-template-columns: 70px minmax(0, 1fr);
+      gap: 10px;
+    }
+    .mobile-product-art :global(svg) {
+      width: 55px;
+      height: 55px;
+    }
+    .mobile-color {
+      gap: 5px;
+    }
+    .mobile-current-action > strong {
+      font-size: 21px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-add,
+    .mobile-added,
+    .mobile-state-values dd,
+    .mobile-store,
+    .mobile-current-action,
+    .mobile-state-surface {
+      transition: none;
+    }
+  }
+</style>
+<script>
+  function initializeDemo() {
+    const dialog = document.querySelector<HTMLDialogElement>("#how-dialog");
+    if (!dialog || dialog.dataset.demoInitialized) return;
+    dialog.dataset.demoInitialized = "true";
+    const panes = [...dialog.querySelectorAll<HTMLElement>("[data-load]")];
+    const preference = matchMedia("(prefers-reduced-motion: reduce)");
+    const steps = [
+      "Open product",
+      "Choose Midnight",
+      "Add to bag",
+      "Verify cart",
+    ];
+    let frame = 0;
+    let started: number | undefined;
+    const paint = (pane: HTMLElement, value: number) => {
+      if (pane.dataset.value === String(value)) return;
+      pane.dataset.value = String(value);
+      pane.style.setProperty("--progress", `${value}%`);
+      const stage = Math.min(3, Math.floor(value / 25));
+      pane.dataset.stage = String(stage);
+      const event = pane.querySelector("[data-runtime-event]");
+      if (event) event.textContent = steps[stage];
+      const detail = pane.querySelector("[data-action-detail]");
+      if (detail)
+        detail.textContent = [
+          "Run JavaScript and build page state",
+          "Update the selected color",
+          "Run the click handler and update the cart",
+          "Return the cart data to your automation",
+        ][stage];
+      const number = pane.querySelector("[data-action-number]");
+      if (number) number.textContent = `0${stage + 1} / 04`;
+      const color = pane.querySelector("[data-selected-color]");
+      if (color) color.textContent = stage > 0 ? "Midnight" : "—";
+
+      pane
+        .querySelector("[role=progressbar]")
+        ?.setAttribute("aria-valuenow", String(value));
+      const percent = pane.querySelector("[data-load-percent]");
+      const status = pane.querySelector("[data-load-status]");
+      if (percent) percent.textContent = `${value}%`;
+      if (status)
+        status.textContent =
+          value === 100 ? "Cart verified · 1 item" : steps[stage];
+      pane.querySelectorAll("[data-cart-count]").forEach((count) => {
+        count.textContent = stage === 3 ? "1" : "0";
+      });
+      const total = pane.querySelector("[data-cart-total]");
+      if (total) total.textContent = stage === 3 ? "129" : "0";
+    };
+    const tick = (now: number) => {
+      if (!dialog.open) return;
+      started ??= now;
+      const elapsed = (now - started) % 11000;
+      const resetting = !preference.matches && elapsed > 10000;
+      dialog.toggleAttribute("data-resetting", resetting);
+      panes.forEach((pane) => {
+        const duration = pane.dataset.load === "mimic" ? 4600 : 7200;
+        paint(
+          pane,
+          preference.matches
+            ? 100
+            : elapsed > 10400
+              ? 0
+              : Math.min(100, Math.floor((elapsed / duration) * 100)),
+        );
+      });
+      if (!preference.matches) frame = requestAnimationFrame(tick);
+    };
+    const restart = () => {
+      cancelAnimationFrame(frame);
+      started = undefined;
+      if (dialog.open) {
+        panes.forEach((pane) => paint(pane, preference.matches ? 100 : 0));
+        frame = requestAnimationFrame(tick);
+      }
+    };
+    const observer = new MutationObserver(restart);
+    observer.observe(dialog, { attributes: true, attributeFilter: ["open"] });
+    preference.addEventListener("change", restart);
+    document.addEventListener(
+      "astro:before-swap",
+      () => {
+        cancelAnimationFrame(frame);
+        observer.disconnect();
+        preference.removeEventListener("change", restart);
+      },
+      { once: true },
+    );
+  }
+  initializeDemo();
+  document.addEventListener("astro:page-load", initializeDemo);
+</script>

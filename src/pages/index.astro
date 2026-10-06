@@ -1,358 +1,197 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import WorkloadComparison from "@/components/WorkloadComparison.astro";
+import HeroScene from "@/components/HeroScene.astro";
+import HowItWorks from "@/components/HowItWorks.astro";
+import ToolMark from "@/components/ToolMark.astro";
 import CodeWindow from "@/components/CodeWindow.astro";
 import LanguageIcon from "@/components/LanguageIcon.astro";
-import ContactOptions from "@/components/ContactOptions.astro";
 import {
   ArrowRight,
   Github,
-  Zap,
   Cpu,
-  LockKeyhole,
-  Puzzle,
+  Wifi,
+  Layers,
+  Fingerprint,
   Globe,
-  ChartNoAxesColumnIncreasing,
-  FlaskConical,
-  Settings,
-  Box,
-  Database,
+  Server,
+  ShieldCheck,
   Code,
-  Network,
-  Theater,
-  Bot,
+  Play,
+  Mail,
+  Terminal,
+  Box,
 } from "lucide-astro";
-const base = import.meta.env.BASE_URL;
-const repo = "https://github.com/mimic-browser/runtime";
-const benchmark = `${base}benchmarks/`;
-const codes = {
+const examples = {
+  terminal: {
+    label: "Terminal",
+    lang: "bash",
+    code: `mimic optimize --name shop -- node scraper.js
+
+# Reuse your saved workload profile
+mimic --profile shop`,
+  },
   python: {
     label: "Python",
     lang: "python",
-    code: `from playwright.sync_api import sync_playwright
+    code: `import os
+from playwright.sync_api import sync_playwright
 
+url = os.getenv("MIMIC_CDP_URL")
+url = url or "http://localhost:9222"
 with sync_playwright() as p:
-    browser = p.chromium.connect_over_cdp(
-        "http://127.0.0.1:9222"
-    )
-    page = browser.contexts[0].new_page()
-    page.goto("https://books.toscrape.com/", wait_until="load")
-
-    # Extract data from the live DOM
-    title = page.locator("h1").inner_text()
-    print(title)
-    browser.close()`,
+    browser = p.chromium.connect_over_cdp(url)`,
   },
   node: {
     label: "Node.js",
     lang: "javascript",
     code: `import { chromium } from "playwright-core";
 
-const browser = await chromium.connectOverCDP(
-  "http://127.0.0.1:9222"
-);
-const page = await browser.contexts()[0].newPage();
-await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
-
-const links = await page.locator(".product_pod h3 a").evaluateAll(
-  nodes => nodes.map(a => ({ text: a.title, url: a.href }))
-);
-console.log(links);
-await browser.close();`,
+const url = process.env.MIMIC_CDP_URL
+  ?? "http://localhost:9222";
+const browser = await chromium.connectOverCDP(url);
+const page = await browser.contexts()[0].newPage();`,
   },
   cdp: {
     label: "Raw CDP",
-    lang: "jsonc",
+    lang: "json",
     code: `{
   "id": 1,
   "method": "Runtime.evaluate",
-  "params": {
-    "expression": "({ title: document.title, url: location.href })",
-    "returnByValue": true
-  }
+  "params": { "expression": "document.title" }
 }`,
   },
 };
-const features = [
+const base = import.meta.env.BASE_URL;
+const repo = "https://github.com/mimic-browser/runtime";
+const benefits = [
   {
-    icon: Zap,
-    title: "Real browser behavior",
-    text: "JavaScript, DOM, navigation and browser state. Measured against Chrome 152.",
+    icon: Layers,
+    title: "More jobs per machine",
+    text: "A smaller memory footprint leaves room for more concurrent sessions.",
+    badge: false,
   },
   {
     icon: Cpu,
-    title: "Resource efficient",
-    text: "Run independent Pages concurrently, without Chromium’s rendering pipeline.",
+    title: "Less browser work",
+    text: "Run JavaScript and browser behavior without rendering every page.",
+    badge: false,
   },
   {
-    icon: LockKeyhole,
-    title: "Consistent observations",
-    text: "Coherent browser profiles and observable state across your workflow.",
-  },
-  {
-    icon: Puzzle,
-    title: "Fits your workflow",
-    text: "One standalone executable. Connect with the automation tools you already use.",
+    icon: Wifi,
+    title: "Only the traffic you need",
+    text: "Optimize learns which requests your workload can run without.",
+    badge: true,
   },
 ];
-const metrics = [
+const capabilities = [
   {
-    icon: Zap,
-    value: "6.0×",
-    title: "Higher static throughput",
-    mimic: "108.67",
-    chrome: "18.09",
-    width: 17,
-    unit: "sessions/s",
+    icon: Fingerprint,
+    title: "Consistent fingerprints",
+    text: "Browser signals stay coherent across your workflow.",
   },
   {
-    icon: Cpu,
-    value: "8.3×",
-    title: "Less ready memory",
-    mimic: "45.79",
-    chrome: "379.54",
-    width: 12,
-    unit: "MiB RSS",
+    icon: Server,
+    title: "Your proxies",
+    text: "Keep your existing proxy and rotation setup.",
   },
-  {
-    icon: Database,
-    value: "5.5×",
-    title: "Less active memory",
-    mimic: "748.11",
-    chrome: "4,102.04",
-    width: 18,
-    unit: "MiB RSS · 50 Pages",
-  },
-];
-const tools = [
-  {
-    icon: Theater,
-    title: "Playwright",
-    text: "Connect your existing scripts over CDP.",
-  },
-  {
-    icon: Bot,
-    title: "Puppeteer",
-    text: "Use your familiar automation workflow.",
-  },
-  {
-    icon: Code,
-    title: "Chrome DevTools Protocol",
-    text: "Control the supported browser surface.",
-  },
-  {
-    icon: Network,
-    title: "HTTP / HTTPS / SOCKS5",
-    text: "Use your own proxy infrastructure.",
-  },
-];
-const uses = [
   {
     icon: Globe,
-    title: "Data extraction",
-    text: "Read content from JavaScript-driven websites.",
+    title: "Dynamic websites",
+    text: "JavaScript, page state, cookies and navigation.",
   },
   {
-    icon: ChartNoAxesColumnIncreasing,
-    title: "Automation at scale",
-    text: "Run concurrent Pages with less overhead.",
-  },
-  {
-    icon: FlaskConical,
-    title: "Testing & QA",
-    text: "Check supported browser behavior in your workflow.",
-  },
-  {
-    icon: Settings,
-    title: "Web monitoring",
-    text: "Track changes and collect website data.",
-  },
-  {
-    icon: Box,
-    title: "Custom tools",
-    text: "Build browser automation into your product.",
+    icon: ShieldCheck,
+    title: "Tested against Chrome",
+    text: "Compatibility measured against real browser behavior.",
   },
 ];
 ---
 
 <BaseLayout
-  title="Mimic — Lightweight Browser Automation Without Chromium"
-  description="Lightweight browser automation without Chromium. A source-available public beta for JavaScript automation and web scraping with Playwright, Puppeteer and CDP."
+  title="Mimic — Lightweight Browser for Web Scraping & Automation"
+  description="Run browser automation with less memory, compute and network traffic. Mimic keeps the browser behavior your workload needs, without a full browser."
 >
-  <section class="hero-scene">
-    <img
-      class="hero-art"
-      src={`${base}images/mascot-hero.png`}
-      alt="A blue one-eyed Mimic mascot holding a browser window in a softly lit studio"
-      fetchpriority="high"
-    />
-    <div class="hero-shade"></div>
-    <div class="container hero-copy">
-      <span class="eyeline">A lightweight browser runtime</span>
-      <h1>Same web.<br /><em>Less weight.</em></h1>
-      <p>
-        Mimic runs website JavaScript for automation and data extraction without
-        Chromium’s rendering pipeline. Focus on your work, with less browser
-        overhead.
-      </p>
-      <div class="actions">
-        <a class="button button-primary" href={`${base}download/`}
-          >Download Mimic <ArrowRight size={18} /></a
-        >{" "}<a class="button" href={repo}
-          ><Github size={20} /> View on GitHub</a
-        >
+  <section class="hero">
+    <div class="hero-art"><HeroScene /></div>
+    <div class="container hero-layout">
+      <div class="hero-content">
+        <span class="eyeline">Browser automation, without the excess.</span>
+        <h1>Same web.<br /><em>Less weight.</em></h1>
+        <p>
+          Run browser automation with less memory, compute and network traffic.
+          Mimic keeps the browser behavior your workload needs — without
+          carrying the cost of a full browser.
+        </p>
+        <div class="actions">
+          <a class="button button-primary" href={`${base}download/`}
+            >Download Mimic <ArrowRight size={17} /></a
+          ><button class="button how-button" type="button" data-how-open
+            ><Play size={15} /> See how it works</button
+          >
+        </div>
+        <div class="hero-tags">
+          <span><Code size={13} /> Works over CDP</span><span
+            ><Layers size={13} /> No Chromium underneath</span
+          ><span><Box size={13} /> Your existing tools</span>
+        </div>
       </div>
-      <div class="hero-tags">
-        <span><Code size={14} /> Source available</span>{" "}<span
-          ><Zap size={14} /> Automation-first</span
-        >{" "}<span><Box size={14} /> Runs without Chromium</span>
-      </div>
+      <WorkloadComparison />
     </div>
   </section>
-  <section class="feature-strip" id="features">
-    <div class="container feature-grid">
+  <section class="benefit-band" id="features">
+    <div class="container benefits">
       {
-        features.map(({ icon: Icon, title, text }) => (
+        benefits.map(({ icon: Icon, title, text, badge }) => (
           <article>
             <>
-              <Icon size={35} />
-              <div>
-                <>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </>
-              </div>
+              <Icon size={32} />
+              <h3>{title}</h3>
+              <p>{text}</p>
+              {badge && (
+                <a class="new-feature" href={`${base}optimize/`}>
+                  Optimize <span>NEW</span>
+                  <ArrowRight size={13} />
+                </a>
+              )}
             </>
           </article>
         ))
       }
     </div>
   </section>
-  <div class="container content">
-    <section class="automation" id="about">
-      <div>
-        <h2>Built for automation,<br />not screenshots.</h2><p>
-          Mimic sits between an HTTP client and a full Chromium browser. Our
-          goal is faster, lower-cost automation that keeps its meaning:
-          executing JavaScript, maintaining page state and preserving the
-          observations that browser fingerprints depend on.
-        </p><div class="actions">
-          <a class="button button-primary" href={`${base}docs/`}
-            >Read the docs <ArrowRight size={17} /></a
-          >{" "}<a class="button" href={`${base}examples/`}
-            >See examples <Code size={16} /></a
-          >
-        </div>
-      </div>
-      <div class="example">
-        <div class="example-tabs" role="tablist" aria-label="Automation client">
-          {
-            Object.keys(codes).map((key, index) => (
-              <button
-                id={`tab-${key}`}
-                role="tab"
-                type="button"
-                data-tab={key}
-                aria-controls={`panel-${key}`}
-                aria-selected={index === 0}
-                tabindex={index === 0 ? 0 : -1}
-                class:list={{ active: index === 0 }}
-              >
-                <LanguageIcon language={key} />
-                {codes[key as keyof typeof codes].label}
-              </button>
-            ))
-          }
-        </div>{
-          Object.entries(codes).map(([key, code], index) => (
-            <div
-              id={`panel-${key}`}
-              role="tabpanel"
-              aria-labelledby={`tab-${key}`}
-              hidden={index !== 0}
-            >
-              <CodeWindow showcase code={code.code} lang={code.lang} />
-            </div>
-          ))
-        }
-        <p class="example-note">
-          Demo: <a href="https://books.toscrape.com/">Books to Scrape</a>. Raw
-          CDP uses an already loaded Page.
-        </p>
-      </div>
-    </section>
-    <section id="benchmarks" class="section-block">
-      <span class="eyeline">Benchmarks</span><div class="section-heading">
-        <h2>Real measurements. Less overhead.</h2><a href={benchmark}
-          >See benchmark details <ArrowRight size={16} /></a
+  <section class="container benchmark-strip" id="benchmarks">
+    <div>
+      <strong>6.0×</strong><span
+        >static workload throughput<br /><small
+          >50 concurrent pages · Chrome 152 vs. Mimic</small
+        ></span
+      >
+    </div>
+    <a href={`${base}benchmarks/`}
+      >Explore the measurements <ArrowRight size={18} /></a
+    >
+  </section>
+  <section class="behavior-band">
+    <div class="container behavior-layout">
+      <div class="behavior-intro">
+        <span class="eyeline">Real browser behavior</span><h2>
+          Built to work<br />on the real web.
+        </h2><p>
+          Run JavaScript, interact with pages and keep your existing browser
+          workflow.
+        </p><a class="text-link" href={`${base}docs/#compatibility`}
+          >Explore compatibility <ArrowRight size={17} /></a
         >
-      </div><p class="section-intro">
-        Measured against Chrome 152. Lower memory usage and higher throughput in
-        the controlled static workload.
-      </p><div class="metric-grid">
+      </div>
+      <div class="capabilities">
         {
-          metrics.map(
-            (
-              { icon: Icon, value, title, mimic, chrome, width, unit },
-              index,
-            ) => (
-              <article class="metric-card">
-                <>
-                  <div class="metric-title">
-                    <>
-                      <Icon size={40} />
-                      <div>
-                        <>
-                          <strong>{value}</strong>
-                          <h3>{title}</h3>
-                        </>
-                      </div>
-                    </>
-                  </div>
-                  <div class="bar-row">
-                    <>
-                      <span>Mimic</span>
-                      <div class="bar-track">
-                        <i style={`width:${index === 0 ? 100 : width}%`} />
-                      </div>
-                      <small>{mimic}</small>
-                    </>
-                  </div>
-                  <div class="bar-row">
-                    <>
-                      <span>Chrome</span>
-                      <div class="bar-track">
-                        <i
-                          class="chrome-bar"
-                          style={`width:${index === 0 ? width : 100}%`}
-                        />
-                      </div>
-                      <small>{chrome}</small>
-                    </>
-                  </div>
-                  <div class="metric-unit">{unit}</div>
-                </>
-              </article>
-            ),
-          )
-        }
-      </div><p class="benchmark-note">
-        September 29, 2026 · Windows 11 · 50 static Pages for throughput and
-        active memory.<br />Fixture- and machine-specific results; some
-        workloads favor Chrome. <a href={benchmark}>Results & methodology →</a>
-      </p>
-    </section>
-    <section class="section-block" id="compatibility">
-      <span class="eyeline">Compatibility</span><h2>
-        Works with your tools.
-      </h2><p class="section-intro">
-        Use Mimic with Playwright, Puppeteer or any CDP client. No special SDK
-        required.
-      </p><div class="tool-grid">
-        {
-          tools.map(({ icon: Icon, title, text }) => (
-            <article class="small-card tool-card">
+          capabilities.map(({ icon: Icon, title, text }) => (
+            <article>
               <>
-                <Icon size={39} />
+                <div class="capability-symbol">
+                  <Icon size={35} />
+                </div>
                 <div>
                   <>
                     <h3>{title}</h3>
@@ -363,101 +202,196 @@ const uses = [
             </article>
           ))
         }
-      </div><p class="boundary-note">
-        Public beta. Compatibility depends on your workload. Mimic does not
-        produce screenshots or rendered pixels. <a
-          href={`${base}docs/#compatibility`}>Check the supported surface →</a
-        >
-      </p>
-    </section>
-    <section class="section-block" id="use-cases">
-      <span class="eyeline">Use cases</span><h2>For real-world workflows.</h2><p
-        class="section-intro"
+      </div>
+    </div>
+  </section>
+  <section class="container section-compact optimize-section">
+    <div>
+      <span class="eyeline">Optimize</span><h2>Let Mimic figure it out.</h2><p>
+        Run your automation. Mimic tests what it can stop downloading, checks
+        the result with your own assertions, and saves a reusable profile.
+      </p><a class="button button-primary" href={`${base}optimize/`}
+        >Explore Optimize <ArrowRight size={17} /></a
       >
-        For data extraction, testing, monitoring and workflows that need browser
-        logic with less overhead.
-      </p><div class="use-grid">
+    </div><ol class="steps">
+      <li>
+        <span>1</span><h3>Run your workload</h3><p>
+          Use your existing script or tool.
+        </p>
+      </li><li>
+        <span>2</span><h3>Mimic tests locally</h3><p>
+          Try alternatives without repeatedly visiting the site.
+        </p>
+      </li><li>
+        <span>3</span><h3>Reuse the profile</h3><p>
+          Apply what passed. Keep your assertions in place.
+        </p>
+      </li>
+    </ol>
+  </section>
+  <section class="tools-band" id="use-cases">
+    <div class="container section-compact tools-section">
+      <div>
+        <span class="eyeline">Your tools. Unchanged.</span><h2>
+          Use what you<br />already know.
+        </h2><p>
+          Connect with Playwright, Puppeteer or another CDP client. No new SDK.
+          Keep your language, your code and your workflow.
+        </p><div class="tool-chips">
+          {
+            ["Playwright", "Puppeteer", "Selenium", "Python", "Node.js"].map(
+              (name) => (
+                <a href={`${base}examples/`}>
+                  <>
+                    <ToolMark name={name} />
+                    <span>{name}</span>
+                  </>
+                </a>
+              ),
+            )
+          }<a href={`${base}examples/`} class="more-tools">… and more</a>
+        </div><a class="text-link" href={`${base}examples/`}
+          >See connection examples <ArrowRight size={15} /></a
+        >
+      </div><div class="terminal">
+        <div
+          class="example-tabs"
+          role="tablist"
+          aria-label="Automation examples"
+        >
+          {
+            Object.entries(examples).map(([key, example], i) => (
+              <button
+                type="button"
+                role="tab"
+                data-example={key}
+                id={`example-tab-${key}`}
+                aria-controls={`example-panel-${key}`}
+                aria-selected={i === 0}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                {key === "terminal" ? (
+                  <Terminal size={15} />
+                ) : (
+                  <LanguageIcon language={key} />
+                )}{" "}
+                {example.label}
+              </button>
+            ))
+          }
+        </div>
         {
-          uses.map(({ icon: Icon, title, text }) => (
-            <article class="small-card">
-              <>
-                <Icon size={28} />
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </>
-            </article>
+          Object.entries(examples).map(([key, example], i) => (
+            <div
+              role="tabpanel"
+              id={`example-panel-${key}`}
+              aria-labelledby={`example-tab-${key}`}
+              hidden={i !== 0}
+            >
+              <CodeWindow
+                code={example.code}
+                lang={example.lang}
+                title={example.label}
+                showcase
+              />
+            </div>
           ))
         }
-      </div>
-    </section>
-  </div>
-  <section class="closing-banner">
-    <img src={`${base}images/mascot-banner.png`} alt="" loading="lazy" /><div
-      class="closing-copy"
-    >
-      <h3>Ready to build with Mimic?</h3><p>
-        Source available. Standalone.<br />Built for real automation.
-      </p><div class="actions">
-        <a class="button button-primary" href={`${base}download/`}
-          >Download Mimic <ArrowRight size={17} /></a
-        >{" "}<a class="button" href={repo}
-          ><Github size={19} /> View on GitHub</a
+        <a href={`${base}docs/optimize/`}
+          >Optimize your workload <ArrowRight size={14} /></a
         >
       </div>
     </div>
   </section>
-  <section class="container integration-cta" id="contact">
+  <section class="closing">
+    <div class="container closing-inner">
+      <img src={`${base}images/mascot-overlook.webp`} alt="" loading="lazy" />
+      <div>
+        <span class="eyeline">Built for a wider web</span><h2>
+          Automation without<br />the overhead.
+        </h2><p>
+          For work where the result is data and browser behavior. A lighter way
+          to get the job done.
+        </p><div class="actions">
+          <a class="button button-primary" href={`${base}download/`}
+            >Download Mimic <ArrowRight size={16} /></a
+          ><a class="button" href={repo}><Github size={17} /> View on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="container support" id="contact">
     <div>
       <span class="eyeline">Integration support</span><h2>
         Bring your real workload.
       </h2><p>
-        Need help integrating? We can help evaluate compatibility, compare
-        resource usage and fit Mimic into your existing infrastructure.
+        Need help getting started? Let's check compatibility and find where
+        Mimic fits your setup.
       </p>
-    </div>
-    <div class="integration-actions">
-      <ContactOptions />
-    </div>
+    </div><a class="support-email" href="mailto:slava@mimic.boo"
+      ><Mail size={22} /><span
+        ><strong>Talk to the builder</strong><small>slava@mimic.boo</small
+        ></span
+      ><ArrowRight size={19} /></a
+    >
   </section>
-  <section class="container prose" aria-label="Automation guides">
-    <h2>Guides for nonvisual automation</h2>
-    <p>
+  <section class="container guides" aria-label="Automation guides">
+    <span>Start with a real example</span><p>
       Read <a href={`${base}playwright-without-chromium/`}
         >Run Playwright without Chromium</a
-      >{" "}
-      for a complete extraction example, or <a
+      > for a complete extraction example, or <a
         href={`${base}mimic-vs-chromium/`}>Mimic versus Chromium</a
-      >{" "}
-      for workload selection and measured memory boundaries.
-    </p>
+      > for workload selection and measured memory boundaries.
+    </p><a href={`${base}blog/`}>From the blog <ArrowRight size={14} /></a>
   </section>
+  <HowItWorks />
 </BaseLayout>
 <script>
-  const initializedTabs = new WeakSet<HTMLButtonElement>();
-  function initializeTabs() {
+  function initHowDialog() {
+    const dialog = document.querySelector<HTMLDialogElement>("#how-dialog");
+    const trigger =
+      document.querySelector<HTMLButtonElement>("[data-how-open]");
+    if (!dialog || !trigger || trigger.dataset.initialized) return;
+    trigger.dataset.initialized = "true";
+    trigger.addEventListener("click", () => dialog.showModal());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) {
+        const r = dialog.getBoundingClientRect();
+        if (
+          event.clientX < r.left ||
+          event.clientX > r.right ||
+          event.clientY < r.top ||
+          event.clientY > r.bottom
+        )
+          dialog.close();
+      }
+    });
+    dialog.addEventListener("close", () => trigger.focus());
+  }
+  function initExamples() {
     const tabs = [
-      ...document.querySelectorAll<HTMLButtonElement>("[data-tab]"),
+      ...document.querySelectorAll<HTMLButtonElement>("[data-example]"),
     ];
-    function selectTab(tab: HTMLButtonElement) {
+    function select(tab: HTMLButtonElement) {
       tabs.forEach((item) => {
         const active = item === tab;
-        item.classList.toggle("active", active);
         item.setAttribute("aria-selected", String(active));
         item.tabIndex = active ? 0 : -1;
         document
-          .getElementById(`panel-${item.dataset.tab}`)
+          .getElementById(`example-panel-${item.dataset.example}`)
           ?.toggleAttribute("hidden", !active);
       });
     }
     tabs.forEach((tab) => {
-      if (initializedTabs.has(tab)) return;
-      initializedTabs.add(tab);
-      tab.addEventListener("click", () => selectTab(tab));
+      if (tab.dataset.initialized) return;
+      tab.dataset.initialized = "true";
+      tab.addEventListener("click", () => select(tab));
       tab.addEventListener("keydown", (event) => {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
         if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
           return;
         event.preventDefault();
-        const index =
+        const i =
           event.key === "Home"
             ? 0
             : event.key === "End"
@@ -466,751 +400,1701 @@ const uses = [
                   (event.key === "ArrowRight" ? 1 : -1) +
                   tabs.length) %
                 tabs.length;
-        selectTab(tabs[index]);
-        tabs[index].focus();
+        select(tabs[i]);
+        tabs[i].focus();
       });
     });
   }
-  initializeTabs();
-  document.addEventListener("astro:page-load", initializeTabs);
+  initExamples();
+  document.addEventListener("astro:page-load", initExamples);
+  initHowDialog();
+  document.addEventListener("astro:page-load", initHowDialog);
+  document.addEventListener("astro:before-swap", () =>
+    document.querySelector<HTMLDialogElement>("#how-dialog")?.close(),
+  );
 </script>
-
 <style>
-  .automation .example > p.example-note {
-    font-size: 12px;
-    color: #7e899c;
-    line-height: 1.5;
-  }
-  .integration-cta {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 60px;
-    align-items: center;
-    border-top: 1px solid var(--line);
-    padding-block: 36px 50px;
-  }
-  .integration-cta p {
-    max-width: 670px;
-    line-height: 1.65;
-    margin-bottom: 0;
-  }
-  .integration-actions {
-    justify-self: end;
-  }
-  @media (min-width: 1500px) {
-    .integration-cta {
-      padding-block: 48px 65px;
-    }
-    .integration-cta p {
-      font-size: 19px;
-    }
-  }
-  @media (max-width: 760px) {
-    .integration-cta {
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
-    .integration-actions {
-      justify-self: start;
-    }
-  }
-  .hero-scene {
-    position: relative;
-    height: 540px;
-    margin-top: -76px;
-    padding-top: 76px;
-    overflow: hidden;
-    background: #0c1020;
-  }
-  .hero-art {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    inset: 0;
-    object-fit: cover;
-    object-position: center 56%;
-  }
-  .hero-shade {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, #080d19e8 0%, #080d19b0 35%, transparent 66%),
-      linear-gradient(0deg, #080d14 0%, transparent 14%);
-  }
-  .hero-copy {
-    position: relative;
-    padding-top: 58px;
-  }
   .eyeline {
-    font-family: var(--mono);
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.22em;
-    color: #c5c9ed;
     display: block;
+    font: 11px var(--mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #8ea9ff;
+    margin-bottom: 16px;
+  }
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: "Manrope Variable", var(--sans);
   }
   h1 {
-    font-family: var(--display);
-    font-size: clamp(48px, 5.7vw, 72px);
-    letter-spacing: -0.05em;
-    line-height: 1.02;
-    margin: 14px 0 19px;
-    font-weight: 820;
+    font-size: clamp(58px, 6.5vw, 86px);
+    line-height: 1.01;
+    letter-spacing: -0.055em;
+    font-weight: 800;
   }
   h1 em {
     font-style: normal;
-    color: #6a86ff;
+    color: #6583ff;
+    text-shadow: 0 2px 28px #395bfa27;
   }
-  .hero-copy > p {
-    max-width: 450px;
-    color: #c4cbe4;
-    line-height: 1.55;
-    margin: 0;
+  h2 {
+    font-size: clamp(32px, 3.3vw, 44px);
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    font-weight: 780;
+  }
+  h3 {
+    font-size: 17px;
+    letter-spacing: -0.015em;
+    font-weight: 730;
+  }
+  p {
+    color: #becbe1;
     font-size: 16px;
+    line-height: 1.62;
   }
   .actions {
     display: flex;
     gap: 16px;
-    margin-top: 25px;
+    align-items: center;
     flex-wrap: wrap;
+    margin-top: 27px;
+    flex-shrink: 0;
+  }
+  .button {
+    font-size: 13px;
+    min-height: 48px;
+    padding-inline: 23px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 #dce4ff08;
+  }
+  .button-primary {
+    background: linear-gradient(135deg, #567aff, #5d6df5);
+    color: #06122a;
+    border-color: #7992ff70;
+    box-shadow:
+      inset 0 1px 0 #c9daff55,
+      0 8px 25px #375ff222;
+  }
+  .how-button {
+    background: linear-gradient(145deg, #111e30aa, #08101dd9);
+    color: #edf2ff;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+  }
+  .hero {
+    position: relative;
+    isolation: isolate;
+    margin-top: -76px;
+    padding-top: 76px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 55% 20%, #1e2f572b, transparent 60%);
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: -100px 0 0;
+    background:
+      linear-gradient(115deg, transparent 25%, #597aff06 45%, transparent 63%),
+      radial-gradient(ellipse at 80% 80%, #2956b917, transparent 50%);
+    z-index: -1;
+  }
+  .hero-content {
+    text-align: center;
+    padding-top: 47px;
+    padding-bottom: 20px;
+  }
+  .hero-content > p {
+    max-width: 680px;
+    margin: 24px auto 0;
+    font-size: 18px;
+    line-height: 1.65;
+  }
+  .hero-content .actions {
+    justify-content: center;
   }
   .hero-tags {
     display: flex;
-    gap: 26px;
-    margin-top: 32px;
-    font-size: 12px;
-    color: #c7cbe5;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 26px;
   }
   .hero-tags span {
     display: flex;
     align-items: center;
     gap: 7px;
+    font-size: 11px;
+    color: #b5c7e4;
   }
-  .hero-tags svg {
-    color: #8a9aff;
+  .hero-tags :global(svg) {
+    color: #7b9aff;
   }
-  .feature-strip {
-    background: linear-gradient(90deg, #0e1421, #0c1019);
-    padding: 34px 0 39px;
+  .benefit-band {
+    background: linear-gradient(180deg, #0a1320, #080f18);
+    border-block: 1px solid #26385855;
   }
-  .feature-grid {
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 31px 0;
+  }
+  .benefits article {
+    padding: 0 22px;
+    border-right: 1px solid #26395880;
+  }
+  .benefits article:first-child {
+    padding-left: 0;
+  }
+  .benefits article:last-child {
+    border: 0;
+  }
+  .benefits :global(svg) {
+    color: #6683ff;
+    filter: drop-shadow(0 0 12px #547cff2b);
+    margin-bottom: 12px;
+    stroke-width: 1.7;
+  }
+  .benefits h3 {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+  .benefits p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .section-compact {
+    padding-block: 46px;
+  }
+  .section-heading-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 65px;
+    align-items: center;
+    margin-bottom: 27px;
+  }
+  .section-heading-row > p {
+    max-width: 455px;
+  }
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .impact-card {
+    position: relative;
+    isolation: isolate;
+    padding: 25px 24px;
+    border: 1px solid #5376a925;
+    border-radius: 13px;
+    background:
+      radial-gradient(ellipse at 20% 0%, #35518620, transparent 65%),
+      linear-gradient(135deg, #0e1a2a, #0c1522);
+    box-shadow:
+      inset 0 1px 0 #adc8ff07,
+      0 18px 30px #0002;
+    overflow: hidden;
+    transition:
+      transform 0.3s,
+      border-color 0.3s,
+      box-shadow 0.3s;
+  }
+  .impact-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 0%, #587bfa18, transparent 62%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
+  }
+  .impact-card:hover {
+    transform: translateY(-4px);
+    border-color: #668ce855;
+    box-shadow:
+      inset 0 1px 0 #adc8ff10,
+      0 20px 45px #0003;
+  }
+  .impact-card:hover::before {
+    opacity: 1;
+  }
+  .impact-card :global(svg) {
+    color: #6384ff;
+    stroke-width: 1.7;
+    filter: drop-shadow(0 0 12px #5273ff33);
+    margin-bottom: 13px;
+  }
+  .impact-card h3 {
+    margin-bottom: 7px;
+  }
+  .impact-card p {
+    font-size: 14px;
+    max-width: 290px;
+  }
+  .impact-card > strong {
+    display: block;
+    font-size: 38px;
+    font-weight: 750;
+    color: #93aaff;
+    letter-spacing: -0.035em;
+    margin-top: 20px;
+  }
+  .impact-card > strong span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #c2cee5;
+    letter-spacing: 0;
+  }
+  .impact-card > small {
+    font-size: 11px;
+    color: #95a8c4;
+    display: block;
+    margin-top: 5px;
+  }
+  .fine-print {
+    font-size: 12px;
+    line-height: 1.7;
+    color: #91a1bc;
+    margin-top: 19px;
+  }
+  .fine-print a {
+    color: #b1c6ff;
+  }
+  .behavior-band {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 80% 0%, #18396817, transparent 70%), #070e17;
+    border-block: 1px solid #24375455;
+  }
+  .capabilities {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
+    gap: 24px;
   }
-  .feature-grid article {
+  .capabilities article {
     display: flex;
-    gap: 20px;
+    gap: 15px;
+    padding: 19px 0;
   }
-  .feature-grid svg {
-    flex-shrink: 0;
-    color: #7389ff;
+  .capabilities :global(svg) {
+    width: 34px;
+    height: 34px;
+    color: #6985ff;
+    filter: drop-shadow(0 0 11px #6585ff22);
+    flex: none;
+    stroke-width: 1.8;
   }
-  .feature-grid h3 {
-    font-size: 14px;
-    margin: 3px 0 10px;
+  .capabilities h3 {
+    font-size: 15px;
+    margin-bottom: 7px;
   }
-  .feature-grid p {
+  .capabilities p {
     font-size: 13px;
     line-height: 1.55;
-    margin: 0;
-    color: var(--muted);
   }
-  .content {
-    padding-top: 36px;
-  }
-  h2 {
-    font-family: var(--display);
-    font-size: 35px;
-    line-height: 1.18;
-    letter-spacing: -0.035em;
-    font-weight: 800;
-    margin: 8px 0 12px;
-  }
-  p {
-    color: var(--muted);
-  }
-  .automation {
+  .optimize-section {
     display: grid;
-    grid-template-columns: 0.9fr 1.1fr;
-    gap: 76px;
-    align-items: start;
-    margin-bottom: 38px;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 70px;
+    align-items: center;
+    position: relative;
   }
-  .automation > div > p {
-    font-size: 16px;
-    line-height: 1.55;
-    max-width: 465px;
+  .optimize-section > div > p {
+    max-width: 440px;
+    margin-top: 15px;
   }
-  .example {
-    border: 1px solid var(--line);
-    border-radius: 10px;
+  .steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 35px;
+    position: relative;
+  }
+  .steps::before {
+    content: "";
+    position: absolute;
+    left: 26px;
+    right: 110px;
+    top: 26px;
+    height: 1px;
+    background: linear-gradient(90deg, #5a7aff20, #7197ffb0, #5a7aff20);
+  }
+  .steps li {
+    position: relative;
+  }
+  .steps li:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    top: 12px;
+    right: -15px;
+    color: #a5bdff;
+    font-size: 23px;
+    font-weight: 300;
+    text-shadow: 0 0 12px #628cff77;
+  }
+  .steps li > span {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 53px;
+    height: 53px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 32% 20%,
+      #b9d1ff,
+      #7195ff 35%,
+      #4164e9 78%
+    );
+    color: #05143a;
+    font-size: 25px;
+    font-weight: 750;
+    border: 1px solid #b2ccffa0;
+    box-shadow:
+      inset 0 2px 3px #e2eeff50,
+      inset 0 -5px 8px #1b44c975,
+      0 6px 16px #203d8555,
+      0 0 24px #5176ff25;
+    margin-bottom: 20px;
+  }
+  .steps h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .steps p {
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 150px;
+  }
+  .steps li[data-step-active] > span {
+    box-shadow:
+      inset 0 2px 3px #e2eeff70,
+      inset 0 -5px 8px #1b44c975,
+      0 5px 22px #264ad880,
+      0 0 40px #658bff66;
+  }
+  .tools-band {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 75% 50%, #273f6d22, transparent 60%), #070f19;
+    border-block: 1px solid #24375455;
+  }
+  .tools-section {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .tools-section h2 {
+    margin-bottom: 16px;
+  }
+  .tools-section p {
+    max-width: 470px;
+  }
+  .tool-chips {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin: 23px 0 17px;
+  }
+  .tool-chips > a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 77px;
+    background: linear-gradient(145deg, #162235, #0d1827);
+    border-radius: 8px;
+    border: 1px solid #57759d16;
+    box-shadow: inset 0 1px 0 #b6d1ff05;
+    font-size: 10px;
+    color: #dce7fa;
+    transition:
+      transform 0.25s,
+      background 0.25s;
+  }
+  .tool-chips > a:hover {
+    transform: translateY(-3px);
+    background: #1c2b46;
+  }
+  .tool-chips .more-tools {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .text-link {
+    display: inline-flex;
+    gap: 9px;
+    align-items: center;
+    font-size: 12px;
+    color: #a1b8ff;
+  }
+  .terminal {
+    position: relative;
+    min-width: 0;
+    border: 1px solid #5372a54d;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #111d30e0, #080f1c);
+    box-shadow:
+      inset 0 1px 0 #bed4ff10,
+      0 20px 60px #0004,
+      0 0 80px #406bdd0c;
     overflow: hidden;
-    background: linear-gradient(120deg, #131724, #0b0f19);
+    transform: perspective(1200px) rotateY(calc(-2deg + var(--depth-y, 0deg)))
+      rotateX(var(--depth-x, 0deg));
+    transition: transform 0.25s ease;
   }
   .example-tabs {
     display: flex;
-    padding: 8px;
-    gap: 8px;
-    border-bottom: 1px solid var(--line);
+    align-items: center;
+    gap: 3px;
+    padding: 9px;
+    border-bottom: 1px solid #4c668b33;
   }
   .example-tabs button {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     border: 0;
-    border-radius: 7px;
-    padding: 7px 18px;
     background: none;
-    color: var(--muted);
-    font-size: 13px;
+    color: #a8bbda;
+    font-size: 11px;
+    padding: 7px 10px;
+    border-radius: 6px;
     cursor: pointer;
-  }
-  .example-tabs button {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
     transition:
-      color 140ms ease,
-      box-shadow 140ms ease;
+      background 0.2s,
+      color 0.2s;
+  }
+  .example-tabs button[aria-selected="true"] {
+    background: linear-gradient(135deg, #273d74, #182b56);
+    box-shadow: inset 0 1px 0 #799cff18;
+    color: #eff4ff;
   }
   .example-tabs button:hover {
-    color: #eef0ff;
-    box-shadow: inset 0 0 0 100px #ffffff06;
+    color: #eef5ff;
+    background: #243451;
   }
-  .example-tabs button:active {
-    color: #eef0ff;
-    box-shadow: inset 0 0 0 100px #00000016;
+  .terminal :global(.code-window) {
+    min-height: 250px;
+    position: relative;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
   }
-  .example-tabs button.active {
-    background: #232954;
-    color: #e9eaff;
+  .terminal :global(.code-titlebar) {
+    background: none;
+    border-bottom: 0;
+    height: 26px;
+    padding-top: 7px;
   }
-  .section-block {
-    margin-bottom: 38px;
+  .terminal :global(.code-titlebar > span) {
+    visibility: hidden;
   }
-  .section-heading {
-    max-width: none;
-    margin-bottom: 0;
+  .terminal :global(pre) {
+    font-size: 12px;
+    line-height: 1.8;
+    min-height: 180px;
+    padding: 13px 17px 20px;
+    background: transparent !important;
+  }
+  .terminal > a {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 17px;
+    font-size: 11px;
+    color: #a9bdff;
+    border-top: 1px solid #31466250;
+  }
+  .closing {
+    padding-block: 28px;
+    overflow: hidden;
+  }
+  .closing-inner {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    min-height: 380px;
+    overflow: hidden;
+    border: 1px solid #526c9130;
+    border-radius: 20px;
+    background: #0b1524;
+  }
+  .closing-inner > img {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 60%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 56%;
+    mask-image: linear-gradient(90deg, #000 60%, transparent 100%);
+    z-index: -1;
+  }
+  .closing-inner > div {
+    grid-column: 2;
+    width: auto;
+    padding: 52px clamp(28px, 4vw, 80px) 52px 32px;
+  }
+  .closing p {
+    max-width: 440px;
+    margin-top: 16px;
+    font-size: 15px;
+  }
+  .support {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 75px;
+    align-items: center;
+    padding-block: 36px;
+    border-bottom: 1px solid #26375060;
+  }
+  .support h2 {
+    font-size: 30px;
+  }
+  .support p {
+    margin-top: 12px;
+    font-size: 14px;
+    max-width: 520px;
+  }
+  .support-email {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    border: 1px solid #718cb65c;
+    background:
+      radial-gradient(ellipse at 0 0, #24406d55, transparent 70%),
+      linear-gradient(115deg, #15243b, #0c1828);
+    border-radius: 12px;
+    padding: 24px;
+    color: #aec6ff;
+    box-shadow:
+      inset 0 1px 0 #c1d3ff09,
+      0 10px 35px #0002;
+    transition:
+      border-color 0.25s,
+      transform 0.25s;
+  }
+  .support-email span {
+    flex: 1;
+  }
+  .support-email strong {
+    display: block;
+    font-size: 15px;
+    color: #edf4ff;
+  }
+  .support-email small {
+    display: block;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  .support-email:hover {
+    border-color: #799dff;
+    transform: translateY(-2px);
+  }
+  .guides {
+    display: flex;
+    gap: 27px;
+    align-items: center;
+    padding-block: 27px;
+  }
+  .guides > span {
+    color: #d6e2fa;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .guides p {
+    font-size: 11px;
+    max-width: 690px;
+  }
+  .guides p a {
+    color: #adc2ff;
+  }
+  .guides > a {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 12px;
+    white-space: nowrap;
+    color: #b0c3ff;
+  }
+  dialog {
+    width: min(640px, calc(100% - 36px));
+    padding: 40px;
+    border: 1px solid #7997c06b;
+    border-radius: 18px;
+    background:
+      radial-gradient(ellipse at 0 0, #273e633b, transparent 75%),
+      linear-gradient(145deg, #14233a, #091321);
+    color: #eef3ff;
+    box-shadow:
+      inset 0 1px 0 #c0d4ff0e,
+      0 30px 120px #000a;
+    max-height: 85vh;
+    overflow: auto;
+  }
+  dialog::backdrop {
+    background: #020813c9;
+    backdrop-filter: blur(12px);
+  }
+  dialog h2 {
+    font-size: 35px;
+    margin-bottom: 22px;
+  }
+  dialog p {
+    font-size: 15px;
+    margin-top: 16px;
+  }
+  .dialog-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: none;
+    border: 0;
+    color: #b9cbea;
+    cursor: pointer;
+    padding: 6px;
+  }
+  .dialog-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin: 26px 0;
+    padding: 22px 10px;
+    border: 1px solid #3b598850;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #c2d1ec;
+  }
+  .dialog-flow strong {
+    color: #92b0ff;
+  }
+  @media (min-width: 1500px) {
+    .hero-content {
+      padding-top: 52px;
+    }
+    .section-compact {
+      padding-block: 50px;
+    }
+    h2 {
+      font-size: 46px;
+    }
+    .hero-content > p {
+      font-size: 19px;
+    }
+    .button {
+      font-size: 14px;
+    }
+    .benefits h3 {
+      font-size: 17px;
+    }
+    .benefits p {
+      font-size: 14px;
+    }
+    .terminal :global(pre) {
+      font-size: 13px;
+    }
+    .tool-chips > a {
+      font-size: 11px;
+    }
+    .steps h3 {
+      font-size: 15px;
+    }
+    .steps p {
+      font-size: 14px;
+    }
+  }
+  @media (max-width: 1050px) {
+    .capabilities {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .tools-section,
+    .optimize-section {
+      gap: 35px;
+    }
+    .benefits article {
+      padding-inline: 13px;
+    }
+    .benefits h3 {
+      font-size: 14px;
+    }
+    .benefits p {
+      font-size: 12px;
+    }
+    .tool-chips {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .steps {
+      gap: 24px;
+    }
+    .example-tabs button {
+      padding-inline: 7px;
+      font-size: 10px;
+    }
+    .section-heading-row {
+      gap: 40px;
+    }
+    .impact-card {
+      padding: 22px 18px;
+    }
+    .impact-card > strong {
+      font-size: 32px;
+    }
+  }
+  @media (max-width: 760px) {
+    .eyeline {
+      font-size: 10px;
+      letter-spacing: 0.13em;
+    }
+    h1 {
+      font-size: 55px;
+    }
+    h2 {
+      font-size: 32px;
+    }
+    p {
+      font-size: 15px;
+    }
+    .hero-content {
+      padding-top: 30px;
+      padding-bottom: 22px;
+    }
+    .hero-content > p {
+      font-size: 15px;
+      margin-top: 20px;
+    }
+    .hero-tags {
+      gap: 12px;
+    }
+    .hero-tags span {
+      font-size: 9px;
+    }
+    .hero .actions {
+      gap: 10px;
+    }
+    .hero .button {
+      padding-inline: 15px;
+      font-size: 12px;
+      min-height: 44px;
+    }
+    .benefits {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+      padding-block: 28px;
+    }
+    .benefits article {
+      border: 0;
+      padding: 0;
+    }
+    .benefits article:last-child {
+      grid-column: 1/-1;
+    }
+    .benefits h3 {
+      font-size: 15px;
+    }
+    .benefits p {
+      font-size: 13px;
+    }
+    .section-heading-row {
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 23px;
+    }
+    .impact-grid {
+      grid-template-columns: 1fr;
+      gap: 13px;
+    }
+    .impact-card {
+      padding: 23px;
+    }
+    .impact-card > strong {
+      font-size: 36px;
+    }
+    .capabilities {
+      gap: 10px 19px;
+    }
+    .capabilities article {
+      display: block;
+      padding-block: 15px;
+    }
+    .capabilities :global(svg) {
+      margin-bottom: 10px;
+    }
+    .capabilities h3 {
+      font-size: 14px;
+    }
+    .optimize-section,
+    .tools-section,
+    .support {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+    .steps {
+      gap: 18px;
+    }
+    .steps li > span {
+      width: 47px;
+      height: 47px;
+      font-size: 23px;
+    }
+    .steps::before {
+      top: 23px;
+      right: 55px;
+    }
+    .steps li:not(:last-child)::after {
+      right: -7px;
+      top: 10px;
+      font-size: 21px;
+    }
+    .steps h3 {
+      font-size: 13px;
+    }
+    .steps p {
+      font-size: 12px;
+    }
+    .tool-chips {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .terminal {
+      transform: none;
+    }
+    .terminal :global(pre) {
+      font-size: 11px;
+    }
+    .closing-inner > div {
+      grid-column: 1;
+      width: 100%;
+      padding: 38px 24px;
+    }
+    .closing-inner > img {
+      left: 0;
+      width: 100%;
+      opacity: 0.33;
+      mask-image: linear-gradient(90deg, #000, transparent);
+    }
+    .closing-inner {
+      grid-template-columns: 1fr;
+      min-height: 340px;
+    }
+    .closing p {
+      font-size: 14px;
+    }
+    .closing .button {
+      font-size: 11px;
+      padding-inline: 13px;
+    }
+    .support {
+      padding-block: 32px;
+    }
+    .support h2 {
+      font-size: 28px;
+    }
+    .support-email {
+      padding: 23px;
+    }
+    .guides {
+      display: block;
+    }
+    .guides p {
+      margin: 11px 0;
+    }
+    .guides > a {
+      margin-top: 12px;
+    }
+    dialog {
+      padding: 30px 24px;
+    }
+    dialog h2 {
+      font-size: 29px;
+    }
+    .dialog-flow {
+      gap: 10px;
+      font-size: 12px;
+    }
+    .section-compact {
+      padding-block: 35px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .impact-card,
+    .tool-chips > a,
+    .support-email,
+    .example-tabs button {
+      transition: none;
+    }
+    .impact-card:hover,
+    .tool-chips > a:hover,
+    .support-email:hover {
+      transform: none;
+    }
+  }
+
+  /* One coherent scene; copy, actions and benchmark evidence remain live. */
+  .hero-layout {
+    width: min(calc(100% - 96px), var(--page));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.15fr);
+    gap: 36px;
+    align-items: center;
+    min-height: 590px;
+    padding-block: 35px 40px;
+  }
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+  .hero::before {
+    inset: 0;
+    background:
+      linear-gradient(90deg, #090e1640, transparent 45%),
+      linear-gradient(0deg, #090e16, transparent 16%);
+    z-index: -1;
+  }
+  .hero-content {
+    text-align: left;
+    padding: 0;
+  }
+  .hero-content h1 {
+    font-size: clamp(48px, 3.8vw, 76px);
+    letter-spacing: -0.06em;
+    line-height: 1.06;
+  }
+  .hero-content > p {
+    margin: 24px 0 0;
+    max-width: 310px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #c1d0e5;
+  }
+  .hero-content .actions,
+  .hero-tags {
+    justify-content: flex-start;
+  }
+  .hero-content .actions {
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .hero-content .button {
+    padding-inline: 16px;
+  }
+  .hero-tags {
+    gap: 10px 15px;
+  }
+  .hero-tags span {
+    font-size: 11px;
+  }
+  .hero .eyeline {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+  }
+  .benefits {
+    grid-template-columns: 1fr 1fr 1.35fr 1fr 1fr;
+    align-items: center;
+    gap: 15px;
+    padding-block: 35px;
+  }
+  .benefits article {
+    padding: 8px 12px;
+    border: 0;
+  }
+  .benefits h3 {
+    font-size: 18px;
+  }
+  .benefits p {
+    font-size: 15px;
+  }
+  .steps::before {
+    display: none;
+  }
+  .steps li > span {
+    border: 0;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+    width: auto;
+    height: 65px;
+    display: block;
+    color: #7595ff;
+    font-size: 52px;
+    font-weight: 600;
+    letter-spacing: -0.06em;
+    margin-bottom: 14px;
+  }
+  .steps li[data-step-active] > span {
+    box-shadow: none;
+    color: #b9ccff;
+    text-shadow: 0 0 28px #557aff50;
+  }
+  .steps li > span::before {
+    content: "0";
+  }
+  .steps li:not(:last-child)::after {
+    top: 19px;
+  }
+  .steps h3 {
+    font-size: 17px;
+  }
+  .steps p {
+    font-size: 16px;
+    max-width: 185px;
+  }
+  .more-tools {
+    font-size: 12px !important;
+  }
+  .tool-chips > a {
+    font-size: 14px;
+    min-height: 88px;
+  }
+  .text-link {
+    font-size: 14px;
+  }
+  .example-tabs button {
+    font-size: 14px;
+  }
+  @media (max-width: 1100px) {
+    .hero-layout {
+      grid-template-columns: 1fr;
+      max-width: 900px;
+      padding-top: 40px;
+    }
+    .hero-content {
+      text-align: center;
+    }
+    .hero-content > p {
+      margin-inline: auto;
+    }
+    .hero-content .actions,
+    .hero-tags {
+      justify-content: center;
+    }
+  }
+  @media (max-width: 760px) {
+    .hero-layout {
+      gap: 12px;
+      padding-block: 30px;
+    }
+    .hero-content h1 {
+      font-size: 52px;
+    }
+    .hero-content > p {
+      font-size: 17px;
+    }
+    .benefits {
+      grid-template-columns: 1fr 1fr;
+    }
+    .steps li > span {
+      font-size: 42px;
+      height: 54px;
+      width: auto;
+    }
+    .steps h3 {
+      font-size: 17px;
+    }
+    .steps p {
+      font-size: 15px;
+    }
+  }
+  .optimize-section > div > .button {
+    margin-top: 24px;
+  }
+  .terminal {
+    height: 365px;
+    display: flex;
+    flex-direction: column;
+    transform: none;
+  }
+  .terminal [role="tabpanel"] {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .terminal :global(.code-window) {
+    height: 100%;
+    min-height: 0;
+  }
+  .terminal :global(pre) {
+    height: calc(100% - 44px);
+    min-height: 0;
+    overflow: auto;
+  }
+  .terminal > a,
+  .example-tabs {
+    flex-shrink: 0;
+  }
+  @media (max-width: 760px) {
+    .terminal {
+      height: 350px;
+    }
+    .example-tabs button {
+      font-size: 12px;
+      padding-inline: 7px;
+    }
+  }
+  .benchmark-strip {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 28px;
+    padding-block: 30px;
+    border-bottom: 1px solid #31466250;
   }
-  .section-heading h2 {
-    margin: 8px 0 12px;
-    font-size: 35px;
-    line-height: 1.18;
-    letter-spacing: -0.035em;
-  }
-  .section-heading a {
-    flex-shrink: 0;
-    white-space: nowrap;
-    font-size: 13px;
-    color: var(--blue);
+  .benchmark-strip > div {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 24px;
   }
-  .section-intro {
-    margin: 0 0 18px;
-    font-size: 16px;
-    max-width: 770px;
+  .benchmark-strip strong {
+    font-size: 52px;
+    letter-spacing: -0.055em;
+    color: #9bb3ff;
   }
-  .metric-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-  }
-  .metric-card,
-  .small-card {
-    background: linear-gradient(125deg, #131923, #0e131e);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 20px;
-  }
-  @media (hover: hover) and (pointer: fine) {
-    .metric-card,
-    .small-card {
-      transition:
-        border-color 180ms ease,
-        box-shadow 180ms ease;
-    }
-    .metric-card:hover,
-    .small-card:hover {
-      border-color: #5566a0;
-      box-shadow: inset 0 0 28px #718bff0a;
-    }
-  }
-  .metric-title {
-    display: flex;
-    gap: 23px;
-    align-items: center;
-    color: var(--blue);
-    margin-bottom: 24px;
-  }
-  .metric-title strong {
-    font-size: 29px;
-    line-height: 1;
-    font-weight: 800;
-  }
-  .metric-title h3 {
-    font-size: 16px;
-    margin: 8px 0 0;
-    font-weight: 600;
-  }
-  .metric-title svg {
-    flex: none;
-  }
-  .bar-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    margin-top: 11px;
-  }
-  .bar-row > span {
-    width: 55px;
-  }
-  .bar-row small {
-    width: 63px;
-    text-align: right;
-    font-size: 11px;
-  }
-  .bar-track {
-    height: 15px;
-    background: #171d29;
-    border-radius: 5px;
-    flex: 1;
-    overflow: hidden;
-  }
-  .bar-track i {
-    display: block;
-    height: 100%;
-    border-radius: 5px;
-    background: linear-gradient(90deg, #7796ff, #5e74f0);
-  }
-  .bar-track .chrome-bar {
-    background: linear-gradient(90deg, #858ba7, #5e647e);
-  }
-  .metric-unit {
-    font-size: 11px;
-    color: var(--quiet);
-    text-align: right;
-    margin-top: 10px;
-  }
-  .benchmark-note {
-    text-align: center;
-    font-size: 12px;
-    line-height: 1.7;
-    margin-top: 14px;
-  }
-  .benchmark-note a,
-  .boundary-note a {
-    color: var(--blue);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .tool-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-  }
-  .tool-card {
-    display: flex;
-    gap: 20px;
-    padding: 22px 20px;
-    min-height: 140px;
-  }
-  .small-card svg {
-    color: var(--blue);
-    flex-shrink: 0;
-  }
-  .small-card h3 {
-    font-size: 14px;
-    line-height: 1.4;
-    margin: 0 0 8px;
-  }
-  .small-card p {
-    font-size: 14px;
+  .benchmark-strip span {
+    font-size: 17px;
     line-height: 1.5;
-    margin: 0;
+    color: #e0e8f7;
   }
-  .boundary-note {
-    font-size: 12px;
-    margin: 12px 0 0;
+  .benchmark-strip small {
+    font-size: 13px;
+    color: #9baecb;
   }
-  .use-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 18px;
-  }
-  .use-grid .small-card {
-    padding: 22px;
-    min-height: 162px;
-  }
-  .use-grid svg {
-    margin-bottom: 10px;
-  }
-  .closing-banner {
-    width: min(calc(100% - 64px), 1240px);
-    height: 194px;
-    position: relative;
-    margin: 0 auto 30px;
-    overflow: hidden;
-    border-radius: 10px;
-    background: #171c33;
-  }
-  .closing-banner > img {
-    position: absolute;
-    width: 64%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 80% 55%;
-    left: 0;
-    mask-image: linear-gradient(90deg, #000 70%, transparent);
-  }
-  .closing-copy {
-    position: relative;
-    margin-left: 61%;
-    padding-top: 21px;
-  }
-  .closing-copy h3 {
-    font-size: 19px;
-    margin: 0 0 5px;
-  }
-  .closing-copy p {
-    font-size: 15px;
-    margin: 0;
-    line-height: 1.4;
-  }
-  .closing-copy .actions {
-    margin-top: 18px;
+  .benchmark-strip a {
+    display: flex;
+    align-items: center;
     gap: 12px;
+    color: #b9ccff;
+    font-size: 15px;
   }
-  .closing-copy .button {
-    font-size: 12px;
-    padding: 0 16px;
-    min-height: 42px;
-  }
-  [hidden] {
-    display: none !important;
-  }
-  @media (min-width: 1500px) {
-    .hero-scene {
-      height: 640px;
+  @media (max-width: 760px) {
+    .benchmark-strip {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 18px;
     }
-    .hero-copy {
-      padding-top: 100px;
+    .benchmark-strip strong {
+      font-size: 42px;
     }
-  }
-  @media (min-width: 1500px) {
-    .hero-scene {
-      height: clamp(680px, 36vw, 900px);
-      margin-top: -90px;
-      padding-top: 90px;
-    }
-    .hero-art {
-      width: min(100%, 2100px);
-      left: auto;
-      right: 0;
-      object-position: center 56%;
-    }
-    .hero-copy {
-      padding-top: clamp(110px, 7vw, 180px);
-    }
-    h1 {
-      font-size: clamp(78px, 4.2vw, 106px);
-    }
-    .hero-copy > p {
-      font-size: 20px;
-      max-width: 600px;
-      line-height: 1.65;
-    }
-    .hero-tags {
-      font-size: 14px;
-      gap: 30px;
-      margin-top: 36px;
-    }
-    .eyeline {
-      font-size: 14px;
-    }
-    .feature-strip {
-      padding: 44px 0 48px;
-    }
-    .feature-grid {
-      gap: 44px;
-    }
-    .feature-grid h3 {
-      font-size: 18px;
-    }
-    .feature-grid p {
-      font-size: 16px;
-    }
-    .content {
-      padding-top: 58px;
-    }
-    .automation {
-      gap: 100px;
-      margin-bottom: 64px;
-    }
-    h2,
-    .section-heading h2 {
-      font-size: clamp(38px, 2vw, 48px);
-    }
-    .automation > div > p {
-      font-size: 19px;
-      max-width: 650px;
-      line-height: 1.65;
-    }
-    .section-intro {
-      font-size: 19px;
-      max-width: 1100px;
-      margin-bottom: 25px;
-    }
-    .section-block {
-      margin-bottom: 58px;
-    }
-    .section-heading a {
-      font-size: 16px;
-    }
-    .example-tabs {
-      padding: 10px;
-    }
-    .example-tabs button {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      padding: 9px 22px;
-    }
-    .metric-card,
-    .small-card {
-      padding: 28px;
-    }
-    .metric-title strong {
-      font-size: 36px;
-    }
-    .metric-title h3 {
-      font-size: 19px;
-    }
-    .bar-row {
+    .benchmark-strip span {
       font-size: 15px;
-      gap: 16px;
-    }
-    .bar-row > span {
-      width: 65px;
-    }
-    .bar-row small {
-      width: 80px;
-      font-size: 14px;
-    }
-    .metric-unit,
-    .benchmark-note,
-    .boundary-note {
-      font-size: 14px;
-    }
-    .tool-card {
-      min-height: 170px;
-      gap: 24px;
-    }
-    .small-card h3 {
-      font-size: 18px;
-    }
-    .small-card p {
-      font-size: 16px;
-    }
-    .use-grid {
-      gap: 22px;
-    }
-    .use-grid .small-card {
-      padding: 28px;
-      min-height: 198px;
-    }
-    .closing-banner {
-      width: min(calc(100% - 96px), calc(var(--page) + 80px));
-      height: 270px;
-      margin-bottom: 50px;
-    }
-    .closing-copy {
-      padding-top: 42px;
-      margin-left: 59%;
-    }
-    .closing-copy h3 {
-      font-size: 27px;
-    }
-    .closing-copy p {
-      font-size: 19px;
-    }
-    .closing-copy .actions {
-      margin-top: 25px;
-    }
-    .closing-copy .button {
-      font-size: 16px;
-      min-height: 50px;
-      padding-inline: 22px;
     }
   }
-  @media (max-width: 1000px) {
-    .hero-copy > p {
-      max-width: 390px;
+  .behavior-layout {
+    display: grid;
+    grid-template-columns: 0.85fr 1.25fr;
+    gap: 65px;
+    align-items: center;
+    padding-block: 42px;
+  }
+  .behavior-intro h2 {
+    font-size: 42px;
+    margin: 14px 0 17px;
+  }
+  .behavior-intro > p {
+    max-width: 370px;
+    font-size: 17px;
+  }
+  .behavior-intro > .text-link {
+    margin-top: 22px;
+  }
+  .behavior-layout .capabilities {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 0;
+  }
+  .behavior-layout .capabilities article {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 22px 18px;
+    border: 1px solid #425e8733;
+    border-radius: 13px;
+    background: linear-gradient(140deg, #1a2b4355, #0e17272a);
+    box-shadow: inset 0 1px #adc9ff08;
+  }
+  .capability-symbol {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 53px;
+    height: 57px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #293f6c80, #16233a55);
+    box-shadow: inset 0 1px #aacaff1c;
+  }
+  .capability-symbol :global(svg) {
+    color: #8aa7ff;
+    filter: drop-shadow(0 2px 8px #567cff30);
+  }
+  .behavior-layout .capabilities h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .behavior-layout .capabilities p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  @media (max-width: 1100px) {
+    .behavior-layout {
+      gap: 30px;
+      grid-template-columns: 0.8fr 1.3fr;
     }
-    .feature-grid {
-      gap: 20px;
-    }
-    .feature-grid article {
+    .behavior-layout .capabilities article {
+      padding: 18px 12px;
       gap: 10px;
     }
-    .automation {
-      gap: 35px;
+    .capability-symbol {
+      width: 43px;
+      height: 49px;
     }
-    .tool-card {
-      gap: 10px;
-      padding: 16px;
-    }
-    .tool-card svg {
+    .capability-symbol :global(svg) {
       width: 29px;
-    }
-    .use-grid {
-      gap: 10px;
-    }
-    .use-grid .small-card {
-      padding: 16px;
-    }
-    .closing-copy {
-      margin-left: 55%;
-    }
-    .closing-banner > img {
-      width: 61%;
     }
   }
   @media (max-width: 760px) {
-    .hero-scene {
-      height: auto;
-      min-height: 700px;
+    .behavior-layout {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding-block: 32px;
+    }
+    .behavior-intro h2 {
+      font-size: 36px;
+    }
+    .behavior-intro > p {
+      max-width: none;
+    }
+    .behavior-layout .capabilities article {
+      display: block;
+      padding: 18px;
+    }
+    .capability-symbol {
+      margin-bottom: 13px;
+    }
+    .behavior-layout .capabilities h3 {
+      font-size: 16px;
+    }
+    .behavior-layout .capabilities p {
+      font-size: 14px;
+    }
+  }
+  .benefits {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 0;
+    padding-block: 30px;
+  }
+  .benefits article {
+    position: relative;
+    padding: 8px 30px;
+    border-right: 1px solid #415c833d;
+    background: none;
+  }
+  .benefits article:first-child {
+    padding-left: 0;
+  }
+  .benefits article:last-child {
+    padding-right: 0;
+    border: 0;
+  }
+  .benefits h3 {
+    font-size: 20px;
+    margin: 0 0 9px;
+  }
+  .benefits p {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 320px;
+  }
+  .benefits :global(svg) {
+    width: 33px;
+    height: 33px;
+    margin-bottom: 13px;
+  }
+  .new-feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 13px;
+    font-size: 13px;
+    color: #afc3f8;
+  }
+  .new-feature span {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    border: 1px solid #5378b853;
+    border-radius: 4px;
+    padding: 2px 5px;
+    color: #bdd0ff;
+  }
+  .new-feature :global(svg) {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+  }
+  @media (max-width: 760px) {
+    .benefits {
+      grid-template-columns: 1fr;
+      padding-block: 10px;
+    }
+    .benefits article,
+    .benefits article:first-child,
+    .benefits article:last-child {
+      padding: 20px 0 20px 54px;
+      border: 0;
+      border-bottom: 1px solid #415c8330;
+    }
+    .benefits article:last-child {
+      border-bottom: 0;
+    }
+    .benefits article > :global(svg) {
+      position: absolute;
+      left: 0;
+      top: 22px;
+    }
+    .benefits h3 {
+      font-size: 19px;
+    }
+    .benefits p {
+      max-width: none;
+    }
+    .new-feature :global(svg) {
+      position: static;
+    }
+  }
+  @media (min-width: 1101px) {
+    .hero-tags {
+      flex-wrap: nowrap;
+      width: max-content;
+      max-width: calc(100% + 48px);
+      gap: 14px;
+    }
+    .hero-tags span {
+      white-space: nowrap;
+      font-size: 13px;
+    }
+  }
+  @media (max-width: 1300px) {
+    .hero-layout {
+      grid-template-columns: 1fr;
+      gap: 0;
+      min-height: 0;
+      padding-block: 40px 32px;
+    }
+    .hero-content {
+      text-align: center;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+    .hero-content h1 {
+      font-size: 64px;
+    }
+    .hero-content > p {
+      margin-inline: auto;
+      font-size: 17px;
+      max-width: 580px;
+    }
+    .hero-content .actions,
+    .hero-tags {
+      justify-content: center;
+    }
+    .hero-art {
+      display: none;
+    }
+    .hero::before {
+      background:
+        linear-gradient(0deg, #090e16, transparent 20%),
+        linear-gradient(180deg, #090e16 28%, transparent 50%);
+    }
+  }
+  @media (max-width: 900px) {
+    .hero {
       margin-top: -64px;
       padding-top: 64px;
     }
-    .hero-copy {
-      padding-top: 35px;
-      padding-bottom: 300px;
+  }
+  @media (max-width: 600px) {
+    .hero-layout {
+      width: calc(100% - 36px);
+      padding-block: 28px 30px;
+      gap: 0;
     }
-    .hero-art {
-      object-position: 70% bottom;
+    .hero-content {
+      text-align: left;
+      padding: 0;
     }
-    .hero-shade {
-      background: linear-gradient(
-        180deg,
-        #080d19 0%,
-        #080d19ed 42%,
-        transparent 72%
-      );
+    .hero-content h1 {
+      font-size: clamp(42px, 12vw, 64px);
     }
-    h1 {
-      font-size: 54px;
+    .hero-content > p {
+      font-size: 16px;
+      margin-top: 20px;
     }
-    .hero-copy > p {
-      max-width: 100%;
+    .hero-content .actions,
+    .hero-tags {
+      justify-content: flex-start;
+    }
+    .hero-content .actions {
+      margin-top: 24px;
     }
     .hero-tags {
-      gap: 14px;
-      flex-wrap: wrap;
+      gap: 9px 14px;
+      margin-top: 20px;
+    }
+    .hero-tags span {
       font-size: 11px;
     }
-    .feature-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 25px;
+    .hero .eyeline {
+      font-size: 9px;
     }
-    .feature-grid p {
-      font-size: 12px;
+    .hero::before {
+      background:
+        linear-gradient(0deg, #090e16 22%, transparent 40%),
+        linear-gradient(180deg, #090e16 35%, transparent 48%);
     }
-    .automation {
+  }
+  @media (max-width: 600px) {
+    .steps {
       grid-template-columns: 1fr;
-      gap: 24px;
+      gap: 26px;
     }
-    .metric-grid {
-      grid-template-columns: 1fr;
+    .steps li {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 4px 18px;
+      align-items: start;
     }
-    .tool-grid,
-    .use-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .section-heading {
-      max-width: none;
-      margin-bottom: 0;
-      display: block;
-    }
-    .section-heading h2 {
-      margin: 8px 0 12px;
-      font-size: 35px;
-      line-height: 1.18;
-      letter-spacing: -0.035em;
-    }
-    .section-heading a {
-      flex-shrink: 0;
-      white-space: nowrap;
-      margin: 12px 0;
-    }
-    .closing-banner {
-      width: calc(100% - 32px);
-      height: 330px;
-    }
-    .closing-banner > img {
-      width: 100%;
-      height: 100%;
-      opacity: 0.4;
-      mask-image: none;
-    }
-    .closing-copy {
+    .steps li > span {
+      grid-row: 1 / 3;
+      font-size: 34px;
+      height: auto;
       margin: 0;
-      padding: 170px 24px 0;
+      line-height: 1.2;
     }
-    .closing-copy .actions {
-      margin-top: 12px;
+    .steps h3 {
+      margin: 0;
+      font-size: 17px;
     }
-    h2,
-    .section-heading h2 {
-      font-size: 28px;
+    .steps p {
+      max-width: none;
+      font-size: 15px;
+      margin: 0;
     }
-  }
-
-  .example-tabs button,
-  .example-tabs button:hover,
-  .example-tabs button:active {
-    transition: none;
-    box-shadow: none;
-  }
-  .example-tabs button:hover {
-    background: #1c2238;
-  }
-  .example-tabs button.active:hover {
-    background: #2c3365;
-  }
-  .example-tabs button:active {
-    background: #252d4a;
-  }
-
-  .integration-actions {
-    width: 440px;
-    max-width: 100%;
-  }
-  @media (max-width: 380px) {
-    .tool-card {
-      min-width: 0;
-      overflow-wrap: anywhere;
+    .steps li:not(:last-child)::after {
+      content: none;
+    }
+    .terminal :global(pre) {
+      font-size: 12px;
+      line-height: 1.7;
     }
     .example-tabs {
-      flex-wrap: wrap;
+      gap: 2px;
+      padding-inline: 7px;
+    }
+    .example-tabs button {
+      white-space: nowrap;
+      font-size: 11px;
+      gap: 5px;
+      padding-inline: 6px;
+    }
+    .closing-inner {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .closing-inner > img {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      opacity: 1;
+      object-position: 18% center;
+      mask-image: linear-gradient(#000 65%, transparent);
+    }
+    .closing-inner > div {
+      padding: 0 24px 28px;
+      margin-top: -20px;
+    }
+    .closing .actions {
+      gap: 12px;
+    }
+    .closing .button {
+      font-size: 12px;
+    }
+  }
+  @media (max-width: 360px) {
+    .example-tabs {
+      overflow-x: auto;
+    }
+    .example-tabs button {
+      font-size: 10px;
+      padding-inline: 4px;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .behavior-layout .capabilities {
+      grid-template-columns: 1fr;
+    }
+    .behavior-layout .capabilities article {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      column-gap: 14px;
+    }
+    .capability-symbol {
+      grid-row: 1 / 3;
+      margin: 0;
+    }
+  }
+
+  /* The scene, HTML windows and fingertips share one bounded composition. */
+  @media (min-width: 1301px) {
+    .hero {
+      height: min(37.395vw, 842px);
+      min-height: 0;
+      margin-top: -76px;
+      padding: 0;
+      background: #090e16;
+    }
+    .hero::before {
+      display: none;
+    }
+    .hero-art {
+      display: block;
+      inset: 0;
+      width: min(100%, 2250px);
+      margin-inline: auto;
+      z-index: 0;
+    }
+    .hero-layout {
+      width: min(100%, 2250px);
+      height: 100%;
+      min-height: 0;
+      padding: 0;
+      position: absolute;
+      inset: 0;
+      display: block;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hero-content {
+      position: absolute;
+      pointer-events: auto;
+      left: 9%;
+      top: 25%;
+      width: 26%;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+    }
+    .hero .eyeline {
+      font-size: clamp(10px, 0.56vw, 12px);
+      letter-spacing: 0.15em;
+    }
+    .hero-content h1 {
+      font-size: clamp(68px, 4.05vw, 84px);
+      line-height: 0.99;
+      margin-top: 20px;
+      letter-spacing: -0.055em;
+    }
+    .hero-content > p {
+      font-size: clamp(16px, 0.95vw, 19px);
+      line-height: 1.6;
+      max-width: 100%;
+      margin-top: 24px;
+    }
+    .hero-content .actions {
+      margin-top: 24px;
+      gap: 14px;
+      flex-wrap: nowrap;
+    }
+    .hero-content .button {
+      font-size: clamp(13px, 0.75vw, 15px);
+      padding: 0.78em 1.35em;
+      gap: 10px;
+      border-radius: 8px;
+      min-height: 46px;
+    }
+    .hero-content .button :global(svg) {
+      width: 17px;
+      height: 17px;
+    }
+    .hero-tags {
+      margin-top: 24px;
+      gap: 14px;
+      max-width: none;
+      flex-wrap: nowrap;
+    }
+    .hero-tags span {
+      font-size: clamp(12px, 0.67vw, 13px);
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .hero-tags :global(svg) {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  @media (min-width: 1301px) and (max-width: 1599px) {
+    .hero-content {
+      top: 22%;
+      width: 25%;
+    }
+    .hero-content h1 {
+      font-size: 56px;
+    }
+    .hero-content > p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-top: 18px;
+    }
+    .hero-content .actions {
+      margin-top: 18px;
+      gap: 10px;
+    }
+    .hero-content .button {
+      font-size: 12px;
+      padding: 10px 15px;
+      min-height: 42px;
+    }
+    .hero-tags {
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .hero-tags span {
+      font-size: 11px;
+      gap: 4px;
+    }
+    .hero-tags :global(svg) {
+      width: 12px;
+      height: 12px;
     }
   }
   @media (min-width: 1500px) {
-    .integration-actions {
-      width: 500px;
+    .hero {
+      margin-top: -90px;
     }
   }
-  @media (max-width: 760px) {
-    .integration-actions {
-      width: 100%;
+  @media (min-width: 2251px) {
+    .hero-art {
+      mask-image: linear-gradient(
+        90deg,
+        transparent,
+        #000 5%,
+        #000 95%,
+        transparent
+      );
     }
   }
 </style>

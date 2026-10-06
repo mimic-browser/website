@@ -473,4 +473,15 @@ const topics = [
       display: none;
     }
   }
+  .docs-index a {
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .docs-index a {
+      transition: none;
+    }
+  }
 </style>

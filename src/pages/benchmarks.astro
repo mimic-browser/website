@@ -14,5 +14,13 @@ const rendered = (await marked.parse(summary)).replaceAll(
   eyebrow="Performance"
   icon="gauge"
   description="Mimic and Chrome 152 compared on controlled workloads. Measurements, methodology and limits."
-  ><div set:html={rendered} /></ArticleLayout
+  ><div set:html={rendered} /><h2>Network acquisition with Optimize</h2><p>
+    The homepage network example uses Books extraction, comparing ordinary Mimic
+    with an installed optimized profile. It is separate from the Chrome CPU and
+    memory workloads above. See the{" "}<a
+      href={`${base}docs/optimize/results/`}>network measurements</a
+    >{" "}and{" "}<a href={`${base}docs/optimize/benchmarks/`}
+      >optimization methodology</a
+    >.
+  </p></ArticleLayout
 >

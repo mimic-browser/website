@@ -1,0 +1,16 @@
+{
+  "source": "Mimic runtime docs/optimize",
+  "sha256": {
+    "benchmarks.md": "664847513632c06b66cd638e753776d0c75eac356ccd8850a6b5f40a9429fd7c",
+    "index.md": "a34228c691130dfc917bf5e9a7288a469e93dbf5032af737e66e312aa018d151",
+    "manual-policy.md": "2f0baf33cef73c8e15bb9c286cb1b27c37f8828d3995861eb6f35cc6ef6f238a",
+    "profiles.md": "eeccfe058b2af714f771fd49a7dda502b168e290daf42dc00047d02134b54a9f",
+    "replay.md": "fa31cba2149bd16251e3566984262f7fbaaa95968924d7818138ba9ba37fb66f",
+    "safety.md": "5c19ca44ed222b1b679df256ab1c3f54ea18d92a31b83f309c054002da840a93",
+    "troubleshooting.md": "394f4e6a0e4e3bcff6a37290ef873743fb6c6d556f0030718a352d93e2995bd8",
+    "workloads.md": "ce46be59a34e15e8f5fbc60bfe5331cd316c065ab572ecd31b602a6884d6d2d3"
+  },
+  "siteAuthored": {
+    "results.md": "7073cfd4e5d879f495b4694784d7b7e35c485f5c7a2dcc7d3d46e44e5db29eb4"
+  }
+}

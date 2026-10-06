@@ -1,0 +1,35 @@
+---
+const { name } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const files: Record<string, string> = {
+  Playwright: "playwright",
+  Puppeteer: "puppeteer",
+  Python: "python",
+  "Node.js": "nodedotjs",
+  Selenium: "selenium",
+};
+---
+
+<span class="tool-mark" aria-hidden="true"
+  ><img
+    src={`${base}icons/${files[name]}.svg`}
+    alt=""
+    width="28"
+    height="28"
+    loading="lazy"
+  /></span
+>
+<style>
+  .tool-mark {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 0 12px #4f82ff25);
+  }
+  .tool-mark img {
+    width: 27px;
+    height: 27px;
+    object-fit: contain;
+  }
+</style>

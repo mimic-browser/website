@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && npm run test:spacing && npm run test:og",
+    "build": "astro check && astro build && npm run test:spacing && npm run test:og && npm run test:routes",
     "preview": "astro preview",
     "check": "astro check",
     "test:links": "node scripts/check-links.mjs",
+    "test:routes": "node scripts/check-routes.mjs",
     "test:spacing": "node scripts/check-text-spacing.mjs",
     "test:og": "node --experimental-strip-types scripts/check-blog-og.ts"
   },

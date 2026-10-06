@@ -1,0 +1,66 @@
+---
+import ArticleLayout from "@/layouts/ArticleLayout.astro";
+import SelectionDemo from "@/components/SelectionDemo.astro";
+import CodeWindow from "@/components/CodeWindow.astro";
+const base = import.meta.env.BASE_URL;
+---
+
+<ArticleLayout
+  title="Download only what your automation needs"
+  description="Train an existing CDP workload against recorded responses, test resource combinations locally, and save a reusable Mimic profile. Your ordinary assertions define success."
+  eyebrow="Optimize your workload"
+  icon="gauge"
+>
+  <p>
+    Mimic remains a general CDP browser runtime. Optimize is an occasional
+    training operation for repeatable workloads: it records a successful browser
+    environment, validates local replay, and searches for acquisitions the
+    workload can survive without. Candidate search never falls back to the live
+    website.
+  </p>
+  <SelectionDemo />
+  <CodeWindow
+    title="Train once, then run normally"
+    lang="bash"
+    code={`mimic optimize --name shop -- node scraper.js
+
+mimic --profile shop`}
+  />
+  <p>
+    The command can be Node, Python, a test runner or any executable using Mimic
+    over CDP. No language SDK or Mimic assertion API is required. Optimize
+    supplies a private endpoint through MIMIC_CDP_URL. Your existing Mimic
+    instance can keep running. See endpoint setup in the guide if your script
+    uses a hardcoded address.
+  </p>
+  <h2>Beyond broad resource categories</h2>
+  <p>
+    Keep the scripts and API responses the workload needs, and test specific
+    resources and combinations it may not need. Blocking a parent can activate a
+    fallback request; Optimize explores the resulting branch rather than
+    treating the request graph as a fixed list. Where acquisition must remain,
+    headers-only Fetch responses and classic-script execution exclusions provide
+    additional experimental actions.
+  </p>
+  <h2>Check the difference, then reuse it</h2>
+  <p>
+    Optimize measures the result, saves what passed, and explains what changed.
+    Your normal assertions define success. See the{" "}
+    <a href={`${base}docs/optimize/results/`}>measured results</a> and{" "}
+    <a href={`${base}docs/optimize/benchmarks/`}>methodology</a>. Savings depend
+    on the workload and the state of the website.
+  </p>
+  <h2>Assertions and evidence, not a promise about tomorrow</h2>
+  <p>
+    A passing profile preserves the behavior verified in its recorded states.
+    Unknown documents and request inputs use general Mimic, but destructive
+    exclusions cannot be rolled back after they happen. Profiles are explicitly
+    empirical: retain your live assertions and retrain when relevant states
+    change.
+  </p>
+  <div class="page-actions">
+    <a href={`${base}docs/optimize/`}>Optimize your workload</a>
+    <a href={`${base}docs/optimize/safety/`}>Safety limits</a>
+    <a href={`${base}docs/optimize/troubleshooting/`}>Troubleshooting</a>
+  </div>
+</ArticleLayout>

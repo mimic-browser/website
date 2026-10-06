@@ -1,0 +1,55 @@
+---
+import ArticleLayout from "../../../layouts/ArticleLayout.astro";
+import { marked } from "marked";
+export async function getStaticPaths() {
+  const pages = import.meta.glob("../../../content/optimize/*.md", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  });
+  return Object.entries(pages).map(([path, source]) => {
+    const name = path.split("/").pop()!.replace(/\.md$/, "");
+    const lines = String(source).split("\n");
+    const title = lines.shift()!.replace(/^# /, "");
+    const body = lines
+      .join("\n")
+      .replace(
+        /\]\(([a-z-]+)\.md(#[a-z0-9-]+)?\)/g,
+        (_, slug, fragment = "") =>
+          `](${import.meta.env.BASE_URL}docs/optimize/${slug === "index" ? "" : slug + "/"}${fragment})`,
+      );
+    return {
+      params: { slug: name === "index" ? undefined : name },
+      props: { title, body },
+    };
+  });
+}
+const { title, body } = Astro.props;
+const renderer = new marked.Renderer();
+renderer.heading = function ({ tokens, depth }) {
+  const text = this.parser.parseInline(tokens);
+  const id = text
+    .replace(/<[^>]*>/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `<h${depth} id="${id}">${text}</h${depth}>`;
+};
+const html = await marked.parse(body, { renderer });
+---
+
+<ArticleLayout
+  title={title}
+  description="Learn which network traffic your CDP workload needs. Train locally, verify with ordinary assertions, and apply a reusable profile."
+  eyebrow="Optimize · empirical specialization"
+  icon="gauge"
+>
+  <div class="page-actions">
+    <a href={`${import.meta.env.BASE_URL}docs/optimize/`}>Optimize guide</a><a
+      href={`${import.meta.env.BASE_URL}docs/optimize/safety/`}>Safety limits</a
+    ><a href={`${import.meta.env.BASE_URL}docs/optimize/troubleshooting/`}
+      >Troubleshooting</a
+    >
+  </div>
+  <div set:html={html} />
+</ArticleLayout>

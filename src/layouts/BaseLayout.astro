@@ -1,4 +1,5 @@
 ---
+import ProductMotion from "@/components/ProductMotion.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import ReleaseUpdater from "@/components/ReleaseUpdater.astro";
@@ -16,17 +17,25 @@ interface Props {
   imageWidth?: number;
   imageHeight?: number;
 }
-const { title, description, lang = "en", article, image, imageAlt, imageWidth = 1200, imageHeight = 627 } = Astro.props;
+const {
+  title,
+  description,
+  lang = "en",
+  article,
+  image,
+  imageAlt,
+  imageWidth = 1200,
+  imageHeight = 627,
+} = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const pathname = base && Astro.url.pathname.startsWith(`${base}/`)
-  ? Astro.url.pathname.slice(base.length)
-  : Astro.url.pathname;
+const pathname =
+  base && Astro.url.pathname.startsWith(`${base}/`)
+    ? Astro.url.pathname.slice(base.length)
+    : Astro.url.pathname;
 const canonical = new URL(pathname, Astro.site);
-const socialImage = new URL(
-  image || "/og-image.png?v=d5820416",
-  Astro.site,
-);
-const socialImageAlt = imageAlt ||
+const socialImage = new URL(image || "/og-image.png?v=d5820416", Astro.site);
+const socialImageAlt =
+  imageAlt ||
   "Mimic — Same web. Less weight. Lightweight browser automation, with the blue Mimic mascot.";
 ---
 
@@ -37,18 +46,27 @@ const socialImageAlt = imageAlt ||
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <meta property="og:type" content={article ? "article" : "website"} />
-    {article && <>
-      <meta property="article:published_time" content={article.published} />
-      <meta property="article:author" content={article.author} />
-      <meta name="author" content={article.author} />
-    </>}
+    {
+      article && (
+        <>
+          <meta property="article:published_time" content={article.published} />
+          <meta property="article:author" content={article.author} />
+          <meta name="author" content={article.author} />
+        </>
+      )
+    }
     <slot name="head" />
     <meta property="og:site_name" content="Mimic" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImage} />
-    <meta property="og:image:type" content={socialImage.pathname.endsWith(".webp") ? "image/webp" : "image/png"} />
+    <meta
+      property="og:image:type"
+      content={socialImage.pathname.endsWith(".webp")
+        ? "image/webp"
+        : "image/png"}
+    />
     <meta property="og:image:width" content={String(imageWidth)} />
     <meta property="og:image:height" content={String(imageHeight)} />
     <meta property="og:image:alt" content={socialImageAlt} />
@@ -78,7 +96,9 @@ const socialImageAlt = imageAlt ||
       data-cf-beacon='{"token":"359417a4f49a4a7585aa5d4a6aa5113a"}'></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">{lang === "ru" ? "Перейти к содержимому" : "Skip to content"}</a>
+    <a class="skip-link" href="#main"
+      >{lang === "ru" ? "Перейти к содержимому" : "Skip to content"}</a
+    >
     <div class="site-frame">
       <Header />
       <main
@@ -88,7 +108,8 @@ const socialImageAlt = imageAlt ||
       >
         <slot />
       </main>
-      <Footer /><ReleaseUpdater />
+      <Footer />
+      <ProductMotion /><ReleaseUpdater />
     </div>
   </body>
 </html>

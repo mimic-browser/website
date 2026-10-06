@@ -80,6 +80,14 @@ try {
 >
   <div class="doc-overview">
     <p>
+      Have a repeatable workload? <a
+        href={`${import.meta.env.BASE_URL}optimize/`}>Explore Optimize</a
+      >{" "}
+      records its network environment, tests resource combinations locally, and saves
+      an empirically validated profile. Ordinary assertions remain the correctness
+      contract. Read the safety limits before applying a profile.
+    </p>
+    <p>
       Mimic runs as a local executable. Start it, then connect Playwright,
       Puppeteer, or another CDP client. This guide covers setup and the features
       available today.
@@ -512,21 +520,73 @@ try {
   </p>
 
   <h2 id="faq">FAQ</h2>
-  <h3>Is Mimic headless Chrome?</h3><p>
-    No. It uses V8 for JavaScript but does not embed or launch Chromium.
-  </p>
-  <h3>Does every website work?</h3><p>
-    No. Compatibility is actively expanding and depends on the APIs, loading
-    behavior, and interactions a workflow uses.
-  </p>
-  <h3>Can I run untrusted code?</h3><p>
-    No. Mimic is not a security sandbox, and separate Pages are not
-    hostile-tenant security boundaries.
-  </p>
-  <h3>Is Mimic open source?</h3><p>
-    Mimic's source is public under the Prosperity Public License 3.0.0.
-    Noncommercial use is free; commercial use has a 30-day trial. Read the <a
-      href={`${import.meta.env.BASE_URL}license/`}>license</a
-    > for the full terms.
-  </p>
+  <div class="faq-list">
+    <article class="faq-item">
+      <h3>Is Mimic headless Chrome?</h3><p>
+        No. It uses V8 for JavaScript but does not embed or launch Chromium.
+      </p>
+    </article>
+    <article class="faq-item">
+      <h3>Does every website work?</h3><p>
+        No. Compatibility is actively expanding and depends on the APIs, loading
+        behavior, and interactions a workflow uses.
+      </p>
+    </article>
+    <article class="faq-item">
+      <h3>Can I run untrusted code?</h3><p>
+        No. Mimic is not a security sandbox, and separate Pages are not
+        hostile-tenant security boundaries.
+      </p>
+    </article>
+    <article class="faq-item">
+      <h3>Is Mimic open source?</h3><p>
+        Mimic's source is public under the Prosperity Public License 3.0.0.
+        Noncommercial use is free; commercial use has a 30-day trial. Read the <a
+          href={`${import.meta.env.BASE_URL}license/`}>license</a
+        > for the full terms.
+      </p>
+    </article>
+  </div>
 </DocsLayout>
+
+<style>
+  .faq-list {
+    display: grid;
+    gap: 8px;
+  }
+  .faq-item {
+    padding: 18px 20px;
+    margin: 0 -20px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    transition:
+      background-color 0.22s ease,
+      border-color 0.22s ease;
+  }
+  .faq-item:hover,
+  .faq-item:focus-within {
+    background-color: #17263d77;
+    border-color: #56749d3b;
+  }
+  .faq-item h3 {
+    margin: 0 0 10px;
+  }
+  .faq-item p {
+    margin: 0;
+  }
+  .faq-item a {
+    transition: color 0.2s ease;
+  }
+  @media (max-width: 760px) {
+    .faq-item {
+      margin-inline: -18px;
+      padding-inline: 18px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .faq-item,
+    .faq-item a {
+      transition: none;
+    }
+  }
+</style>

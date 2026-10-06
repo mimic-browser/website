@@ -3,12 +3,13 @@ import Logo from "./Logo.astro";
 import { ArrowRight } from "lucide-astro";
 const base = import.meta.env.BASE_URL;
 const links = [
-  { label: "Features", href: `${base}#features` },
+  { label: "Home", href: base },
+  { label: "Optimize", href: `${base}optimize/` },
   { label: "Benchmarks", href: `${base}benchmarks/` },
-  { label: "Examples", href: `${base}examples/` },
+
   { label: "Docs", href: `${base}docs/` },
   { label: "Blog", href: `${base}blog/` },
-  { label: "About", href: `${base}about/` },
+  { label: "GitHub", href: "https://github.com/mimic-browser/runtime" },
 ];
 ---
 
@@ -82,8 +83,13 @@ const links = [
     nav?.querySelectorAll("a").forEach((link) => {
       const target = new URL(link.href, location.href);
       const path = target.pathname.replace(/\/$/, "") || "/";
-      const active = !target.hash && (current === path || (path.endsWith("/blog") && current.startsWith(`${path}/`)));
-      if (active) link.setAttribute("aria-current", current === path ? "page" : "true");
+      const active =
+        target.origin === location.origin &&
+        !target.hash &&
+        (current === path ||
+          (path.endsWith("/blog") && current.startsWith(`${path}/`)));
+      if (active)
+        link.setAttribute("aria-current", current === path ? "page" : "true");
       else link.removeAttribute("aria-current");
     });
   }
@@ -125,7 +131,7 @@ const links = [
     position: sticky;
     top: 0;
     z-index: 30;
-    background: #0b10202b;
+    background: #090e1629;
     opacity: 1;
     transition:
       transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -143,6 +149,7 @@ const links = [
     pointer-events: none;
   }
   .nav-wrap {
+    width: min(calc(100% - 96px), var(--page));
     display: flex;
     align-items: center;
   }
@@ -217,6 +224,7 @@ const links = [
       height: 64px;
     }
     .nav-wrap {
+      width: calc(100% - 36px);
       justify-content: space-between;
     }
     .menu-button {

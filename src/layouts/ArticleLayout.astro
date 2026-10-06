@@ -38,6 +38,8 @@ const Icon = icons[icon];
     margin-block: 0 32px;
   }
   .article-head {
+    position: relative;
+    isolation: isolate;
     padding-block: 70px 40px;
   }
   .article-head h1 {
@@ -73,6 +75,33 @@ const Icon = icons[icon];
     }
     .article-head {
       padding-top: 95px;
+    }
+  }
+  .article-head::before {
+    content: "";
+    position: absolute;
+    inset: -50px -10% -20px;
+    background: radial-gradient(ellipse at 65% 20%, #5075ff13, transparent 65%);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .article-head h1 {
+    font-family: var(--display);
+    font-weight: 780;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+  .article-body :global(.page-actions a) {
+    transition: color 0.2s;
+  }
+  @media (max-width: 1300px) {
+    .article-head::before {
+      inset-inline: -48px;
+    }
+  }
+  @media (max-width: 760px) {
+    .article-head::before {
+      inset-inline: -18px;
     }
   }
 </style>

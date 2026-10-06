@@ -1,0 +1,286 @@
+---
+import {
+  FileCode,
+  Database,
+  BarChart3,
+  Image,
+  Check,
+  Minus,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-astro";
+const resources = [
+  { label: "app.js", icon: FileCode, keep: true },
+  { label: "reviews.js", icon: FileCode, keep: true },
+  { label: "/api/product", icon: Database, keep: true },
+  { label: "/api/reviews", icon: Database, keep: true },
+  { label: "analytics.js", icon: BarChart3, keep: false },
+  { label: "experiments.js", icon: FileCode, keep: false },
+  { label: "/api/recommendations", icon: Database, keep: false },
+  { label: "Unused images", icon: Image, keep: false },
+];
+---
+
+<section
+  class="selection-demo"
+  aria-label="Illustrated workload specialization"
+  data-pruned
+>
+  <div class="selection-heading">
+    <span>Same task. A smaller request graph.</span><div
+      class="view-controls"
+      aria-label="Resource illustration"
+    >
+      <button type="button" aria-pressed="false" data-selection="all"
+        >All requests</button
+      ><button type="button" aria-pressed="true" data-selection="needed"
+        >After training</button>
+    </div>
+  </div>
+  <div class="selection-stage">
+    <div class="request-stack">
+      {
+        resources.map(({ label, icon: Icon, keep }, i) => (
+          <div
+            class:list={["request-item", { unneeded: !keep }]}
+            style={`--order:${i}`}
+          >
+            <>
+              <Icon size={18} />
+              <code>{label}</code>
+              <span class="selection-check">
+                {keep ? <Check size={16} /> : <Minus size={16} />}
+              </span>
+            </>
+          </div>
+        ))
+      }
+    </div><div class="selection-bridge" aria-hidden="true">
+      <ArrowRight size={32} /><span>Test locally</span>
+    </div><div class="verified">
+      <ShieldCheck size={44} /><strong>Your workload<br />still passes.</strong
+      ><p>Your own assertions decide<br />what can stay out.</p>
+    </div>
+  </div>
+  <p class="selection-caption">
+    Interactive illustration, not a benchmark. What is removable depends on your
+    workload.
+  </p>
+</section>
+<script>
+  function initializeSelection() {
+    document
+      .querySelectorAll<HTMLElement>(".selection-demo")
+      .forEach((demo) => {
+        if (demo.dataset.initialized) return;
+        demo.dataset.initialized = "true";
+        const buttons = [
+          ...demo.querySelectorAll<HTMLButtonElement>("[data-selection]"),
+        ];
+        buttons.forEach((button) =>
+          button.addEventListener("click", () => {
+            demo.toggleAttribute(
+              "data-pruned",
+              button.dataset.selection === "needed",
+            );
+            buttons.forEach((item) =>
+              item.setAttribute("aria-pressed", String(item === button)),
+            );
+          }),
+        );
+      });
+  }
+  initializeSelection();
+  document.addEventListener("astro:page-load", initializeSelection);
+</script>
+<style>
+  .selection-demo {
+    position: relative;
+    margin: 35px 0 45px;
+    padding: 25px;
+    border-radius: 18px;
+    border: 1px solid #7997c543;
+    background:
+      radial-gradient(ellipse at 75% 40%, #325dd124, transparent 65%),
+      linear-gradient(135deg, #122039, #0a1423);
+    box-shadow:
+      inset 0 1px 0 #c3d8ff10,
+      0 20px 55px #0003;
+    overflow: hidden;
+  }
+  .selection-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .selection-heading > span {
+    font-size: 14px;
+    color: #c5d4ed;
+  }
+  .view-controls {
+    display: flex;
+    gap: 3px;
+    padding: 4px;
+    border-radius: 8px;
+    background: #060d19a0;
+    border: 1px solid #718eba23;
+  }
+  .view-controls button {
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #9eb1d2;
+    cursor: pointer;
+    transition:
+      background 0.2s,
+      color 0.2s;
+  }
+  .view-controls button[aria-pressed="true"] {
+    background: linear-gradient(135deg, #385389, #213559);
+    color: #ecf3ff;
+    box-shadow: inset 0 1px 0 #c2d4ff14;
+  }
+  .selection-stage {
+    display: grid;
+    grid-template-columns: 1.1fr 100px 1fr;
+    align-items: center;
+    gap: 25px;
+    padding: 25px 0;
+  }
+  .request-stack {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .request-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 10px;
+    border-radius: 7px;
+    border: 1px solid #6b89b934;
+    background: #182840a0;
+    transition:
+      opacity 0.65s,
+      transform 0.65s,
+      border-color 0.65s;
+    transition-delay: calc(var(--order) * 35ms);
+    font-size: 11px;
+    min-width: 0;
+  }
+  .request-item :global(svg) {
+    flex: none;
+    color: #8fabde;
+  }
+  .request-item code {
+    font-size: 10px;
+    background: none;
+    padding: 0;
+    border: 0;
+    color: #c6d5ed;
+    overflow-wrap: anywhere;
+  }
+  .selection-check {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+  .selection-check :global(svg) {
+    color: #75d8c7;
+  }
+  .unneeded .selection-check :global(svg) {
+    color: #ec9baf;
+  }
+  .selection-demo[data-pruned] .unneeded {
+    opacity: 0.24;
+    transform: translateY(3px);
+    border-color: #718ab212;
+  }
+  .selection-demo[data-pruned] .unneeded code {
+    text-decoration: line-through;
+  }
+  .selection-bridge {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    color: #849fff;
+    font-size: 11px;
+  }
+  .selection-bridge :global(svg) {
+    filter: drop-shadow(0 0 15px #6c9bff77);
+  }
+  .verified {
+    padding: 35px 0;
+    text-align: center;
+  }
+  .verified :global(svg) {
+    color: #7eddcb;
+    filter: drop-shadow(0 0 20px #6accbf30);
+    margin-bottom: 18px;
+  }
+  .verified strong {
+    display: block;
+    font-family: var(--display);
+    font-size: 26px;
+    line-height: 1.25;
+    color: #f1f6ff;
+    letter-spacing: -0.025em;
+  }
+  .verified p {
+    color: #b3c5e2;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-top: 14px;
+  }
+  .selection-caption {
+    font-size: 11px !important;
+    margin: 0;
+    color: #899dbd;
+  }
+  @media (max-width: 760px) {
+    .selection-demo {
+      padding: 18px;
+    }
+    .selection-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 13px;
+    }
+    .selection-stage {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .selection-bridge {
+      display: none;
+    }
+    .verified {
+      padding: 17px 0 0;
+    }
+    .request-item code {
+      font-size: 9px;
+    }
+    .request-item {
+      gap: 5px;
+      padding: 11px 7px;
+    }
+    .verified strong {
+      font-size: 24px;
+    }
+    .verified p br {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .request-item,
+    .view-controls button {
+      transition: none;
+    }
+    .selection-demo[data-pruned] .unneeded {
+      transform: none;
+    }
+  }
+</style>

@@ -26,10 +26,10 @@ const repo = "https://github.com/mimic-browser/runtime";
         >
       </div><div>
         <strong>Project</strong>{" "}<a href={`${base}about/`}>About</a>{" "}<a
-          href={`${base}blog/`}>Blog</a>{" "}<a href={`${base}changelog/`}>Changelog</a
-        >{" "}<a href={`${base}license/`}>License</a>{" "}<a
-          href={`${base}#contact`}>Contact</a
-        >
+          href={`${base}blog/`}>Blog</a
+        >{" "}<a href={`${base}changelog/`}>Changelog</a>{" "}<a
+          href={`${base}license/`}>License</a
+        >{" "}<a href={`${base}#contact`}>Contact</a>
       </div>
     </nav><div class="footer-note">
       <span>Same internet.<br />Less overhead.</span><div>
@@ -158,6 +158,17 @@ const repo = "https://github.com/mimic-browser/runtime";
     }
     .footer-bottom {
       padding-bottom: 28px;
+    }
+  }
+  @media (max-width: 360px) {
+    nav {
+      grid-template-columns: repeat(3, max-content);
+      justify-content: space-between;
+      gap: 8px;
+    }
+    nav a,
+    nav strong {
+      font-size: 13px;
     }
   }
 </style>

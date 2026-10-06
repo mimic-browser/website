@@ -2,7 +2,7 @@
 
 Contributor: moreveal
 
-Source Code: https://github.com/moreveal/mimic
+Source Code: https://github.com/mimic-browser/runtime
 
 ## Purpose
 

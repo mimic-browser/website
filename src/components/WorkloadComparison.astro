@@ -1,0 +1,372 @@
+---
+import { Layers, Cpu, Wifi, ArrowUpRight } from "lucide-astro";
+import HeroScene from "./HeroScene.astro";
+const base = import.meta.env.BASE_URL;
+const metrics = [
+  {
+    icon: Layers,
+    label: "Memory",
+    before: "4,102 MiB",
+    after: "748 MiB",
+    ratio: 18.2,
+  },
+  { icon: Cpu, label: "CPU", before: "195 ms", after: "39 ms", ratio: 20 },
+  {
+    icon: Wifi,
+    label: "Downloaded",
+    before: "284.6 KB",
+    after: "5.3 KB",
+    ratio: 1.85,
+  },
+];
+---
+
+<section
+  class="comparison"
+  aria-label="Measured examples of a lighter browser runtime"
+>
+  <div class="mobile-scene">
+    <HeroScene compact />
+  </div>
+  <div class="measurements">
+    <div class="metric-head">
+      <span>Measured examples</span><span>Before</span><span>With Mimic</span>
+    </div>
+    {
+      metrics.map(({ icon: Icon, label, before, after, ratio }) => (
+        <div class="metric">
+          <div class="metric-label">
+            <>
+              <Icon size={18} />
+              <span>{label}</span>
+            </>
+          </div>
+          <div class="heavy">
+            <>
+              <strong>{before}</strong>
+              <div class="meter">
+                <i />
+              </div>
+            </>
+          </div>
+          <div class="light">
+            <>
+              <strong>{after}</strong>
+              <div class="meter">
+                <i style={`width:${ratio}%`} />
+              </div>
+            </>
+          </div>
+        </div>
+      ))
+    }
+    <a class="methodology" href={`${base}benchmarks/`}
+      >Results &amp; methodology <ArrowUpRight size={14} /></a
+    >
+    <p class="evidence">
+      Separate tests: 50-page memory, static-session CPU, Books downloads with
+      Optimize. Encoded body bytes, not wire traffic.
+    </p>
+  </div>
+</section>
+<style>
+  .comparison {
+    pointer-events: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 0;
+  }
+  .mobile-scene {
+    display: none;
+  }
+  .measurements {
+    position: relative;
+    width: clamp(280px, 22vw, 440px);
+    margin-top: 80px;
+    padding: 24px 20px 20px;
+    border: 1px solid #91b5ff52;
+    border-radius: 15px;
+    background: linear-gradient(130deg, #162338df, #09121fe8);
+    box-shadow:
+      inset 0 1px 0 #dbeaff10,
+      0 22px 70px #0007;
+    backdrop-filter: blur(3px);
+  }
+  .metric-head,
+  .metric {
+    display: grid;
+    grid-template-columns: 0.85fr 1fr 1fr;
+    column-gap: 12px;
+  }
+  .metric-head {
+    color: #b3c4df;
+    font-size: 12px;
+    align-items: end;
+    margin-bottom: 16px;
+  }
+  .metric-head > span:first-child {
+    font-size: 11px;
+  }
+  .metric {
+    margin-top: 21px;
+    align-items: center;
+  }
+  .metric-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: #bdcde7;
+  }
+  .metric-label :global(svg) {
+    color: #90b6ff;
+    flex-shrink: 0;
+  }
+  .metric strong {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+  }
+  .heavy strong {
+    color: #f294a7;
+  }
+  .light strong {
+    color: #93b3ff;
+  }
+  .meter {
+    height: 5px;
+    border-radius: 6px;
+    background: #60759529;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .meter i {
+    position: relative;
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    min-width: 5px;
+    overflow: hidden;
+    background: #f18ba2;
+  }
+  .light .meter i {
+    background: #648dff;
+  }
+  .meter i::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent, #ffffff85, transparent);
+    transform: translateX(-120%);
+  }
+  .comparison[data-active] .meter i::after {
+    animation: meter-light 5s ease-in-out infinite;
+  }
+  .light .meter i::after {
+    animation-delay: 0.35s;
+  }
+  @keyframes meter-light {
+    0%,
+    25% {
+      transform: translateX(-120%);
+    }
+    65%,
+    100% {
+      transform: translateX(120%);
+    }
+  }
+  .methodology {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #b2c8ff;
+    margin-top: 24px;
+    transition: color 0.2s;
+  }
+  .methodology:hover {
+    color: white;
+  }
+  .evidence {
+    color: #95a8c6;
+    font-size: 10px;
+    line-height: 1.6;
+    margin: 8px 0 0;
+  }
+  @media (min-width: 1800px) {
+    .measurements {
+      padding: 28px;
+    }
+    .metric strong {
+      font-size: 20px;
+    }
+    .metric-label,
+    .metric-head,
+    .methodology {
+      font-size: 13px;
+    }
+    .evidence {
+      font-size: 11px;
+    }
+  }
+  @media (max-width: 1300px) {
+    .comparison {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(270px, 1fr);
+      gap: 24px;
+      margin-top: 10px;
+    }
+    .mobile-scene {
+      display: block;
+      aspect-ratio: 770 / 697;
+      overflow: hidden;
+      mask-image: linear-gradient(transparent, #000 4%, #000 94%, transparent);
+    }
+    .measurements {
+      width: 100%;
+      margin-top: 50px;
+    }
+  }
+  @media (min-width: 601px) and (max-width: 900px) {
+    .measurements {
+      padding-inline: 16px;
+    }
+    .metric-head,
+    .metric {
+      column-gap: 8px;
+    }
+    .metric strong {
+      font-size: 14px;
+    }
+    .metric-label {
+      font-size: 11px;
+      gap: 5px;
+    }
+    .metric-label :global(svg) {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  @media (max-width: 600px) {
+    .comparison {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 16px;
+    }
+    .mobile-scene {
+      width: calc(100% + 36px);
+      height: auto;
+    }
+    .measurements {
+      margin-top: 8px;
+      padding: 20px 17px;
+    }
+    .evidence {
+      font-size: 11px;
+    }
+  }
+  @media (max-width: 360px) {
+    .metric strong {
+      font-size: 14px;
+    }
+    .metric-label {
+      font-size: 11px;
+      gap: 4px;
+    }
+    .metric-head,
+    .metric {
+      column-gap: 8px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .comparison[data-active] .meter i::after {
+      animation: none;
+    }
+  }
+
+  @media (min-width: 1301px) {
+    .comparison {
+      position: absolute;
+      left: 70.9%;
+      top: 38%;
+      width: 25%;
+      display: block;
+    }
+    .measurements {
+      width: 100%;
+      transform: none;
+      margin: 0;
+      padding: clamp(20px, 1.15vw, 24px);
+      border-radius: 13px;
+    }
+    .metric-head,
+    .metric {
+      column-gap: 12px;
+    }
+    .metric-head {
+      font-size: clamp(12px, 0.67vw, 14px);
+      margin-bottom: 10px;
+    }
+    .metric-head > span:first-child {
+      font-size: clamp(11px, 0.62vw, 13px);
+    }
+    .metric {
+      margin-top: 15px;
+      line-height: 1.2;
+    }
+    .metric-label {
+      font-size: clamp(12px, 0.67vw, 14px);
+      gap: 7px;
+    }
+    .metric-label :global(svg) {
+      width: 18px;
+      height: 18px;
+    }
+    .metric strong {
+      font-size: clamp(17px, 0.95vw, 20px);
+      display: block;
+      line-height: 1.2;
+    }
+    .meter {
+      height: 5px;
+      margin-top: 7px;
+    }
+    .methodology {
+      font-size: clamp(12px, 0.67vw, 14px);
+      margin-top: 20px;
+    }
+    .evidence {
+      font-size: clamp(10px, 0.56vw, 12px);
+      margin-top: 8px;
+      line-height: 1.45;
+    }
+  }
+  @media (min-width: 1301px) and (max-width: 1599px) {
+    .comparison {
+      left: 71.8%;
+      width: 26%;
+      top: 36%;
+    }
+    .measurements {
+      padding: 16px;
+    }
+    .metric-head,
+    .metric {
+      column-gap: 10px;
+    }
+    .metric strong {
+      font-size: 15px;
+    }
+    .metric-label {
+      font-size: 11px;
+      gap: 5px;
+    }
+    .metric-label :global(svg) {
+      width: 15px;
+      height: 15px;
+    }
+  }
+</style>
