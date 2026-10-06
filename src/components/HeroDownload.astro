@@ -1,0 +1,180 @@
+---
+import { ChevronDown, Download, ArrowRight } from "lucide-astro";
+import PlatformIcon from "./PlatformIcon.astro";
+import release from "../../public/release-cache.json";
+const base = import.meta.env.BASE_URL;
+const windows = release.assets.find((a) =>
+  a.name.endsWith("windows-amd64.zip"),
+)?.browser_download_url;
+const linux = release.assets.find((a) =>
+  a.name.endsWith("linux-amd64.tar.gz"),
+)?.browser_download_url;
+---
+
+<div
+  class="hero-download"
+  data-os-download
+  data-windows={windows}
+  data-linux={linux}
+>
+  <a class="download-main" href={`${base}download/`} data-os-link
+    ><span data-os-label>Download Mimic</span><Download size={16} /></a
+  >
+  <details>
+    <summary aria-label="Other download options"
+      ><ChevronDown size={16} /></summary
+    >
+    <div class="download-menu">
+      <a href={windows} data-release-asset="windows-amd64.zip"
+        ><PlatformIcon platform="windows" /><span>Windows x64</span></a
+      >
+      <a href={linux} data-release-asset="linux-amd64.tar.gz"
+        ><PlatformIcon platform="linux" /><span>Linux x64</span></a
+      >
+      <a href={`${base}download/`}
+        >Other options <ArrowRight size={16} aria-hidden="true" /></a
+      >
+    </div>
+  </details>
+</div>
+<script>
+  function setupDownloads() {
+    document
+      .querySelectorAll<HTMLElement>("[data-os-download]")
+      .forEach((root) => {
+        const ua = navigator.userAgent;
+        const mobile = /Android|iPhone|iPad|iPod/i.test(ua);
+        const os =
+          !mobile && /Windows NT/i.test(ua)
+            ? "windows"
+            : !mobile && /Linux.*x86_64|X11.*Linux x86_64/i.test(ua)
+              ? "linux"
+              : null;
+        const link = root.querySelector<HTMLAnchorElement>("[data-os-link]");
+        const label = root.querySelector("[data-os-label]");
+        if (os && link && label && root.dataset[os]) {
+          label.textContent = `Download for ${os === "windows" ? "Windows" : "Linux"}`;
+          const suffix =
+            os === "windows" ? "windows-amd64.zip" : "linux-amd64.tar.gz";
+          link.href =
+            root.querySelector<HTMLAnchorElement>(
+              `[data-release-asset="${suffix}"]`,
+            )?.href || root.dataset[os]!;
+          link.dataset.releaseAsset = suffix;
+        }
+        if (root.dataset.bound) return;
+        root.dataset.bound = "true";
+        const details = root.querySelector("details")!;
+        root.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            details.open = false;
+            root.querySelector("summary")?.focus();
+          }
+        });
+        document.addEventListener("click", (event) => {
+          if (!root.contains(event.target as Node)) details.open = false;
+        });
+      });
+  }
+  document.addEventListener("astro:page-load", setupDownloads);
+</script>
+<style>
+  .hero-download a::after {
+    content: none !important;
+  }
+  .hero-download {
+    display: inline-flex;
+    position: relative;
+    flex-shrink: 0;
+    background: var(--blue);
+    color: #080e25;
+    border: 1px solid #a4b1ff80;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 #fff3;
+    font-size: 13px;
+    font-weight: 650;
+  }
+  .download-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    min-height: 48px;
+    color: inherit;
+    white-space: nowrap;
+    border-radius: 8px 0 0 8px;
+  }
+  .download-main:hover,
+  summary:hover {
+    background: #ffffff18;
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 100%;
+    min-height: 48px;
+    cursor: pointer;
+    border-left: 1px solid #17274c30;
+    list-style: none;
+    border-radius: 0 8px 8px 0;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .download-menu {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 8px);
+    min-width: 100%;
+    padding: 6px;
+    background: linear-gradient(135deg, #263650a8, #0b1424c9);
+    backdrop-filter: blur(22px) saturate(135%);
+    -webkit-backdrop-filter: blur(22px) saturate(135%);
+    border: 1px solid #acc6ff38;
+    border-radius: 12px;
+    box-shadow:
+      inset 0 1px 0 #ffffff18,
+      0 16px 40px #0005;
+    z-index: 20;
+  }
+  .download-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    color: #e5edff;
+    white-space: nowrap;
+    border-radius: 5px;
+  }
+  .download-menu a:hover {
+    background: #aac6ff16;
+  }
+  .download-menu a:last-child {
+    border-top: 1px solid #acc6ff20;
+    border-radius: 0;
+    margin-top: 4px;
+  }
+  .download-menu a {
+    font-weight: 500;
+    transition:
+      background-color 0.18s,
+      color 0.18s;
+  }
+  .download-menu a:last-child {
+    justify-content: space-between;
+    color: #b8c9e6;
+  }
+  .download-menu :global(.platform-icon) {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: none;
+    border-radius: 0;
+  }
+  .download-menu :global(.platform-icon svg) {
+    width: 24px;
+    height: 24px;
+  }
+</style>

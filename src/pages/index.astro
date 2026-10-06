@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import WorkloadComparison from "@/components/WorkloadComparison.astro";
-import HeroScene from "@/components/HeroScene.astro";
+import LaptopScene from "@/components/LaptopScene.astro";
+import HeroDownload from "@/components/HeroDownload.astro";
 import HowItWorks from "@/components/HowItWorks.astro";
 import ToolMark from "@/components/ToolMark.astro";
 import CodeWindow from "@/components/CodeWindow.astro";
@@ -64,26 +64,6 @@ const page = await browser.contexts()[0].newPage();`,
 };
 const base = import.meta.env.BASE_URL;
 const repo = "https://github.com/mimic-browser/runtime";
-const benefits = [
-  {
-    icon: Layers,
-    title: "More jobs per machine",
-    text: "A smaller memory footprint leaves room for more concurrent sessions.",
-    badge: false,
-  },
-  {
-    icon: Cpu,
-    title: "Less browser work",
-    text: "Run JavaScript and browser behavior without rendering every page.",
-    badge: false,
-  },
-  {
-    icon: Wifi,
-    title: "Only the traffic you need",
-    text: "Optimize learns which requests your workload can run without.",
-    badge: true,
-  },
-];
 const capabilities = [
   {
     icon: Fingerprint,
@@ -112,66 +92,63 @@ const capabilities = [
   title="Mimic — Lightweight Browser for Web Scraping & Automation"
   description="Run browser automation with less memory, compute and network traffic. Mimic keeps the browser behavior your workload needs, without a full browser."
 >
-  <section class="hero">
-    <div class="hero-art"><HeroScene /></div>
-    <div class="container hero-layout">
-      <div class="hero-content">
-        <span class="eyeline">Browser automation, without the excess.</span>
-        <h1>Same web.<br /><em>Less weight.</em></h1>
-        <p>
-          Run browser automation with less memory, compute and network traffic.
-          Mimic keeps the browser behavior your workload needs — without
-          carrying the cost of a full browser.
-        </p>
-        <div class="actions">
-          <a class="button button-primary" href={`${base}download/`}
-            >Download Mimic <ArrowRight size={17} /></a
-          ><button class="button how-button" type="button" data-how-open
-            ><Play size={15} /> See how it works</button
-          >
+  <div class="hero-intro">
+    <section class="hero">
+      <div class="hero-art"><LaptopScene /></div>
+      <div class="container hero-layout">
+        <div class="hero-content">
+          <span class="eyeline">Browser automation, without the excess.</span>
+          <h1>Same web.<br /><em>Less weight.</em></h1>
+          <p>
+            Run browser automation with less memory, compute and network
+            traffic. Mimic keeps the browser behavior your workload needs —
+            without carrying the cost of a full browser.
+          </p>
+          <div class="actions">
+            <HeroDownload />
+            <button class="button how-button" type="button" data-how-open
+              ><Play size={15} /> See how it works</button
+            >
+          </div>
+          <div class="hero-tags">
+            <span><Code size={13} /> Works over CDP</span><span
+              ><Layers size={13} /> No Chromium underneath</span
+            ><span><Box size={13} /> Your existing tools</span>
+          </div>
         </div>
-        <div class="hero-tags">
-          <span><Code size={13} /> Works over CDP</span><span
-            ><Layers size={13} /> No Chromium underneath</span
-          ><span><Box size={13} /> Your existing tools</span>
-        </div>
+        <div class="mobile-laptop"><LaptopScene /></div>
       </div>
-      <WorkloadComparison />
-    </div>
-  </section>
-  <section class="benefit-band" id="features">
-    <div class="container benefits">
-      {
-        benefits.map(({ icon: Icon, title, text, badge }) => (
+    </section>
+    <section class="benefit-band" id="features">
+      <div class="container unified-benefits" id="benchmarks">
+        <div class="unified-grid">
           <article>
-            <>
-              <Icon size={32} />
-              <h3>{title}</h3>
-              <p>{text}</p>
-              {badge && (
-                <a class="new-feature" href={`${base}optimize/`}>
-                  Optimize <span>NEW</span>
-                  <ArrowRight size={13} />
-                </a>
-              )}
-            </>
+            <h3><Cpu size={22} /> Less browser work</h3>
+            <strong>5.0×</strong>
+            <p>Less CPU per static session.</p>
+            <small>Static DOM · 39 ms vs. Chrome: 195 ms</small>
           </article>
-        ))
-      }
-    </div>
-  </section>
-  <section class="container benchmark-strip" id="benchmarks">
-    <div>
-      <strong>6.0×</strong><span
-        >static workload throughput<br /><small
-          >50 concurrent pages · Chrome 152 vs. Mimic</small
-        ></span
-      >
-    </div>
-    <a href={`${base}benchmarks/`}
-      >Explore the measurements <ArrowRight size={18} /></a
-    >
-  </section>
+          <article>
+            <h3><Layers size={22} /> More room to work</h3>
+            <strong>8.3×</strong>
+            <p>Less memory at startup.</p>
+            <small>Process-tree RSS · 46 MiB vs. Chrome: 380 MiB</small>
+          </article>
+          <article>
+            <h3><Wifi size={22} /> Only the traffic you need</h3>
+            <strong>53.9×</strong>
+            <p>
+              Less downloaded with <a href={`${base}optimize/`}>Optimize</a>.
+            </p>
+            <small>Books extraction · vs. ordinary Mimic · body bytes</small>
+          </article>
+        </div>
+        <a class="unified-methodology" href={`${base}benchmarks/`}
+          >Results &amp; methodology <ArrowRight size={16} /></a
+        >
+      </div>
+    </section>
+  </div>
   <section class="behavior-band">
     <div class="container behavior-layout">
       <div class="behavior-intro">
@@ -1547,49 +1524,100 @@ const capabilities = [
   }
   .benchmark-strip {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    padding-block: 30px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding-block: 32px;
     border-bottom: 1px solid #31466250;
   }
-  .benchmark-strip > div {
-    display: flex;
-    align-items: center;
-    gap: 24px;
+  .benchmark-highlights {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+  .benchmark-highlight {
+    min-width: 0;
+    padding-inline: 30px;
+  }
+  .benchmark-highlight:first-child {
+    padding-left: 0;
+  }
+  .benchmark-highlight:last-child {
+    padding-right: 0;
+  }
+  .benchmark-highlight + .benchmark-highlight {
+    border-left: 1px solid #31466250;
+    padding-left: 30px;
   }
   .benchmark-strip strong {
-    font-size: 52px;
-    letter-spacing: -0.055em;
+    display: block;
+    font-size: 42px;
+    line-height: 1.15;
+    letter-spacing: -0.045em;
     color: #9bb3ff;
+    margin-bottom: 10px;
+  }
+  .benchmark-strip strong em {
+    font-size: 20px;
+    font-weight: 500;
+    font-style: normal;
+    letter-spacing: 0;
+    margin-left: 7px;
   }
   .benchmark-strip span {
-    font-size: 17px;
+    font-size: 15px;
     line-height: 1.5;
     color: #e0e8f7;
   }
   .benchmark-strip small {
-    font-size: 13px;
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
     color: #9baecb;
   }
   .benchmark-strip a {
+    align-self: flex-end;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     color: #b9ccff;
-    font-size: 15px;
+    font-size: 13px;
+    flex-shrink: 0;
   }
-  @media (max-width: 760px) {
+  @media (max-width: 1100px) {
     .benchmark-strip {
-      align-items: flex-start;
       flex-direction: column;
-      gap: 18px;
+      align-items: stretch;
+      gap: 24px;
+    }
+  }
+  @media (max-width: 600px) {
+    .benchmark-highlights {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .benchmark-highlight {
+      display: grid;
+      padding-inline: 0;
+      grid-template-columns: 120px 1fr;
+      align-items: center;
+      gap: 16px;
+    }
+    .benchmark-highlight + .benchmark-highlight {
+      border-left: 0;
+      border-top: 1px solid #31466250;
+      padding: 20px 0 0;
     }
     .benchmark-strip strong {
-      font-size: 42px;
+      font-size: 34px;
+      margin: 0;
+    }
+    .benchmark-strip strong em {
+      font-size: 16px;
+      margin-left: 4px;
     }
     .benchmark-strip span {
-      font-size: 15px;
+      font-size: 14px;
     }
   }
   .behavior-layout {
@@ -1961,11 +1989,13 @@ const capabilities = [
   /* The scene, HTML windows and fingertips share one bounded composition. */
   @media (min-width: 1301px) {
     .hero {
-      height: min(37.395vw, 842px);
+      height: auto;
+      aspect-ratio: 2075 / 758;
       min-height: 0;
       margin-top: -76px;
       padding: 0;
       background: #090e16;
+      overflow: hidden;
     }
     .hero::before {
       display: none;
@@ -1973,7 +2003,7 @@ const capabilities = [
     .hero-art {
       display: block;
       inset: 0;
-      width: min(100%, 2250px);
+      width: 100%;
       margin-inline: auto;
       z-index: 0;
     }
@@ -2086,15 +2116,137 @@ const capabilities = [
       margin-top: -90px;
     }
   }
-  @media (min-width: 2251px) {
-    .hero-art {
-      mask-image: linear-gradient(
-        90deg,
-        transparent,
-        #000 5%,
-        #000 95%,
-        transparent
-      );
+  /* Keep the supporting benefits inside the hero's visual envelope. */
+  .hero-intro {
+    background: #070e17;
+    border-bottom: 1px solid #31466270;
+  }
+  .hero-intro .benefit-band {
+    background: linear-gradient(180deg, #08111b, #070e17);
+    border: 0;
+  }
+  .hero-intro .benefits {
+    padding-block: 20px;
+  }
+  .hero-intro .benefits h3 {
+    font-size: 15px;
+  }
+  .hero-intro .benefits p {
+    font-size: 13px;
+  }
+  .hero-intro .benefits article > :global(svg) {
+    width: 23px;
+    height: 23px;
+  }
+  .unified-benefits {
+    padding-block: 32px 24px;
+  }
+  .unified-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .unified-grid article {
+    padding-inline: 30px;
+    border-right: 1px solid #31466250;
+  }
+  .unified-grid article:first-child {
+    padding-left: 0;
+  }
+  .unified-grid article:last-child {
+    padding-right: 0;
+    border: 0;
+  }
+  .unified-grid h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font: 600 16px var(--sans);
+    margin: 0 0 22px;
+  }
+  .unified-grid h3 :global(svg) {
+    color: var(--blue);
+    flex-shrink: 0;
+  }
+  .unified-grid strong {
+    display: block;
+    font-size: 44px;
+    line-height: 1.15;
+    letter-spacing: -0.045em;
+    color: #9bb3ff;
+  }
+  .unified-grid p {
+    margin: 10px 0 5px;
+    font-size: 15px;
+    color: #e0e8f7;
+  }
+  .unified-grid p a {
+    color: #b9ccff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .unified-grid small {
+    display: block;
+    color: #9baecb;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .unified-methodology {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    color: #b9ccff;
+    font-size: 13px;
+  }
+  @media (max-width: 760px) {
+    .unified-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .unified-grid article,
+    .unified-grid article:first-child,
+    .unified-grid article:last-child {
+      padding: 0 0 24px;
+      border: 0;
+      border-bottom: 1px solid #31466250;
+    }
+    .unified-grid article:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .unified-grid h3 {
+      margin-bottom: 14px;
+    }
+    .unified-grid strong {
+      font-size: 38px;
+    }
+    .unified-methodology {
+      justify-content: flex-start;
+    }
+  }
+
+  .hero {
+    overflow: visible;
+    z-index: 2;
+  }
+  .mobile-laptop {
+    display: none;
+  }
+  @media (min-width: 1301px) {
+    .hero-content {
+      left: 7%;
+      width: 29%;
+    }
+  }
+  @media (max-width: 1300px) {
+    .mobile-laptop {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+    }
+    .hero-layout {
+      display: block;
     }
   }
 </style>
