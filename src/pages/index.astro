@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import LaptopScene from "@/components/LaptopScene.astro";
 import HeroDownload from "@/components/HeroDownload.astro";
 import HowItWorks from "@/components/HowItWorks.astro";
 import ToolMark from "@/components/ToolMark.astro";
@@ -94,7 +93,15 @@ const capabilities = [
 >
   <div class="hero-intro">
     <section class="hero">
-      <div class="hero-art"><LaptopScene /></div>
+      <div class="hero-art">
+        <img
+          src={`${base}images/mascot-hero.png`}
+          width="1672"
+          height="941"
+          alt="Mimic holding a browser window"
+          fetchpriority="high"
+        />
+      </div>
       <div class="container hero-layout">
         <div class="hero-content">
           <span class="eyeline">Browser automation, without the excess.</span>
@@ -116,7 +123,14 @@ const capabilities = [
             ><span><Box size={13} /> Your existing tools</span>
           </div>
         </div>
-        <div class="mobile-laptop"><LaptopScene /></div>
+        <div class="mobile-laptop">
+          <img
+            src={`${base}images/mascot-hero.png`}
+            width="1672"
+            height="941"
+            alt="Mimic holding a browser window"
+          />
+        </div>
       </div>
     </section>
     <section class="benefit-band" id="features">
@@ -1367,6 +1381,13 @@ const capabilities = [
     inset: 0;
     z-index: -2;
   }
+  .hero-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 46%;
+  }
   .hero::before {
     inset: 0;
     background:
@@ -1847,7 +1868,7 @@ const capabilities = [
       font-size: 13px;
     }
   }
-  @media (max-width: 1300px) {
+  @media (max-width: 900px) {
     .hero-layout {
       grid-template-columns: 1fr;
       gap: 0;
@@ -2019,10 +2040,9 @@ const capabilities = [
   }
 
   /* The scene, HTML windows and fingertips share one bounded composition. */
-  @media (min-width: 1301px) {
+  @media (min-width: 901px) {
     .hero {
-      height: auto;
-      aspect-ratio: 2075 / 758;
+      height: max(540px, 36.53vw);
       min-height: 0;
       margin-top: -76px;
       padding: 0;
@@ -2038,9 +2058,10 @@ const capabilities = [
       width: 100%;
       margin-inline: auto;
       z-index: 0;
+      overflow: hidden;
     }
     .hero-layout {
-      width: min(100%, 2250px);
+      width: 100%;
       height: 100%;
       min-height: 0;
       padding: 0;
@@ -2053,7 +2074,8 @@ const capabilities = [
     .hero-content {
       position: absolute;
       pointer-events: auto;
-      left: 9%;
+      text-align: left;
+      left: max(48px, calc((100% - var(--page)) / 2));
       top: 25%;
       width: 26%;
       max-width: none;
@@ -2063,6 +2085,7 @@ const capabilities = [
     .hero .eyeline {
       font-size: clamp(10px, 0.56vw, 12px);
       letter-spacing: 0.15em;
+      margin-left: 10px;
     }
     .hero-content h1 {
       font-size: clamp(68px, 4.05vw, 84px);
@@ -2074,9 +2097,11 @@ const capabilities = [
       font-size: clamp(16px, 0.95vw, 19px);
       line-height: 1.6;
       max-width: 100%;
+      margin-inline: 0;
       margin-top: 24px;
     }
     .hero-content .actions {
+      justify-content: flex-start;
       margin-top: 24px;
       gap: 14px;
       flex-wrap: nowrap;
@@ -2093,6 +2118,7 @@ const capabilities = [
       height: 17px;
     }
     .hero-tags {
+      justify-content: flex-start;
       margin-top: 24px;
       gap: 14px;
       max-width: none;
@@ -2108,17 +2134,18 @@ const capabilities = [
       height: 14px;
     }
   }
-  @media (min-width: 1301px) and (max-width: 1599px) {
+  @media (min-width: 901px) and (max-width: 1599px) {
     .hero-content {
-      top: 22%;
-      width: 25%;
+      top: 28%;
+      width: 37%;
     }
     .hero-content h1 {
-      font-size: 56px;
+      font-size: clamp(56px, 5.1vw, 70px);
     }
     .hero-content > p {
       font-size: 14px;
       line-height: 1.6;
+      max-width: 420px;
       margin-top: 18px;
     }
     .hero-content .actions {
@@ -2265,13 +2292,21 @@ const capabilities = [
   .mobile-laptop {
     display: none;
   }
-  @media (min-width: 1301px) {
+  .mobile-laptop img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1.35;
+    object-fit: cover;
+    object-position: 72% center;
+    border-radius: 12px;
+  }
+  @media (min-width: 1600px) {
     .hero-content {
-      left: 7%;
       width: 29%;
     }
   }
-  @media (max-width: 1300px) {
+  @media (max-width: 900px) {
     .mobile-laptop {
       display: block;
       width: 100%;
