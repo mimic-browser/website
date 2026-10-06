@@ -1,8 +1,8 @@
 ---
 import {
   FileCode,
-  Layers,
-  Globe,
+  LockKeyhole,
+  RotateCw,
   Monitor,
   Layout,
   Puzzle,
@@ -19,11 +19,6 @@ const overhead = [
   { icon: Cpu, label: "GPU" },
   { icon: Film, label: "Media" },
   { icon: Ellipsis, label: "Everything else" },
-];
-const functions = [
-  { icon: FileCode, label: "JavaScript", detail: "Run the web" },
-  { icon: Layers, label: "Page state", detail: "Keep what matters" },
-  { icon: Globe, label: "Network", detail: "Your requests" },
 ];
 ---
 
@@ -82,19 +77,43 @@ const functions = [
       <section class="held-window" aria-label="Mimic runtime">
         <div class="window-bar">
           <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+          <div
+            class="address-bar"
+            aria-label="Page address: https://example.com"
+          >
+            <LockKeyhole size={16} aria-hidden="true" />
+            <span><span class="protocol">https://</span>example.com</span>
+            <RotateCw size={15} aria-hidden="true" />
+          </div>
         </div>
-        <div class="runtime-functions">
-          {
-            functions.map(({ icon: Icon, label, detail }) => (
-              <div class="runtime-function">
-                <span class="function-icon">
-                  <Icon size={38} aria-hidden="true" />
-                </span>
-                <strong>{label}</strong>
-                <span class="detail">{detail}</span>
+        <div
+          class="document-view"
+          aria-label="Document structure of Example Domain"
+        >
+          <div class="document-root">
+            <FileCode size={19} aria-hidden="true" /><span>#document</span><span
+              class="dom-label">DOM</span>
+          </div>
+          <div class="document-tree">
+            <div class="element-row"><span class="node-tag">html</span></div>
+            <div class="document-branch">
+              <div class="element-row"><span class="node-tag">body</span></div>
+              <div class="document-branch leaf-nodes">
+                <div class="element-row">
+                  <span class="node-tag">h1</span><span class="node-text"
+                    >Example Domain</span>
+                </div>
+                <div class="element-row">
+                  <span class="node-tag">p</span><span class="node-text muted"
+                    >This domain is for use in examples.</span>
+                </div>
+                <div class="element-row">
+                  <span class="node-tag">a</span><span
+                    class="node-text link-text">More information &#8599;</span>
+                </div>
               </div>
-            ))
-          }
+            </div>
+          </div>
         </div>
       </section>
       <img
@@ -263,44 +282,105 @@ const functions = [
   .lights i:nth-child(3) {
     background: #49ad65;
   }
-  .runtime-functions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: calc(17 * var(--u)) calc(18 * var(--u)) calc(28 * var(--u));
-    gap: calc(12 * var(--u));
-  }
-  .runtime-function {
+  .address-bar {
+    flex: 1;
+    min-width: 0;
+    height: calc(32 * var(--u));
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
-    gap: calc(8 * var(--u));
-  }
-  .function-icon {
-    display: grid;
-    place-items: center;
-    width: calc(72 * var(--u));
-    height: calc(72 * var(--u));
-    margin-bottom: calc(5 * var(--u));
-    border-radius: 50%;
-    color: #91baff;
-    background: radial-gradient(circle at 40% 30%, #4569b033, #26385410);
-  }
-  .function-icon :global(svg) {
-    width: calc(38 * var(--u));
-    height: calc(38 * var(--u));
-    stroke-width: 1.6;
-    filter: drop-shadow(0 0 8px #387cff50);
-  }
-  .runtime-function strong {
-    font-size: calc(19 * var(--u));
-    font-weight: 600;
-    letter-spacing: -0.025em;
-  }
-  .detail {
-    color: #b3c4df;
-    font-size: calc(14 * var(--u));
+    gap: calc(10 * var(--u));
+    padding: 0 calc(12 * var(--u));
+    border: 1px solid #91b5ff1c;
+    border-radius: calc(7 * var(--u));
+    background: #060e1a70;
+    color: #dce7fa;
+    font-size: calc(16 * var(--u));
     white-space: nowrap;
+  }
+  .address-bar :global(svg) {
+    width: calc(15 * var(--u));
+    height: calc(15 * var(--u));
+    flex-shrink: 0;
+    color: #8c9fbf;
+  }
+  .address-bar :global(svg:last-child) {
+    margin-left: auto;
+  }
+  .protocol {
+    color: #8c9fbf;
+  }
+  .document-view {
+    padding: calc(16 * var(--u)) calc(25 * var(--u)) calc(20 * var(--u));
+    font-size: calc(17 * var(--u));
+    line-height: 1.25;
+  }
+  .document-root {
+    display: flex;
+    align-items: center;
+    gap: calc(9 * var(--u));
+    color: #c0cee6;
+    margin-bottom: calc(8 * var(--u));
+  }
+  .document-root :global(svg) {
+    width: calc(19 * var(--u));
+    height: calc(19 * var(--u));
+    color: #91b5ff;
+  }
+  .dom-label {
+    margin-left: auto;
+    font-size: calc(11 * var(--u));
+    letter-spacing: 0.12em;
+    color: #8297b7;
+  }
+  .document-tree {
+    margin-left: calc(9 * var(--u));
+  }
+  .document-branch {
+    margin-left: calc(12 * var(--u));
+    padding-left: calc(20 * var(--u));
+    border-left: 1px solid #7b9ac333;
+  }
+  .element-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: calc(12 * var(--u));
+    min-height: calc(30 * var(--u));
+    white-space: nowrap;
+  }
+  .document-branch > .element-row::before {
+    content: "";
+    position: absolute;
+    left: calc(-20 * var(--u));
+    width: calc(13 * var(--u));
+    height: 1px;
+    background: #7b9ac333;
+  }
+  .node-tag {
+    color: #97baff;
+    font-size: calc(15 * var(--u));
+    font-weight: 500;
+  }
+  .node-tag::before {
+    content: "<";
+    color: #647b9e;
+  }
+  .node-tag::after {
+    content: ">";
+    color: #647b9e;
+  }
+  .leaf-nodes .node-tag {
+    min-width: calc(35 * var(--u));
+  }
+  .node-text {
+    color: #e4ecf9;
+  }
+  .node-text.muted {
+    color: #95a8c4;
+    font-size: calc(14 * var(--u));
+  }
+  .link-text {
+    color: #aec7fa;
   }
   .heavy-window {
     position: absolute;
@@ -420,24 +500,31 @@ const functions = [
   .compact .heavy-window ul {
     gap: calc(15 * var(--u));
   }
-  .compact .runtime-function strong {
-    font-size: calc(27 * var(--u));
+  .compact .address-bar {
+    font-size: calc(23 * var(--u));
+    height: calc(36 * var(--u));
   }
-  .compact .detail {
-    display: none;
+  .compact .address-bar :global(svg) {
+    width: calc(20 * var(--u));
+    height: calc(20 * var(--u));
   }
-  .compact .function-icon {
-    width: calc(76 * var(--u));
-    height: calc(76 * var(--u));
+  .compact .window-bar {
+    gap: calc(16 * var(--u));
   }
-  .compact .function-icon :global(svg) {
-    width: calc(46 * var(--u));
-    height: calc(46 * var(--u));
+  .compact .document-view {
+    font-size: calc(23 * var(--u));
+    padding-top: calc(12 * var(--u));
   }
-  .compact .runtime-functions {
-    padding-top: calc(33 * var(--u));
+  .compact .node-tag {
+    font-size: calc(21 * var(--u));
   }
-  .compact .window-title {
-    font-size: calc(32 * var(--u));
+  .compact .node-text.muted {
+    font-size: calc(18 * var(--u));
+    max-width: calc(290 * var(--u));
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .compact .dom-label {
+    font-size: calc(16 * var(--u));
   }
 </style>
