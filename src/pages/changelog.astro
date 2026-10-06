@@ -24,13 +24,13 @@ const rendered = await marked.parse(releaseNotes);
   <div class="release-layout container">
     <article
       data-live-release-notes
-      data-version="v0.1.9"
+      data-version="v0.2.0"
       class="release-notes prose"
       set:html={rendered}
     />
     <aside>
       <span>Latest release</span>{" "}<strong data-release-version
-        >v0.1.9</strong
+        >v0.2.0</strong
       >{" "}<a href="https://github.com/mimic-browser/runtime/releases"
         >All releases <ArrowRight size={16} /></a
       >
