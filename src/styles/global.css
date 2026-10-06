@@ -372,8 +372,8 @@ main .example > p.example-note {
   --bg: #070e17;
   --surface: #0f1b2b;
   --line: #283a545e;
-  --blue: #6685ff;
-  --blue-bright: #a5bdff;
+  --blue: #718bff;
+  --blue-bright: #93a6ff;
   --display: "Manrope Variable", Manrope, var(--sans);
 }
 .site-frame {
@@ -398,14 +398,14 @@ main .example > p.example-note {
   transform: translateY(0);
 }
 .button-primary {
-  background: linear-gradient(135deg, #5c80ff, #6072f7);
+  background: var(--blue);
   border-color: #8aa3ff80;
   box-shadow:
     inset 0 1px 0 #d9e5ff40,
     0 5px 24px #436bff1b;
 }
 .button-primary:hover {
-  background: linear-gradient(135deg, #7193ff, #7689ff);
+  background: #859bff;
   box-shadow:
     inset 0 1px 0 #edf4ff60,
     0 8px 27px #436bff38;
