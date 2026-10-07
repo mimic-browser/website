@@ -59,18 +59,27 @@ try {
   await cdp.send("Target.disposeBrowserContext", { browserContextId });
 }`;
 const captureCode = `const cdp = await context.newCDPSession(page);
+// This example uses browser.contexts()[0], Mimic's default Context.
+// For another Context, pass browserContextId to every Context command.
+await cdp.send("Mimic.setMediaProfile", {
+  seed: "account-1842",
+  camera: { source: "obs", profile: "auto" },
+  microphone: { source: "default" },
+});
 for (const name of ["camera", "microphone"]) {
   await cdp.send("Browser.setPermission", {
-    permission: { name }, setting: "granted",
-    origin: new URL(page.url()).origin
+    permission: { name },
+    setting: "granted",
+    origin: new URL(page.url()).origin,
   });
 }
 await page.evaluate(async () => {
   const devices = await navigator.mediaDevices.enumerateDevices();
-  const camera = devices.find(device => device.label === "OBS Virtual Camera");
+  const camera = devices.find((device) => device.kind === "videoinput");
+  if (!camera) throw new Error("Configured camera is unavailable");
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: true,
-    video: camera ? { deviceId: { exact: camera.deviceId } } : true
+    video: { deviceId: { exact: camera.deviceId } },
   });
   const peer = new RTCPeerConnection();
   for (const track of stream.getTracks()) peer.addTrack(track, stream);
@@ -559,12 +568,68 @@ await page.evaluate(async () => {
 
   <h2 id="capture">Camera, microphone and WebRTC</h2>
   <p>
+    Choose the capture source and the camera identity separately. With{" "}
+    <code>source: "obs", profile: "auto"</code>, OBS supplies the frames while
+    the page sees a complete integrated or USB webcam recipe. Native source
+    names stay private to automation. The seed fixes the whole profile;
+    enumeration and navigation never reroll its fields.
+  </p>
+  <p>
     Capture real cameras, including OBS Virtual Camera, and native microphone
     inputs. Grant camera and microphone access explicitly for the page origin.
     Unset or denied permission rejects immediately; automation never waits for a
     permission dialog. Device IDs are scoped to the Context and origin.
   </p>
   <CodeWindow title="capture.mjs" lang="javascript" code={captureCode} />
+  <p>
+    Use <code>usb-webcam</code> or <code>integrated-webcam</code> for an explicit
+    class, or choose its HD/FHD variant. Camera and microphone aliases share
+    a logical group while keeping separate device IDs. The microphone option
+    is optional and requires a real audio input. Profiles also install through{" "}
+    <code>Mimic.createContext.media</code> before creating a page.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Command</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>Mimic.getMediaSources</code></td>
+        <td>Discover native sources and private binding IDs without starting capture.</td>
+      </tr>
+      <tr>
+        <td><code>Mimic.getMediaPresets</code></td>
+        <td>List complete physical camera class variants.</td>
+      </tr>
+      <tr>
+        <td><code>Mimic.validateMediaProfile</code></td>
+        <td>Validate a recipe without changing the Context.</td>
+      </tr>
+      <tr>
+        <td><code>Mimic.setMediaProfile</code></td>
+        <td>Atomically set identity, grouping and executable output recipes.</td>
+      </tr>
+      <tr>
+        <td><code>Mimic.getMediaProfile</code></td>
+        <td>Inspect the resolved catalog and private capture diagnostics.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Settings, capabilities, constraints and actual output agree. CPU crop/scale
+    and FPS reduction produce selected pixels; clones own independent output
+    modes. Impossible constraints and invalid overrides retain the prior state.
+    Changing the catalog while capture is starting or live rejects. Auto uses
+    physical class recipes, rather than claiming an exact model or driver copy.
+    Read the{" "}
+    <a href="https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/media-device-profiles-design.md">
+      media profile contract and examples
+    </a>{" "}
+    for custom recipes, bounded optional noise and deferred native checks.
+  </p>
   <p>
     Streams support video/canvas observations and Web Audio analyser readbacks.
     WebRTC sends and receives H264 video and Opus audio. Capture and codecs
@@ -577,9 +642,12 @@ await page.evaluate(async () => {
     reconnects the source to the current microphone input.
   </p>
   <p>
-    Video transmission is capped at 1280×720 and 30 fps; microphone PCM is 48
+    Video transmission adapts dimensions to at most 1280×720 and follows the
+    selected track FPS and actual frame timestamps. WebRTC statistics describe
+    actual encoded and decoded frames. Microphone PCM is 48
     kHz mono/stereo. Echo cancellation, noise suppression, automatic gain
-    control, voice isolation and speaker output are unavailable. Read the{" "}
+    control, voice isolation and speaker output are unavailable. Camera focus,
+    exposure, PTZ controls and artificial timing jitter are unsupported. Read the{" "}
     <a href="https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/camera.md">
       capture contract and limitations
     </a>{" "}
