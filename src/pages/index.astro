@@ -92,7 +92,10 @@ const capabilities = [
   description="Run browser automation with less memory, compute and network traffic. Mimic keeps the browser behavior your workload needs, without a full browser."
 >
   <div class="hero-intro">
-    <section class="hero">
+    <section
+      class="hero"
+      style={`--hero-room: url('${base}images/mascot-hero-detail.png')`}
+    >
       <picture class="hero-art">
         <source
           media="(max-width: 600px)"
@@ -137,21 +140,45 @@ const capabilities = [
             <h3><Cpu size={22} /> Less browser work</h3>
             <strong>5.0×</strong>
             <p>Less CPU per static session.</p>
+            <div
+              class="metric-comparison"
+              aria-hidden="true"
+              style="--usage: 20%"
+            >
+              <div><span>Chrome</span><i class="metric-baseline"></i></div>
+              <div><span>Mimic</span><i class="metric-result"></i></div>
+            </div>
             <small>Static DOM · 39 ms vs. Chrome: 195 ms</small>
           </article>
           <article>
             <h3><Layers size={22} /> More room to work</h3>
             <strong>8.3×</strong>
             <p>Less memory at startup.</p>
+            <div
+              class="metric-comparison"
+              aria-hidden="true"
+              style="--usage: 12.1%"
+            >
+              <div><span>Chrome</span><i class="metric-baseline"></i></div>
+              <div><span>Mimic</span><i class="metric-result"></i></div>
+            </div>
             <small>Process-tree RSS · 46 MiB vs. Chrome: 380 MiB</small>
           </article>
           <article>
             <h3><Wifi size={22} /> Only the traffic you need</h3>
-            <strong>53.9×</strong>
+            <strong>98.1%</strong>
             <p>
               Less downloaded with <a href={`${base}optimize/`}>Optimize</a>.
             </p>
-            <small>Books extraction · vs. ordinary Mimic · body bytes</small>
+            <div
+              class="metric-comparison"
+              aria-hidden="true"
+              style="--usage: 1.855%"
+            >
+              <div><span>Chrome</span><i class="metric-baseline"></i></div>
+              <div><span>+ Optimize</span><i class="metric-result"></i></div>
+            </div>
+            <small>Books extraction · vs. Chrome · body bytes</small>
           </article>
         </div>
         <a class="unified-methodology" href={`${base}benchmarks/`}
@@ -2068,13 +2095,29 @@ const capabilities = [
     .hero::before {
       display: none;
     }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        linear-gradient(90deg, #080d19b0 0%, #080d1940 35%, transparent 66%),
+        linear-gradient(0deg, #08111b 0%, transparent 18%);
+    }
     .hero-art {
       display: block;
       inset: 0;
-      width: 100%;
-      margin-inline: auto;
+      left: auto;
+      right: 0;
+      width: min(100%, 2100px);
+      margin-inline: 0;
       z-index: 0;
       overflow: hidden;
+    }
+    .hero-art img {
+      object-position: center 56%;
+      mask-image: linear-gradient(90deg, transparent, #000 10%);
     }
     .hero-layout {
       width: 100%;
@@ -2219,9 +2262,14 @@ const capabilities = [
   .unified-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
   }
   .unified-grid article {
-    padding-inline: 30px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 18px;
+    align-content: start;
+    padding-inline: 24px;
     border-right: 1px solid #31466250;
   }
   .unified-grid article:first-child {
@@ -2229,29 +2277,38 @@ const capabilities = [
   }
   .unified-grid article:last-child {
     padding-right: 0;
-    border: 0;
+    border-right: 0;
   }
   .unified-grid h3 {
+    grid-column: 2;
+    grid-row: 1;
     display: flex;
     align-items: center;
-    gap: 12px;
-    font: 600 16px var(--sans);
-    margin: 0 0 22px;
+    gap: 10px;
+    font: 600 14px var(--sans);
+    margin: 0;
   }
   .unified-grid h3 :global(svg) {
-    color: var(--blue);
+    color: #9bb3ff;
     flex-shrink: 0;
+    width: 20px;
+    height: 20px;
   }
   .unified-grid strong {
     display: block;
-    font-size: 44px;
-    line-height: 1.15;
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: center;
+    font-size: clamp(36px, 2.4vw, 46px);
+    line-height: 1;
     letter-spacing: -0.045em;
-    color: #9bb3ff;
+    color: #a7bbff;
   }
   .unified-grid p {
-    margin: 10px 0 5px;
-    font-size: 15px;
+    grid-column: 2;
+    grid-row: 2;
+    margin: 5px 0 0;
+    font-size: 13px;
     color: #e0e8f7;
   }
   .unified-grid p a {
@@ -2260,10 +2317,46 @@ const capabilities = [
     text-underline-offset: 3px;
   }
   .unified-grid small {
+    grid-column: 1 / -1;
     display: block;
     color: #9baecb;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.6;
+  }
+  .metric-comparison {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 6px;
+    margin: 12px 0 10px;
+    max-width: 340px;
+  }
+  .metric-comparison > div {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+  .metric-comparison span {
+    font-size: 11px;
+    line-height: 1;
+    color: #879ab7;
+  }
+  .metric-comparison i {
+    display: block;
+    height: 4px;
+    border-radius: 2px;
+  }
+  .metric-baseline {
+    width: 100%;
+    background: #31415a;
+  }
+  .metric-result {
+    width: var(--usage);
+    min-width: 4px;
+    background: #93a6ff;
+  }
+  .metric-comparison > div:last-child span {
+    color: #b9ccff;
   }
   .unified-methodology {
     display: flex;
@@ -2283,7 +2376,7 @@ const capabilities = [
     .unified-grid article:first-child,
     .unified-grid article:last-child {
       padding: 0 0 24px;
-      border: 0;
+      border-right: 0;
       border-bottom: 1px solid #31466250;
     }
     .unified-grid article:last-child {
@@ -2291,7 +2384,7 @@ const capabilities = [
       border-bottom: 0;
     }
     .unified-grid h3 {
-      margin-bottom: 14px;
+      margin-bottom: 0;
     }
     .unified-grid strong {
       font-size: 38px;
@@ -2304,6 +2397,21 @@ const capabilities = [
   .hero {
     overflow: visible;
     z-index: 2;
+  }
+  @media (min-width: 2101px) {
+    .hero::before {
+      content: "";
+      display: block;
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: calc(100% - 1890px);
+      z-index: 0;
+      pointer-events: none;
+      background-image: var(--hero-room);
+      background-size: 2100px auto;
+      background-position: left 56%;
+      background-repeat: no-repeat;
+    }
   }
   @media (min-width: 1600px) {
     .hero-content {
