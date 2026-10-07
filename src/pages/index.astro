@@ -93,15 +93,20 @@ const capabilities = [
 >
   <div class="hero-intro">
     <section class="hero">
-      <div class="hero-art">
+      <picture class="hero-art">
+        <source
+          media="(max-width: 600px)"
+          srcset={`${base}images/mascot-hero-mobile-detail.png`}
+          type="image/png"
+        />
         <img
-          src={`${base}images/mascot-hero.png`}
+          src={`${base}images/mascot-hero-detail.png`}
           width="1672"
           height="941"
           alt="Mimic holding a browser window"
           fetchpriority="high"
         />
-      </div>
+      </picture>
       <div class="container hero-layout">
         <div class="hero-content">
           <span class="eyeline">Browser automation, without the excess.</span>
@@ -118,18 +123,10 @@ const capabilities = [
             >
           </div>
           <div class="hero-tags">
-            <span><Code size={13} /> Works over CDP</span><span
-              ><Layers size={13} /> No Chromium underneath</span
-            ><span><Box size={13} /> Your existing tools</span>
+            <span><Code size={13} /> Use your existing tools</span><span
+              ><Server size={13} /> Use your proxies</span
+            ><span><Box size={13} /> No Chrome install</span>
           </div>
-        </div>
-        <div class="mobile-laptop">
-          <img
-            src={`${base}images/mascot-hero.png`}
-            width="1672"
-            height="941"
-            alt="Mimic holding a browser window"
-          />
         </div>
       </div>
     </section>
@@ -1873,7 +1870,9 @@ const capabilities = [
       grid-template-columns: 1fr;
       gap: 0;
       min-height: 0;
-      padding-block: 40px 32px;
+      padding-block: 40px clamp(330px, 48vw, 470px);
+      position: relative;
+      z-index: 1;
     }
     .hero-content {
       text-align: center;
@@ -1893,12 +1892,15 @@ const capabilities = [
       justify-content: center;
     }
     .hero-art {
-      display: none;
+      display: block;
+      top: auto;
+      bottom: 0;
+      height: clamp(470px, 60vw, 580px);
+      z-index: 0;
+      overflow: hidden;
     }
     .hero::before {
-      background:
-        linear-gradient(0deg, #090e16, transparent 20%),
-        linear-gradient(180deg, #090e16 28%, transparent 50%);
+      display: none;
     }
   }
   @media (max-width: 900px) {
@@ -1910,7 +1912,7 @@ const capabilities = [
   @media (max-width: 600px) {
     .hero-layout {
       width: calc(100% - 36px);
-      padding-block: 28px 30px;
+      padding-block: 28px 360px;
       gap: 0;
     }
     .hero-content {
@@ -1932,19 +1934,33 @@ const capabilities = [
       margin-top: 24px;
     }
     .hero-tags {
-      gap: 9px 14px;
+      gap: 8px;
       margin-top: 20px;
     }
     .hero-tags span {
       font-size: 11px;
+      padding: 6px 9px;
+      border: 1px solid #718bff30;
+      border-radius: 6px;
+      background: #0b1424f2;
+      color: #d4def2;
+      backdrop-filter: blur(8px);
     }
     .hero .eyeline {
       font-size: 9px;
     }
-    .hero::before {
-      background:
-        linear-gradient(0deg, #090e16 22%, transparent 40%),
-        linear-gradient(180deg, #090e16 35%, transparent 48%);
+    .hero-art {
+      height: clamp(540px, 160vw, 720px);
+    }
+    .hero-art img {
+      object-position: center bottom;
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 15%,
+        #000 78%,
+        transparent
+      );
     }
   }
   @media (max-width: 600px) {
@@ -2289,31 +2305,9 @@ const capabilities = [
     overflow: visible;
     z-index: 2;
   }
-  .mobile-laptop {
-    display: none;
-  }
-  .mobile-laptop img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1.35;
-    object-fit: cover;
-    object-position: 72% center;
-    border-radius: 12px;
-  }
   @media (min-width: 1600px) {
     .hero-content {
       width: 29%;
-    }
-  }
-  @media (max-width: 900px) {
-    .mobile-laptop {
-      display: block;
-      width: 100%;
-      margin-top: 24px;
-    }
-    .hero-layout {
-      display: block;
     }
   }
 </style>
