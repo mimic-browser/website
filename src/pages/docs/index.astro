@@ -572,6 +572,11 @@ await page.evaluate(async () => {
     release devices. No FFmpeg process or runtime codec download is needed.
   </p>
   <p>
+    Web Audio reads captured PCM from a retained window while processing each
+    graph interval. Suspending an AudioContext pauses its graph; resuming it
+    reconnects the source to the current microphone input.
+  </p>
+  <p>
     Video transmission is capped at 1280×720 and 30 fps; microphone PCM is 48
     kHz mono/stereo. Echo cancellation, noise suppression, automatic gain
     control, voice isolation and speaker output are unavailable. Read the{" "}

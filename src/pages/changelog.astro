@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import releaseNotes from "../../RELEASE_NOTES.md?raw";
+import release from "../../public/release-cache.json";
 import { marked } from "marked";
 import { ArrowRight, Download } from "lucide-astro";
 const base = import.meta.env.BASE_URL;
@@ -28,6 +29,7 @@ const rendered = await marked.parse(releaseNotes);
     <article
       data-live-release-notes
       data-version="v0.2.1"
+      data-updated-at={release.updated_at}
       class="release-notes prose"
       set:html={rendered}
     />
