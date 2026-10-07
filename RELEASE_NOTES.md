@@ -22,7 +22,3 @@ Retained frozen Chrome 152 diagnostics verify OBS video and USB microphone audio
 Video transmission currently supports H264 up to 1280×720 at 30 fps. Microphones deliver 48 kHz mono/stereo PCM and Opus audio. Echo cancellation, noise suppression, automatic gain control, voice isolation, speaker output, simulcast and sender parameter changes remain unsupported. Required unavailable processing constraints reject rather than simulate success. macOS hardware capture has not been tested locally, and no macOS release archive is provided. See the [capture contract and limitations](https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/camera.md).
 
 Mimic remains a renderer-free public beta for Windows and Linux amd64. Full source changes: [v0.2.0...v0.2.1](https://github.com/mimic-browser/runtime/compare/v0.2.0...v0.2.1).
-
-## Artifact refresh (2026-10-07)
-
-Windows and Linux archives now include the realtime microphone PCM lifetime and AudioContext resume fixes. They reuse unchanged binaries from [successful CI](https://github.com/mimic-browser/runtime/actions/runs/37568329782) at [`7883b18`](https://github.com/mimic-browser/runtime/commit/7883b1801db83ad72e972883b340cf275360fc36). Archives, source tag, manifest and checksums were refreshed together. Re-download the archives and matching SHA256SUMS if you fetched v0.2.1 before this refresh.
