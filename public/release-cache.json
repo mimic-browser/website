@@ -3,17 +3,17 @@
     {
       "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.2/mimic-v0.2.2-linux-amd64.tar.gz",
       "name": "mimic-v0.2.2-linux-amd64.tar.gz",
-      "size": 51008963
+      "size": 51008524
     },
     {
       "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.2/mimic-v0.2.2-windows-amd64.zip",
       "name": "mimic-v0.2.2-windows-amd64.zip",
-      "size": 47655030
+      "size": 47656230
     },
     {
       "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.2/release-manifest.json",
       "name": "release-manifest.json",
-      "size": 1659
+      "size": 1727
     },
     {
       "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.2/SHA256SUMS",
@@ -21,9 +21,9 @@
       "size": 286
     }
   ],
-  "body": "# Mimic v0.2.2\r\n\r\nChanges since v0.2.1:\r\n\r\n- Preserve CSS length comparison functions (`min`, `max`, `clamp`) in inline styles and stylesheet CSSOM, including mixed units, nested calculations and pending custom-property substitution. This fixes responsive dimensions and typography disappearing from the live developer preview, including a hero image whose container collapsed to zero height. Focused regression tests retain normal headful Chrome 152 observations and verify preview serialization.\r\n- Queue beacon requests and load applied CSS background images through the document resource lifecycle.\r\n- Avoid unused body streams for beacon uploads. Preserve binary snapshots, borrowed Navigator operations and keepalive quotas across engines. Transport regression tests check each accepted upload independently of page setup time.\r\n- Admit CSS background discovery from canonical style inputs before entering JavaScript. Unstyled pages no longer run unrelated style callbacks during task checkpoints, fixing regressions when page code replaces JavaScript intrinsics. CSSOM changes and linked sheets continue to trigger resource discovery.\r\n- Support XPath evaluator construction and compiled attribute predicates.\r\n- Add the contributor Compatibility Doctor and field-evidence workflow. Keep Go metadata inspection offline and report inspection failures without making them fatal.\r\n\r\nMimic remains a renderer-free public beta for Windows and Linux amd64. The developer preview is drawn by the viewer's browser; this release does not add a pixel renderer or full responsive image candidate selection to Mimic. Full source changes: [v0.2.1...v0.2.2](https://github.com/mimic-browser/runtime/compare/v0.2.1...v0.2.2).\r\n",
+  "body": "# Mimic v0.2.2\n\nChanges since v0.2.1:\n\n- Build release executables from the release tag so the startup banner and `Mimic.getVersion` report `v0.2.2`. Release packaging now rejects development versions, mismatched revisions, and dirty binaries, including reused CI artifacts and extracted packages.\n- Preserve canonical DOM tree state when page scripts override public accessors, including iframe insertion, connectivity, viewport observations, mutation records, event paths, and removal. Resolve quirks-mode percentage heights through auto-height block containers. These fixes let the captured HUMAN widget complete its press-and-hold execution path without runtime errors; acceptance of a fresh server challenge remains unverified.\n- Preserve CSS length comparison functions (`min`, `max`, `clamp`) in inline styles and stylesheet CSSOM, including mixed units, nested calculations and pending custom-property substitution. This fixes responsive dimensions and typography disappearing from the live developer preview, including a hero image whose container collapsed to zero height. Focused regression tests retain normal headful Chrome 152 observations and verify preview serialization.\n- Queue beacon requests and load applied CSS background images through the document resource lifecycle.\n- Avoid unused body streams for beacon uploads. Preserve binary snapshots, borrowed Navigator operations and keepalive quotas across engines. Transport regression tests check each accepted upload independently of page setup time.\n- Admit CSS background discovery from canonical style inputs before entering JavaScript. Unstyled pages no longer run unrelated style callbacks during task checkpoints, fixing regressions when page code replaces JavaScript intrinsics. CSSOM changes and linked sheets continue to trigger resource discovery.\n- Support XPath evaluator construction and compiled attribute predicates.\n- Add the contributor Compatibility Doctor and field-evidence workflow. Keep Go metadata inspection offline and report inspection failures without making them fatal.\n\nMimic remains a renderer-free public beta for Windows and Linux amd64. The developer preview is drawn by the viewer's browser; this release does not add a pixel renderer or full responsive image candidate selection to Mimic. Full source changes: [v0.2.1...v0.2.2](https://github.com/mimic-browser/runtime/compare/v0.2.1...v0.2.2).\n",
   "html_url": "https://github.com/mimic-browser/runtime/releases/tag/v0.2.2",
   "published_at": "2026-10-07T08:54:58Z",
   "tag_name": "v0.2.2",
-  "updated_at": "2026-10-07T08:54:58Z"
+  "updated_at": "2026-10-07T14:49:33Z"
 }
