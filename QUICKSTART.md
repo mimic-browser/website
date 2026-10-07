@@ -1,210 +1,96 @@
-# Quick start: one profile, then automate
+# Quick start: launch Mimic, then automate
 
-**Public Beta — Windows and Linux.** [Download v0.2.0](https://github.com/mimic-browser/runtime/releases/tag/v0.2.0) and
-extract the archive. No Go, Rust, Chromium, or GPU is needed. Commands below run
-from the extracted directory. Read [Prosperity Public License 3.0.0](LICENSE.md) before use.
+**Public Beta — Windows and Linux.** [Download v0.2.1](https://github.com/mimic-browser/runtime/releases/tag/v0.2.1), verify the archive against its `SHA256SUMS`, and extract it. The executable requires no Go, Rust, Chromium or GPU. Read [Prosperity Public License 3.0.0](LICENSE.md) before use.
 
-Windows: extract the `.zip` and run `mimic.exe`. Linux: extract the `.tar.gz`
-and run `./mimic`; Ubuntu 24.04+ with glibc 2.39+ and libgcc_s is required.
-For Linux text and input geometry, install fonts if needed:
+Windows: run `mimic.exe`. Linux: run `./mimic` on Ubuntu 24.04+ with glibc 2.39+, libgcc_s and installed Liberation/DejaVu/Noto fonts. Node.js 22+ is only needed for automation clients.
 
-```sh
-sudo apt-get update
-sudo apt-get install -y libgcc-s1 fonts-liberation fonts-dejavu-core
-```
-
-Verify the downloaded archive against the release's `SHA256SUMS` using
-`Get-FileHash -Algorithm SHA256 <archive>` on Windows or `sha256sum <archive>`
-on Linux. Node.js 22+ is only needed for the example automation clients.
-
-**Want the shortest path?** The archive already includes `examples/profile.json`
-and [three runnable workflows](examples/README.md), including Playwright.
-
-## 1. Describe the browser environment
-
-Save this as `profile.json`:
-
-```json
-{
-  "schemaVersion": 1,
-  "baseProfile": "chrome-152-windows-x64-headful-controlled-v1",
-  "display": {
-    "width": 1920,
-    "height": 1080,
-    "availableWidth": 1920,
-    "availableHeight": 1040,
-    "deviceScaleFactor": 1
-  },
-  "window": {
-    "outerWidth": 1280,
-    "outerHeight": 800,
-    "viewportWidth": 1280,
-    "viewportHeight": 720
-  },
-  "hardware": { "logicalProcessors": 8, "deviceMemoryGB": 8 },
-  "locale": {
-    "languages": ["en-US", "en"],
-    "reduceAcceptLanguage": false,
-    "timezone": "America/New_York",
-    "intlLocale": "en-US"
-  },
-  "preferences": { "colorScheme": "dark", "reducedMotion": false }
-}
-```
-
-One profile sets the supported browser-visible environment before the first page
-loads: screen and viewport, reported hardware, languages, timezone, locale, and
-preferences. Its pages, frames, and new workers inherit that environment.
-
-This is broader than a user-agent string change. It is also a bounded interface:
-it does not replace every fingerprint surface or turn the runtime into another
-OS or browser engine. Hardware values are reported properties, not physical
-resource allocation. Profiles are validated; unsupported custom settings return errors.
-
-## 2. Start Mimic
+## Start the browser runtime
 
 ```powershell
-.\mimic.exe --profile profile.json --chrome 152 --browser-mode headful --listen 127.0.0.1:9222
+.\mimic.exe --listen 127.0.0.1:9222
 ```
-
-On Linux, use:
 
 ```sh
-./mimic --profile profile.json --chrome 152 --browser-mode headful --listen 127.0.0.1:9222
+./mimic --listen 127.0.0.1:9222
 ```
 
-`headful` selects the measured environment profile; Mimic still opens no browser
-window and renders no pixels. V8 is the default engine. No Chrome installation or
-GPU is required to run this build. Keep the local process running while you automate.
+The local CDP endpoint is unauthenticated; keep it accessible to trusted clients. `--dev-preview` optionally exposes a passive viewer at `/debug/preview/`, with themes, fit/zoom controls and live activity. It does not render a window inside Mimic or send viewer input to the automated Page.
 
-## 3. Connect with Puppeteer
+## Connect Playwright
 
-With Node.js and npm installed, use another terminal:
-
-```powershell
-npm install puppeteer-core@25.10.0
+```sh
+npm install playwright-core
 ```
 
-Save as `automate.mjs`:
+```js
+import { chromium } from "playwright-core";
 
-```javascript
-import puppeteer from 'puppeteer-core';
-
-const browser = await puppeteer.connect({
-  browserURL: 'http://127.0.0.1:9222',
-  defaultViewport: null // Keep the viewport from profile.json.
-});
-
+const browser = await chromium.connectOverCDP("http://127.0.0.1:9222");
 try {
-  const page = await browser.newPage();
-  try {
-    await page.goto('https://books.toscrape.com/', { waitUntil: 'load' });
-    await page.waitForSelector('h1');
-
-    console.log(await page.evaluate(() => ({
-      heading: document.querySelector('h1').textContent,
-      language: navigator.language,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      viewport: [innerWidth, innerHeight],
-      darkMode: matchMedia('(prefers-color-scheme: dark)').matches
-    })));
-  } finally {
-    await page.close();
-  }
+  const context = browser.contexts()[0];
+  const page = await context.newPage();
+  await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
+  console.log(await page.locator("h1").textContent());
+  await page.close();
 } finally {
-  await browser.disconnect();
+  await browser.close();
 }
 ```
 
-```powershell
-node automate.mjs
-```
+The extracted archive includes [runnable local examples](examples/README.md) for Playwright, Puppeteer, concurrent Pages and isolated profile contexts. Use ordinary assertions and application readiness signals; a load event alone does not establish hydration.
 
-The script reads `All products` from the public Books to Scrape sandbox and the
-environment you configured. External sites can change or become unavailable. For your
-own workflow, wait for the element or application state that indicates readiness,
-then use supported DOM interactions and evaluation. CDP coverage is evolving;
-this example does not imply support for every Puppeteer feature.
+## Camera and microphone
 
-## Playwright: fill, click, and read the result
+On a secure page or localhost, grant access through CDP before requesting capture:
 
-The included [Playwright example](examples/playwright.mjs) uses
-`chromium.connectOverCDP`, `locator.fill`, and `locator.click` against a local
-demo shop. It waits for a fetch-driven DOM update and returns `126 USD`.
-Follow [the example instructions](examples/README.md) or run the complete check:
-
-```sh
-cd examples
-npm ci
-# Linux; on Windows replace ../mimic with ../mimic.exe.
-npm run verify -- ../mimic
-```
-
-This command starts Mimic and the fixture itself, checks Playwright, Puppeteer
-profiles, and ten concurrent pages, then cleans up. No Chrome download is needed.
-
-## Native SOCKS5, HTTP, and HTTPS proxies
-
-Add `network` alongside the other top-level fields in `profile.json`:
-
-```json
-{
-  "network": {
-    "proxy": {
-      "server": "socks5://127.0.0.1:1080"
-    }
-  }
+```js
+const cdp = await context.newCDPSession(page);
+for (const name of ["camera", "microphone"]) {
+  await cdp.send("Browser.setPermission", {
+    permission: { name },
+    setting: "granted",
+    origin: new URL(page.url()).origin,
+  });
 }
+await page.evaluate(async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+  globalThis.capture = stream;
+  const peer = new RTCPeerConnection();
+  for (const track of stream.getTracks()) peer.addTrack(track, stream);
+  // Exchange SDP and ICE through the application's signaling service.
+  globalThis.peer = peer;
+});
 ```
 
-Restart with the updated file and a running SOCKS5 proxy at that address. Resource
-requests use the proxy natively, including worker fetches. SOCKS5 passes the
-destination hostname to the proxy. HTTP and HTTPS proxy URLs are also supported.
-No browser extension is needed.
+Use `enumerateDevices()` and an exact `deviceId` to select OBS Virtual Camera or a particular audio input. Capture is lazy, clones share the source, and navigation/Page teardown close native resources. Unset or denied permission rejects immediately without a waiting dialog.
 
-For an authenticated proxy, add `username` and `password` inside `proxy`, keeping
-credentials out of the server URL and public files. A failed proxy connection or
-authentication does not fall back to a direct request. Proxy mode disables QUIC;
-this setting routes resource-loader HTTP(S), not UDP/WebRTC traffic. Bypass lists
-are not currently supported.
+WebRTC supports H264 video up to 1280×720 at 30 fps and Opus audio from 48 kHz mono/stereo microphone PCM. Echo/noise/gain/voice processing and speaker output are unavailable. See the [capture contract](https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/camera.md) and [release notes](RELEASE_NOTES.md).
 
-A timezone or locale setting does not change your public IP. Use an appropriate
-real proxy when the workflow requires a different network location.
+## Separate environments and proxies
 
-## Multiple profiles in one running instance
+Create managed environments through the current CDP profile contract:
 
-An advanced CDP client can create a context with its own profile and connection
-pool. Here, `browser` is the connected Puppeteer browser from step 3, and
-`profile` is the parsed JSON object from step 1:
-
-```javascript
-const cdp = await browser.target().createCDPSession();
-const { diagnostics } = await cdp.send('Mimic.validateProfile', { profile });
-const { browserContextId } = await cdp.send('Mimic.createContext', {
-  profile,
-  disposeOnDetach: true
+```js
+const { browserContextId, profile } = await cdp.send("Mimic.createContext", {
+  profile: {
+    generate: { browser: "chrome", version: 152, platform: "windows", seed: "account-1842" },
+  },
+  proxy: { server: "socks5://127.0.0.1:1080", username: "user", password: "password" },
+  disposeOnDetach: true,
 });
 try {
-  const { targetId } = await cdp.send('Target.createTarget', {
+  const { targetId } = await cdp.send("Target.createTarget", {
     browserContextId,
-    url: 'about:blank'
+    url: "about:blank",
   });
-  // Attach a page session to targetId to navigate and automate it.
-  await cdp.send('Mimic.updateProfile', {
-    targetId,
-    patch: { window: { viewportWidth: 900, viewportHeight: 600 } }
-  });
-  const effective = await cdp.send('Mimic.getProfile', { targetId });
+  // Attach to targetId and automate it through Page/Runtime commands.
 } finally {
-  await cdp.send('Target.disposeBrowserContext', { browserContextId });
-  await cdp.detach();
+  await cdp.send("Target.disposeBrowserContext", { browserContextId });
 }
 ```
 
-Use `Mimic.getProfileSchema` to discover valid base profiles and supported fields.
-Viewport, language, and theme have dynamic overrides; full environment replacement,
-including hardware, timezone, and proxy settings, requires a new context. Existing
-cookies and documents are not migrated. Contexts are not a security sandbox.
+The returned `profile` is an opaque reusable token. Use `Mimic.exportProfile` and `Mimic.importProfile` for JSON. Generated/imported environments are immutable; create a new Context to change them. JSON is not a CLI environment configuration or an arbitrary createContext override. Proxy credentials are separate Context options; HTTP(S) proxy routing does not route UDP/WebRTC. See the [Context contract](https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/environment-profiles.md).
 
-The aim: describe your environment once, connect your automation, and focus on
-the workflow. **[Public Beta downloads and feedback →](BETA.md)**
+## Workload optimization
+
+`mimic optimize --name shop -- <command>` trains a named workload profile using the command's own assertions. `--profile shop` selects that workload artifact, not environment JSON. Read [Optimize and its safety limits](https://mimic.boo/docs/optimize/) before applying it.

@@ -24,9 +24,18 @@ assets. A DOM snapshot is not a screenshot or a complete offline copy of an appl
 
 ## Does it render pages?
 
-Mimic does not produce page pixels or require a GPU. Screenshots, rendered PDFs,
-video playback, full CSS layout, and Canvas/WebGL pixel rendering are outside the
-current scope. Use a full browser when the visual output is the result you need.
+Mimic does not produce rendered page pixels or require a GPU. Screenshots,
+rendered PDFs and full CSS layout remain outside the current scope. Canvas and
+WebGL observations model what scripts can read; captured camera frames feed
+video, canvas and bitmap observations without a rendered page.
+
+## Can I use a camera or microphone?
+
+Yes. Native camera and microphone inputs, including virtual devices exposed by
+the operating system, support device selection and shared-source tracks. WebRTC
+sends and receives H264 video and Opus audio. Grant permissions explicitly
+through CDP; ungranted requests reject immediately. Audio processing and speaker
+output are unavailable. See the [capture contract and limits](https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/camera.md).
 
 ## Does every website work?
 
@@ -58,7 +67,7 @@ on Linux. Performance charts are the retained Windows checkpoint, not Linux resu
 ## Is it open source? Where can I download it?
 
 The [Mimic source](https://github.com/mimic-browser/runtime) is public, and ready-to-run
-binaries are available in [GitHub Releases](https://github.com/mimic-browser/runtime/releases/tag/v0.1.9).
+binaries are available in [GitHub Releases](https://github.com/mimic-browser/runtime/releases/tag/v0.2.1).
 This website contains the product overview, benchmarks, and MIT-licensed
 client examples. Mimic itself uses the [Prosperity Public License 3.0.0](LICENSE.md);
 read its terms before use.

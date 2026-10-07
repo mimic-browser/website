@@ -13,27 +13,29 @@ const rendered = await marked.parse(releaseNotes);
 >
   <section class="page-intro container">
     <div>
-      <span class="eyebrow">Changelog</span><h1>What’s new in Mimic.</h1><p>
+      <span class="eyebrow">Changelog</span>
+      <h1>What’s new in Mimic.</h1>
+      <p>
         Release notes for the public beta, with the details behind each update.
       </p>
     </div>
-    <a class="button button-primary" href={`${base}download/`}
-      ><Download size={18} />Download latest</a
-    >
+    <a class="button button-primary" href={`${base}download/`}>
+      <Download size={18} />
+      Download latest
+    </a>
   </section>
   <div class="release-layout container">
     <article
       data-live-release-notes
-      data-version="v0.2.0"
+      data-version="v0.2.1"
       class="release-notes prose"
       set:html={rendered}
     />
     <aside>
-      <span>Latest release</span>{" "}<strong data-release-version
-        >v0.2.0</strong
-      >{" "}<a href="https://github.com/mimic-browser/runtime/releases"
-        >All releases <ArrowRight size={16} /></a
-      >
+      <span>Latest release</span> <strong data-release-version>v0.2.1</strong>{" "}
+      <a href="https://github.com/mimic-browser/runtime/releases">
+        All releases <ArrowRight size={16} />
+      </a>
     </aside>
   </div>
 </BaseLayout>

@@ -13,7 +13,9 @@ try {
     const result = await page.locator('#total').textContent();
     assert.equal(result, '126 USD');
     console.log(`Playwright: ${result} — input, click, fetch, and DOM update`);
-  } finally { await page.close(); }
+  } finally {
+    await page.close();
+  }
 } finally {
   // Closing a connected Playwright Browser disconnects this client.
   await browser.close();

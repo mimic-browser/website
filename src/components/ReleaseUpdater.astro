@@ -1,4 +1,5 @@
 <script>
+  import bundledRelease from "../../public/release-cache.json";
   interface ReleaseAsset {
     name: string;
     browser_download_url: string;
@@ -16,6 +17,8 @@
     const release = value as Release;
     return (
       typeof release.tag_name === "string" &&
+      typeof release.published_at === "string" &&
+      Number.isFinite(Date.parse(release.published_at)) &&
       typeof release.body === "string" &&
       Array.isArray(release.assets) &&
       release.assets.every(
@@ -62,7 +65,13 @@
     let cached: { saved: number; release: Release } | undefined;
     try {
       const value = JSON.parse(localStorage.getItem(key) || "null");
-      if (value && valid(value.release) && typeof value.saved === "number")
+      if (
+        value &&
+        valid(value.release) &&
+        typeof value.saved === "number" &&
+        Date.parse(value.release.published_at) >=
+          Date.parse(bundledRelease.published_at)
+      )
         cached = value;
     } catch {
       /* Browser storage is optional. */
@@ -84,6 +93,12 @@
       const release: unknown = await response.json();
       if (!valid(release))
         throw new Error("Unexpected GitHub release response");
+      // A stale API/browser cache cannot downgrade the published static site.
+      if (
+        Date.parse(release.published_at) <
+        Date.parse(bundledRelease.published_at)
+      )
+        return;
       apply(release);
       try {
         localStorage.setItem(

@@ -49,6 +49,7 @@ const topics = [
   ["Mimic commands", "mimic-commands"],
   ["Proxies", "proxies"],
   ["Multiple contexts", "contexts"],
+  ["Camera and microphone", "capture"],
   ["Compatibility", "compatibility"],
   ["Troubleshooting", "troubleshooting"],
   ["FAQ", "faq"],
@@ -66,33 +67,34 @@ const topics = [
       </p>
     </div>
     <div class="docs-intro-note">
-      <span>Current release</span>{" "}<strong data-release-version
-        >v0.2.0</strong
-      ><small>Windows & Linux amd64</small>
+      <span>Current release</span> <strong data-release-version>v0.2.1</strong>
+      <small>Windows & Linux amd64</small>
     </div>
   </div>
   <nav class="docs-cards container" aria-label="Start with a topic">
-    {
-      groups.map((group) => (
-        <a href={group.href}>
-          <>
-            <span class="card-icon">
-              <group.icon size={22} />
-            </span>{" "}
-            <strong>{group.title}</strong>
-            <p>{group.description}</p>
-            <ArrowRight size={17} class="card-arrow" />
-          </>
-        </a>
-      ))
-    }
+    {groups.map((group) => (
+      <a href={group.href}>
+        <>
+          <span class="card-icon">
+            <group.icon size={22} />
+          </span>{" "}
+          <strong>{group.title}</strong>
+          <p>{group.description}</p>
+          <ArrowRight size={17} class="card-arrow" />
+        </>
+      </a>
+    ))}
   </nav>
   <div class="docs-shell container">
-    <article class="docs-content prose"><slot /></article>
+    <article class="docs-content prose">
+      <slot />
+    </article>
     <aside class="docs-index">
       <span>On this page</span>
       <nav aria-label="Documentation sections">
-        {topics.map(([label, id]) => <a href={`#${id}`}>{label}</a>)}
+        {topics.map(([label, id]) => (
+          <a href={`#${id}`}>{label}</a>
+        ))}
       </nav>
     </aside>
   </div>

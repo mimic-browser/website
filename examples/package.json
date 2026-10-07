@@ -7,9 +7,12 @@
     "playwright": "node playwright.mjs",
     "puppeteer": "node puppeteer.mjs",
     "concurrency": "node concurrency.mjs",
+    "profiles": "node profile-contexts.mjs",
     "verify": "node verify.mjs"
   },
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "playwright-core": "1.63.0",
     "puppeteer-core": "25.10.0"

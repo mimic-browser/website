@@ -32,46 +32,51 @@ await page.goto("https://books.toscrape.com/", { waitUntil: "load" });
 console.log(await page.$eval("h1", node => node.textContent));
 await page.close();
 await browser.disconnect();`;
-const profileCode = `{
-  "schemaVersion": 1,
-  "baseProfile": "chrome-152-windows-x64-headful-controlled-v1",
-  "display": { "width": 1920, "height": 1080, "deviceScaleFactor": 1 },
-  "window": { "viewportWidth": 1280, "viewportHeight": 720 },
-  "hardware": { "logicalProcessors": 8, "deviceMemoryGB": 8 },
-  "locale": {
-    "languages": ["en-US", "en"],
-    "timezone": "America/New_York",
-    "intlLocale": "en-US"
-  },
-  "preferences": { "colorScheme": "dark", "reducedMotion": false }
-}`;
+const profileCode = `const { profile } = await cdp.send("Mimic.generateProfile", {
+  seed: "account-1842"
+});
+const exported = await cdp.send("Mimic.exportProfile", { profile });
+const restored = await cdp.send("Mimic.importProfile", { profile: exported.profile });
+const context = await cdp.send("Mimic.createContext", { profile: restored.profile });`;
 const proxyCode = `{
-  "network": {
-    "proxy": {
-      "server": "socks5://127.0.0.1:1080",
-      "username": "user",
-      "password": "password"
-    }
-  }
+  "server": "socks5://127.0.0.1:1080",
+  "username": "user",
+  "password": "password"
 }`;
 const contextsCode = `const cdp = await browser.target().createCDPSession();
-const { diagnostics } = await cdp.send("Mimic.validateProfile", { profile });
 const { browserContextId } = await cdp.send("Mimic.createContext", {
-  profile,
+  profile: {
+    generate: { browser: "chrome", version: 152, platform: "windows", seed: "account-1842" }
+  },
   disposeOnDetach: true
 });
 try {
   const { targetId } = await cdp.send("Target.createTarget", {
-    browserContextId,
-    url: "about:blank"
+    browserContextId, url: "about:blank"
   });
-  await cdp.send("Mimic.updateProfile", {
-    targetId,
-    patch: { window: { viewportWidth: 900, viewportHeight: 600 } }
-  });
+  // Attach to targetId and use ordinary Page/Runtime CDP commands.
 } finally {
   await cdp.send("Target.disposeBrowserContext", { browserContextId });
 }`;
+const captureCode = `const cdp = await context.newCDPSession(page);
+for (const name of ["camera", "microphone"]) {
+  await cdp.send("Browser.setPermission", {
+    permission: { name }, setting: "granted",
+    origin: new URL(page.url()).origin
+  });
+}
+await page.evaluate(async () => {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const camera = devices.find(device => device.label === "OBS Virtual Camera");
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: camera ? { deviceId: { exact: camera.deviceId } } : true
+  });
+  const peer = new RTCPeerConnection();
+  for (const track of stream.getTracks()) peer.addTrack(track, stream);
+  // Exchange SDP and ICE through your application's signaling service.
+  globalThis.call = { peer, stream };
+});`;
 ---
 
 <DocsLayout
@@ -80,12 +85,11 @@ try {
 >
   <div class="doc-overview">
     <p>
-      Have a repeatable workload? <a
-        href={`${import.meta.env.BASE_URL}optimize/`}>Explore Optimize</a
-      >{" "}
-      records its network environment, tests resource combinations locally, and saves
-      an empirically validated profile. Ordinary assertions remain the correctness
-      contract. Read the safety limits before applying a profile.
+      Have a repeatable workload?{" "}
+      <a href={`${import.meta.env.BASE_URL}optimize/`}>Explore Optimize</a>{" "}
+      records its network environment, tests resource combinations locally, and
+      saves an empirically validated profile. Ordinary assertions remain the
+      correctness contract. Read the safety limits before applying a profile.
     </p>
     <p>
       Mimic runs as a local executable. Start it, then connect Playwright,
@@ -95,37 +99,47 @@ try {
   </div>
 
   <p>
-    Read <a href={`${import.meta.env.BASE_URL}playwright-without-chromium/`}
-      >Run Playwright without Chromium</a
-    >{" "}
-    for a complete extraction example, or <a
-      href={`${import.meta.env.BASE_URL}mimic-vs-chromium/`}
-      >Mimic versus Chromium</a
-    >{" "}
+    Read{" "}
+    <a href={`${import.meta.env.BASE_URL}playwright-without-chromium/`}>
+      Run Playwright without Chromium
+    </a>{" "}
+    for a complete extraction example, or{" "}
+    <a href={`${import.meta.env.BASE_URL}mimic-vs-chromium/`}>
+      Mimic versus Chromium
+    </a>{" "}
     for workload selection and measured memory boundaries.
   </p>
 
   <h2 id="getting-started">Getting started</h2>
   <p>
-    Download the latest Windows or Linux archive from <a
-      href={`${import.meta.env.BASE_URL}download/`}>the download page</a
-    >, verify it against the included <code>SHA256SUMS</code>, and extract it.
-    No Chrome, Go, Rust, display server, or GPU is required for the packaged
+    Download the latest Windows or Linux archive from{" "}
+    <a href={`${import.meta.env.BASE_URL}download/`}>the download page</a>,
+    verify it against the included <code>SHA256SUMS</code>, and extract it. No
+    Chrome, Go, Rust, display server, or GPU is required for the packaged
     executable.
   </p>
   <table>
-    <thead><tr><th>Platform</th><th>Runtime requirements</th></tr></thead><tbody
-      ><tr
-        ><td>Windows amd64</td><td
-          >Verified on Windows 11. Run <code>mimic.exe</code>.</td
-        ></tr
-      ><tr
-        ><td>Linux amd64</td><td
-          >glibc 2.39+, libgcc_s, and installed Liberation, DejaVu, or Noto
-          fonts. Ubuntu 24.04+.</td
-        ></tr
-      ></tbody
-    >
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Runtime requirements</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Windows amd64</td>
+        <td>
+          Verified on Windows 11. Run <code>mimic.exe</code>.
+        </td>
+      </tr>
+      <tr>
+        <td>Linux amd64</td>
+        <td>
+          glibc 2.39+, libgcc_s, and installed Liberation, DejaVu, or Noto
+          fonts. Ubuntu 24.04+.
+        </td>
+      </tr>
+    </tbody>
   </table>
   <CodeWindow title="Start Mimic" lang="bash" code={launchCode} />
   <p>
@@ -135,7 +149,8 @@ try {
 
   <h2 id="playwright">Playwright</h2>
   <p>
-    Install <code>playwright-core</code> so the client does not download a browser:
+    Install <code>playwright-core</code> so the client does not download a
+    browser:
   </p>
   <CodeWindow title="Install Playwright" lang="bash" code={playwrightInstall} />
   <CodeWindow title="playwright.mjs" lang="javascript" code={playwrightCode} />
@@ -156,129 +171,192 @@ try {
 
   <h2 id="cli">CLI reference</h2>
   <table>
-    <thead><tr><th>Flag</th><th>Default</th><th>Purpose</th></tr></thead><tbody>
-      <tr
-        ><td><code>--listen</code></td><td><code>127.0.0.1:9222</code></td><td
-          >CDP HTTP and WebSocket address.</td
-        ></tr
-      >
-      <tr
-        ><td><code>--chrome</code></td><td><code>152</code></td><td
-          >Loaded Chrome compatibility milestone. It does not install Chrome.</td
-        ></tr
-      >
-      <tr
-        ><td><code>--profile</code></td><td>none</td><td
-          >JSON environment profile for new contexts.</td
-        ></tr
-      >
-      <tr
-        ><td><code>--browser-mode</code></td><td><code>headful</code></td><td
-          >Chooses the environment profile; it does not open a window.</td
-        ></tr
-      >
-      <tr
-        ><td><code>--engine</code></td><td><code>v8</code></td><td
-          >JavaScript engine: <code>v8</code>, <code>quickjs</code>, or <code
-            >goja</code
-          >. Fallbacks do not promise V8 equivalence.</td
-        ></tr
-      >
-      <tr
-        ><td><code>--navigation-timeout</code></td><td><code>0</code></td><td
-          >Optional navigation execution cap. Zero waits until completion or
-          cancellation.</td
-        ></tr
-      >
-      <tr
-        ><td><code>--dev-preview</code></td><td><code>false</code></td><td
-          >Enables the visual debug viewer at <code>/debug/preview/</code>; this
-          is not native rendering.</td
-        ></tr
-      >
+    <thead>
+      <tr>
+        <th>Flag</th>
+        <th>Default</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>--listen</code>
+        </td>
+        <td>
+          <code>127.0.0.1:9222</code>
+        </td>
+        <td>CDP HTTP and WebSocket address.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>--chrome</code>
+        </td>
+        <td>
+          <code>152</code>
+        </td>
+        <td>
+          Loaded Chrome compatibility milestone. It does not install Chrome.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--profile</code>
+        </td>
+        <td>none</td>
+        <td>
+          Named or exported workload profile created by Optimize. Environment
+          JSON uses CDP import/export.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--engine</code>
+        </td>
+        <td>
+          <code>v8</code>
+        </td>
+        <td>
+          JavaScript engine: <code>v8</code>, <code>quickjs</code>, or{" "}
+          <code>goja</code>. Fallbacks do not promise V8 equivalence.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--navigation-timeout</code>
+        </td>
+        <td>
+          <code>0</code>
+        </td>
+        <td>
+          Optional navigation execution cap. Zero waits until completion or
+          cancellation.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--dev-preview</code>
+        </td>
+        <td>
+          <code>false</code>
+        </td>
+        <td>
+          Enables the visual debug viewer at <code>/debug/preview/</code>; this
+          is not native rendering.
+        </td>
+      </tr>
     </tbody>
   </table>
 
   <h2 id="profiles">Environment profiles</h2>
   <p>
-    Schema version 1 configures a BrowserContext before its first page loads.
-    Pages, frames, and new workers inherit the Context environment. Full
-    replacement requires a new Context; existing cookies, documents, and
-    JavaScript are not migrated.
+    Generate a coherent environment through CDP, then save the returned profile
+    token for another Context. Pages, frames and workers inherit that Context's
+    environment. Generated and imported environments are immutable; change the
+    environment by creating a new Context. Cookies and storage are independent.
   </p>
-  <CodeWindow title="profile.json" lang="json" code={profileCode} />
+  <CodeWindow title="profiles.mjs" lang="javascript" code={profileCode} />
   <p>
-    Unknown fields, nulls, wrong types, and unsupported custom values return
-    explicit validation errors. Objects merge named members into the base;
-    arrays replace their complete value. Query <code
-      >Mimic.getProfileSchema</code
-    > for the exact base profile and machine-readable field contract.
+    Environment JSON is a CDP import/export format, not a CLI configuration file
+    or an arbitrary createContext override. Explicit manual imports validate
+    against the installed baseline. Read the{" "}
+    <a href="https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/environment-profiles.md">
+      current Context profile contract
+    </a>{" "}
+    for supported fields and coherence checks.
   </p>
 
   <h2 id="profile-fields">Profile fields</h2>
+  <p>
+    These groups describe exported observations. Managed Contexts lock
+    environment mutation; the dynamic boundaries below apply to ordinary mutable
+    CDP contexts.
+  </p>
   <table>
-    <thead
-      ><tr><th>Group</th><th>Configures</th><th>Mutation boundary</th></tr
-      ></thead
-    ><tbody>
-      <tr
-        ><td><code>display</code>, <code>window</code></td><td
-          >Screen, available area, DPR, orientation, outer size, viewport</td
-        ><td>Most geometry is dynamic; color depth is creation-only.</td></tr
-      >
-      <tr
-        ><td><code>identity</code></td><td
-          >User agent, platform, Client Hints metadata</td
-        ><td>Dynamic; does not install another Chrome implementation.</td></tr
-      >
-      <tr
-        ><td><code>hardware</code></td><td
-          >Reported CPU count, memory bucket, performance class</td
-        ><td>Creation-only observations, not physical allocation.</td></tr
-      >
-      <tr
-        ><td><code>locale</code></td><td
-          >Languages, Accept-Language reduction, timezone, Intl locale</td
-        ><td
-          >Languages are dynamic; timezone and Intl locale require a new
-          Context.</td
-        ></tr
-      >
-      <tr
-        ><td><code>graphics</code>, <code>fonts</code></td><td
-          >Reported adapter/capability and font baseline</td
-        ><td
-          >Selected values are read-only or reject unsupported customization.</td
-        ></tr
-      >
-      <tr
-        ><td><code>preferences</code></td><td
-          >Color scheme, reduced motion, DNT</td
-        ><td>Theme and motion are dynamic; DNT is creation-only.</td></tr
-      >
-      <tr
-        ><td><code>network</code></td><td
-          >Connection observations, proxy, cookies, modeled ICE</td
-        ><td>Proxy and full network environment require a new Context.</td></tr
-      >
-      <tr
-        ><td><code>permissions</code>, <code>capabilities</code></td><td
-          >Initial permissions, quota, keyboard layout</td
-        ><td
-          >Creation-only; unavailable physical backends remain unsupported.</td
-        ></tr
-      >
-      <tr
-        ><td><code>features</code></td><td
-          >Restrictions on existing exposure flags</td
-        ><td>Can restrict captured features, not enable uncaptured ones.</td
-        ></tr
-      >
-      <tr
-        ><td><code>timing</code></td><td
-          >Execution, navigation, and network scale factors</td
-        ><td>Creation-only; no arbitrary clock epoch injection.</td></tr
-      >
+    <thead>
+      <tr>
+        <th>Group</th>
+        <th>Configures</th>
+        <th>Mutation boundary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>display</code>, <code>window</code>
+        </td>
+        <td>Screen, available area, DPR, orientation, outer size, viewport</td>
+        <td>Most geometry is dynamic; color depth is creation-only.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>identity</code>
+        </td>
+        <td>User agent, platform, Client Hints metadata</td>
+        <td>Dynamic; does not install another Chrome implementation.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>hardware</code>
+        </td>
+        <td>Reported CPU count, memory bucket, performance class</td>
+        <td>Creation-only observations, not physical allocation.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>locale</code>
+        </td>
+        <td>Languages, Accept-Language reduction, timezone, Intl locale</td>
+        <td>
+          Languages are dynamic; timezone and Intl locale require a new Context.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>graphics</code>, <code>fonts</code>
+        </td>
+        <td>Reported adapter/capability and font baseline</td>
+        <td>
+          Selected values are read-only or reject unsupported customization.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>preferences</code>
+        </td>
+        <td>Color scheme, reduced motion, DNT</td>
+        <td>Theme and motion are dynamic; DNT is creation-only.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>network</code>
+        </td>
+        <td>Connection observations and network recipe</td>
+        <td>Proxy is a separate Context option; WebRTC uses real ICE.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>permissions</code>, <code>capabilities</code>
+        </td>
+        <td>Initial permissions, quota, keyboard layout</td>
+        <td>
+          Creation-only; unavailable physical backends remain unsupported.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>features</code>
+        </td>
+        <td>Restrictions on existing exposure flags</td>
+        <td>Can restrict captured features, not enable uncaptured ones.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>timing</code>
+        </td>
+        <td>Execution, navigation, and network scale factors</td>
+        <td>Creation-only; no arbitrary clock epoch injection.</td>
+      </tr>
     </tbody>
   </table>
 
@@ -290,165 +368,187 @@ try {
   <div class="command-grid">
     <div class="api-card">
       <h3>
-        <code>Mimic.getProfileSchema</code>{" "}<span class="tag core"
-          >configuration</span
-        >
-      </h3><p>
-        Returns the profile JSON Schema, available base profiles, mutability
-        annotations, and limitations.
-      </p><div class="signature">
-        params: &#123;&#125; → &#123; schema, baseProfiles, limitations &#125;
+        <code>Mimic.getVersion</code>{" "}
+        <span class="tag core">configuration</span>
+      </h3>
+      <p>
+        Identifies the Mimic release/build separately from its Chrome
+        compatibility version.
+      </p>
+      <div class="signature">
+        params: &#123;&#125; → version and build information
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.validateProfile</code>{" "}<span class="tag core"
-          >configuration</span
-        >
-      </h3><p>
-        Validates and normalizes a profile without creating a Context.
-        Unsupported values appear in diagnostics rather than silently changing
-        behavior.
-      </p><div class="signature">
-        params: &#123; profile &#125; → &#123; profile, diagnostics &#125;
+        <code>Mimic.generateProfile</code>{" "}
+        <span class="tag core">configuration</span>
+      </h3>
+      <p>
+        Generates a coherent profile token without allocating a Context or Page.
+        A seed makes generation reproducible for the installed recipe.
+      </p>
+      <div class="signature">
+        params: &#123; seed? &#125; → &#123; profile, profileId, warnings &#125;
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.createContext</code>{" "}<span class="tag core"
-          >configuration</span
-        >
-      </h3><p>
+        <code>Mimic.createContext</code>{" "}
+        <span class="tag core">configuration</span>
+      </h3>
+      <p>
         Creates an isolated BrowserContext with its own profile and connection
         pool.
-      </p><div class="signature">
-        params: &#123; profile, disposeOnDetach? &#125; → &#123;
-        browserContextId &#125;
+      </p>
+      <div class="signature">
+        params: &#123; profile, proxy?, disposeOnDetach? &#125; → &#123;
+        browserContextId, profile, profileId, mode, warnings &#125;
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getProfile</code>{" "}<span class="tag core"
-          >configuration</span
-        >
-      </h3><p>
+        <code>Mimic.getProfile</code>{" "}
+        <span class="tag core">configuration</span>
+      </h3>
+      <p>
         Returns a defensive projection of the effective Context profile or a
         target profile including Page overrides.
-      </p><div class="signature">
+      </p>
+      <div class="signature">
         params: exactly one of &#123; browserContextId &#125; or &#123; targetId
         &#125; → &#123; profile, … &#125;
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.updateProfile</code>{" "}<span class="tag core"
-          >configuration</span
-        >
-      </h3><p>
+        <code>Mimic.updateProfile</code>{" "}
+        <span class="tag core">configuration</span>
+      </h3>
+      <p>
         Atomically patches dynamic Page fields. A creation-only field rejects
-        the entire patch with <code>requiresNewContext</code>.
-      </p><div class="signature">
+        the entire patch. Managed generated/imported environments reject
+        mutation with <code>profileLocked</code>.
+      </p>
+      <div class="signature">
         params: &#123; targetId, patch &#125; → updated profile result
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.resetProfileOverrides</code>{" "}<span class="tag core"
-          >configuration</span
-        >
-      </h3><p>Restores a Page to its BrowserContext profile baseline.</p><div
-        class="signature"
-      >
+        <code>Mimic.resetProfileOverrides</code>{" "}
+        <span class="tag core">configuration</span>
+      </h3>
+      <p>
+        Restores an ordinary mutable Page to its Context baseline; managed
+        environments remain locked.
+      </p>
+      <div class="signature">
         params: &#123; targetId &#125; → effective baseline profile
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.captureSnapshot</code>{" "}<span class="tag">capture</span>
-      </h3><p>
+        <code>Mimic.captureSnapshot</code> <span class="tag">capture</span>
+      </h3>
+      <p>
         Captures current static DOM and available assets from canonical Page
         state. This is not a screenshot and excludes scripts, embedded frames,
         and rendered pixels.
-      </p><div class="signature">
+      </p>
+      <div class="signature">
         params: &#123; interrupt? &#125; → snapshot payload
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.setViewport</code>{" "}<span class="tag">page control</span>
-      </h3><p>
+        <code>Mimic.setViewport</code> <span class="tag">page control</span>
+      </h3>
+      <p>
         Applies supported viewport changes through the same Page environment
         used by standard Emulation commands.
-      </p><div class="signature">
+      </p>
+      <div class="signature">
         params: page viewport fields → effective viewport
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getCompatibilityMatrix</code>{" "}<span class="tag"
-          >introspection</span
-        >
-      </h3><p>
+        <code>Mimic.getCompatibilityMatrix</code>{" "}
+        <span class="tag">introspection</span>
+      </h3>
+      <p>
         Returns generated CDP command/event status, scope notes, and evidence
         references. Schema presence alone is not semantic support.
-      </p><div class="signature">
+      </p>
+      <div class="signature">
         params: &#123;&#125; → generated compatibility inventory
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getStatus</code>{" "}<span class="tag">diagnostic</span>
-      </h3><p>
+        <code>Mimic.getStatus</code> <span class="tag">diagnostic</span>
+      </h3>
+      <p>
         Returns a lightweight snapshot of current Page execution and navigation
         state for progress monitoring.
-      </p><div class="signature">params: &#123;&#125; → current status</div>
+      </p>
+      <div class="signature">params: &#123;&#125; → current status</div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getDiagnostics</code>{" "}<span class="tag">diagnostic</span
-        >
-      </h3><p>
+        <code>Mimic.getDiagnostics</code> <span class="tag">diagnostic</span>
+      </h3>
+      <p>
         Returns runtime and navigation diagnostics useful when a workflow stops
         making progress.
-      </p><div class="signature">params: &#123;&#125; → diagnostic state</div>
+      </p>
+      <div class="signature">params: &#123;&#125; → diagnostic state</div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.getTrace</code>{" "}<span class="tag">diagnostic</span>
-      </h3><p>
+        <code>Mimic.getTrace</code> <span class="tag">diagnostic</span>
+      </h3>
+      <p>
         Returns retained scheduler, resource, and semantic events for debugging
         supported workflows.
-      </p><div class="signature">
+      </p>
+      <div class="signature">
         params: &#123;&#125; → &#123; events, … &#125;
       </div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.clearTrace</code>{" "}<span class="tag">diagnostic</span>
-      </h3><p>
-        Clears the retained diagnostic trace for the selected session/Page.
-      </p><div class="signature">params: &#123;&#125; → acknowledgement</div>
+        <code>Mimic.clearTrace</code> <span class="tag">diagnostic</span>
+      </h3>
+      <p>Clears the retained diagnostic trace for the selected session/Page.</p>
+      <div class="signature">params: &#123;&#125; → acknowledgement</div>
     </div>
     <div class="api-card">
       <h3>
-        <code>Mimic.cancelExecution</code>{" "}<span class="tag">advanced</span>
-      </h3><p>
+        <code>Mimic.cancelExecution</code> <span class="tag">advanced</span>
+      </h3>
+      <p>
         Requests cancellation of current Page execution when a client needs to
         recover from a busy turn.
-      </p><div class="signature">
+      </p>
+      <div class="signature">
         params: command-specific cancellation options → acknowledgement/status
       </div>
     </div>
     <div class="api-card">
-      <h3><code>Mimic.pause</code>{" "}<span class="tag">advanced</span></h3><p>
-        Pauses supported Page processing at the runtime control boundary.
-      </p><div class="signature">params: &#123;&#125; → acknowledgement</div>
+      <h3>
+        <code>Mimic.pause</code> <span class="tag">advanced</span>
+      </h3>
+      <p>Pauses supported Page processing at the runtime control boundary.</p>
+      <div class="signature">params: &#123;&#125; → acknowledgement</div>
     </div>
     <div class="api-card">
-      <h3><code>Mimic.resume</code>{" "}<span class="tag">advanced</span></h3><p
-      >
-        Resumes Page processing after a matching pause.
-      </p><div class="signature">params: &#123;&#125; → acknowledgement</div>
+      <h3>
+        <code>Mimic.resume</code> <span class="tag">advanced</span>
+      </h3>
+      <p>Resumes Page processing after a matching pause.</p>
+      <div class="signature">params: &#123;&#125; → acknowledgement</div>
     </div>
   </div>
   <div class="callout">
@@ -457,8 +557,36 @@ try {
     semantics return an explicit unsupported error.
   </div>
 
+  <h2 id="capture">Camera, microphone and WebRTC</h2>
+  <p>
+    Capture real cameras, including OBS Virtual Camera, and native microphone
+    inputs. Grant camera and microphone access explicitly for the page origin.
+    Unset or denied permission rejects immediately; automation never waits for a
+    permission dialog. Device IDs are scoped to the Context and origin.
+  </p>
+  <CodeWindow title="capture.mjs" lang="javascript" code={captureCode} />
+  <p>
+    Streams support video/canvas observations and Web Audio analyser readbacks.
+    WebRTC sends and receives H264 video and Opus audio. Capture and codecs
+    start on demand; stopping the last clone, navigation and Page closure
+    release devices. No FFmpeg process or runtime codec download is needed.
+  </p>
+  <p>
+    Video transmission is capped at 1280×720 and 30 fps; microphone PCM is 48
+    kHz mono/stereo. Echo cancellation, noise suppression, automatic gain
+    control, voice isolation and speaker output are unavailable. Read the{" "}
+    <a href="https://github.com/mimic-browser/runtime/blob/v0.2.1/docs/camera.md">
+      capture contract and limitations
+    </a>{" "}
+    before integrating a conferencing workload.
+  </p>
+
   <h2 id="proxies">Native proxies</h2>
-  <CodeWindow title="proxy.json" lang="json" code={proxyCode} />
+  <p>
+    Pass <code>proxy</code> as a separate <code>Mimic.createContext</code>{" "}
+    option.
+  </p>
+  <CodeWindow title="proxy option" lang="json" code={proxyCode} />
   <p>
     SOCKS5, HTTP, and HTTPS proxy URLs are supported. Keep credentials in
     separate fields and out of public files. A proxy failure never falls back to
@@ -480,41 +608,48 @@ try {
   </p>
   <ul>
     <li>
-      No screenshots, rendered PDFs, video playback, or Canvas/WebGL pixel
-      output.
-    </li><li>
+      No native renderer, screenshots or rendered PDFs. Camera/video and
+      supported canvas readbacks model observations without rendering a window.
+    </li>
+    <li>
       Modeled geometry and input are not complete CSS layout, clipping, rich
       editing, touch, drag, or arbitrary transforms.
-    </li><li>
+    </li>
+    <li>
       CDP and Web API coverage is partial. Generated names and wire schema do
       not imply implemented semantics.
-    </li><li>
+    </li>
+    <li>
       Compatibility checks describe specific workflows—not every website, client
       option, or anti-bot decision.
-    </li><li>
+    </li>
+    <li>
       The CDP endpoint has no authentication; bind it only where trusted clients
       can reach it.
     </li>
   </ul>
 
   <h2 id="troubleshooting">Troubleshooting</h2>
-  <h3>The client cannot connect</h3><p>
+  <h3>The client cannot connect</h3>
+  <p>
     Confirm Mimic prints its listening URL, keep the process alive, and use the
     same HTTP origin in <code>connectOverCDP</code> or <code>browserURL</code>.
     Avoid exposing the unauthenticated endpoint publicly.
   </p>
-  <h3>The application loaded but is not ready</h3><p>
+  <h3>The application loaded but is not ready</h3>
+  <p>
     The browser load event can precede hydration. Wait for a selector, text, or
-    application state that represents readiness instead of relying only on <code
-      >waitUntil: "load"</code
-    >.
+    application state that represents readiness instead of relying only on{" "}
+    <code>waitUntil: "load"</code>.
   </p>
-  <h3>A command is unsupported</h3><p>
-    Query <code>Mimic.getCompatibilityMatrix</code> and reduce the workflow to the
-    command and observable behavior it needs. A command accepted for client initialization
-    may still have an explicit unsupported boundary.
+  <h3>A command is unsupported</h3>
+  <p>
+    Query <code>Mimic.getCompatibilityMatrix</code> and reduce the workflow to
+    the command and observable behavior it needs. A command accepted for client
+    initialization may still have an explicit unsupported boundary.
   </p>
-  <h3>Linux text geometry differs</h3><p>
+  <h3>Linux text geometry differs</h3>
+  <p>
     Install Liberation, DejaVu, or Noto fonts. Exact Windows text metrics
     require matching legally available reference fonts.
   </p>
@@ -522,28 +657,32 @@ try {
   <h2 id="faq">FAQ</h2>
   <div class="faq-list">
     <article class="faq-item">
-      <h3>Is Mimic headless Chrome?</h3><p>
+      <h3>Is Mimic headless Chrome?</h3>
+      <p>
         No. It uses V8 for JavaScript but does not embed or launch Chromium.
       </p>
     </article>
     <article class="faq-item">
-      <h3>Does every website work?</h3><p>
+      <h3>Does every website work?</h3>
+      <p>
         No. Compatibility is actively expanding and depends on the APIs, loading
         behavior, and interactions a workflow uses.
       </p>
     </article>
     <article class="faq-item">
-      <h3>Can I run untrusted code?</h3><p>
+      <h3>Can I run untrusted code?</h3>
+      <p>
         No. Mimic is not a security sandbox, and separate Pages are not
         hostile-tenant security boundaries.
       </p>
     </article>
     <article class="faq-item">
-      <h3>Is Mimic open source?</h3><p>
+      <h3>Is Mimic open source?</h3>
+      <p>
         Mimic's source is public under the Prosperity Public License 3.0.0.
-        Noncommercial use is free; commercial use has a 30-day trial. Read the <a
-          href={`${import.meta.env.BASE_URL}license/`}>license</a
-        > for the full terms.
+        Noncommercial use is free; commercial use has a 30-day trial. Read the{" "}
+        <a href={`${import.meta.env.BASE_URL}license/`}>license</a> for the full
+        terms.
       </p>
     </article>
   </div>

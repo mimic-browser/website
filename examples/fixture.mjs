@@ -26,7 +26,10 @@ export async function startFixture(port = 3000) {
     server.once('error', reject);
     server.listen(port, '127.0.0.1', resolve);
   });
-  return { url: `http://127.0.0.1:${server.address().port}`, close: () => new Promise(resolve => server.close(resolve)) };
+  return {
+    url: `http://127.0.0.1:${server.address().port}`,
+    close: () => new Promise((resolve) => server.close(resolve)),
+  };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
