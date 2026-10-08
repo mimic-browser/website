@@ -344,7 +344,7 @@ a[aria-label][href^="https://"]::after
   overflow-wrap: anywhere;
 }
 .prose table {
-  width: 100%;
+  width: max-content;
 }
 /* Secondary demo captions share spacing and stay below the code hierarchy. */
 p.example-note,
@@ -441,7 +441,7 @@ main .example > p.example-note {
   background: linear-gradient(145deg, #14213770, #0a152170);
   border: 1px solid #698db338;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 .prose thead {
   background: #253e6240;
