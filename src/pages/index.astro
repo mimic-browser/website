@@ -108,6 +108,7 @@ const capabilities = [
           height="941"
           alt="Mimic holding a browser window"
           fetchpriority="high"
+          draggable="false"
         />
       </picture>
       <div class="container hero-layout">
@@ -1404,6 +1405,8 @@ const capabilities = [
     position: absolute;
     inset: 0;
     z-index: -2;
+    pointer-events: none;
+    user-select: none;
   }
   .hero-art img {
     display: block;
