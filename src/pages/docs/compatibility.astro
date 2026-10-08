@@ -14,12 +14,18 @@ const topics = [
   <h2 id="compatibility">Compatibility boundaries</h2>
   <p>
     Mimic models observable browser state without a native rendering pipeline.
-    Use a full browser when pixels are the desired output.
+    Use a full browser when accurate rendered pixels are the desired output.
   </p>
   <ul>
     <li>
-      No native renderer, screenshots or rendered PDFs. Camera/video and
-      supported canvas readbacks model observations without rendering a window.
+      No native renderer.{" "}
+      <code>Page.captureScreenshot</code> returns an
+      approximate PNG of the current Page. Visual accuracy is not
+      guaranteed; the image may differ from Chrome and from Mimic's modeled
+      geometry. See the{" "}
+      <a href="https://github.com/mimic-browser/runtime/blob/main/docs/approximate-screenshots.md"
+        >screenshot limitations</a
+      >. Rendered PDFs and video output are unsupported.
     </li>
     <li>
       Modeled geometry and input are not complete CSS layout, clipping, rich

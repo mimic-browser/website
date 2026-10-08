@@ -77,7 +77,8 @@ npm run verify -- C:\absolute\path\to\mimic.exe
 Clients are pinned in `package-lock.json`: Playwright Core 1.63.0 and Puppeteer
 Core 25.10.0. These scenarios are verified on Windows amd64 and Ubuntu 24.04
 amd64 under WSL2 for the beta release. They do not establish full Playwright or
-Puppeteer compatibility. Screenshots and rendered PDFs are not supported.
+Puppeteer compatibility. Mimic can return approximate screenshot PNGs without a
+visual accuracy guarantee; rendered PDFs are not supported.
 
 The files in this directory are [MIT licensed](LICENSE) so you can adapt them.
 The Mimic executable is governed by the authoritative project [LICENSE](../LICENSE).

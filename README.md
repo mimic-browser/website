@@ -2,7 +2,8 @@
 
 Mimic is a source-available public beta for JavaScript automation and web scraping
 with Playwright, Puppeteer and CDP. Compatibility is partial and workload-dependent;
-Mimic does not provide rendered screenshots or the full Blink engine.
+Mimic can return approximate screenshot PNGs, with no visual accuracy
+guarantee. It does not provide the full Blink engine.
 
 Mimic's public source-available repository, documentation, benchmarks,
 downloads, issues, and contribution guidance are maintained at

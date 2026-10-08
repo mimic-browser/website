@@ -86,9 +86,10 @@ npm install playwright-core@1.63.0`}
       href="https://github.com/mimic-browser/runtime/blob/main/docs/cdp-coverage-generated.md"
       >semantic support matrix</a
     >{" "}
-    for your commands. Mimic does not provide rendered screenshots, video or PDF
-    rendering, or full Blink behavior. Modeled geometry and browser observations
-    do not establish visual fidelity.
+    for your commands. Mimic can return an approximate PNG through{" "}
+    <code>Page.captureScreenshot</code>, but visual accuracy is not guaranteed. Video and
+    rendered PDFs remain unsupported, and modeled geometry does not establish
+    visual fidelity.
   </p>
   <h2>Move a real workload in small steps</h2>
   <p>
