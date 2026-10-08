@@ -2,7 +2,7 @@
   "source": "Mimic runtime docs/optimize",
   "sha256": {
     "benchmarks.md": "664847513632c06b66cd638e753776d0c75eac356ccd8850a6b5f40a9429fd7c",
-    "index.md": "a34228c691130dfc917bf5e9a7288a469e93dbf5032af737e66e312aa018d151",
+    "index.md": "6eec7c7221b1852d78a4c4657682b17ea50dc09e1afa083c5fc58d1e3a365c5b",
     "manual-policy.md": "2f0baf33cef73c8e15bb9c286cb1b27c37f8828d3995861eb6f35cc6ef6f238a",
     "profiles.md": "17095cb551fda29a99706fdba0bbc1cf39eb78521d9dd3d986d6631522cd3fb9",
     "replay.md": "22f696ee6d1b05f434a8cf9270766fc8545159a9f04b6b2cd521655c62e01ef0",
@@ -12,5 +12,11 @@
   },
   "siteAuthored": {
     "results.md": "7073cfd4e5d879f495b4694784d7b7e35c485f5c7a2dcc7d3d46e44e5db29eb4"
+  },
+  "adaptations": {
+    "index.md": {
+      "sourceSha256": "a34228c691130dfc917bf5e9a7288a469e93dbf5032af737e66e312aa018d151",
+      "description": "Reading sections and related guide links adapted for the website; executable examples and behavioral limitations retained."
+    }
   }
 }

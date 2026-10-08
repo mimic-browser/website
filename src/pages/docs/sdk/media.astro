@@ -1,0 +1,328 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+import SdkExplorer from "@/components/SdkExplorer.astro";
+import CodeWindow from "@/components/CodeWindow.astro";
+import { mediaExamples } from "@/lib/sdk-examples";
+import { minimumSdkRuntimeVersion } from "@/lib/sdk-release";
+
+const cameraOutput = `{
+  "modes": [
+    { "width": 640, "height": 480, "frameRate": 30 },
+    { "width": 1280, "height": 720, "frameRate": 30 }
+  ],
+  "defaultMode": { "width": 1280, "height": 720, "frameRate": 30 },
+  "processing": { "resize": "crop-and-scale" }
+}`;
+const topics = [
+  ["Run an example", "example"],
+  ["Sources and identity", "sources"],
+  ["Context setup", "context"],
+  ["Permissions", "permissions"],
+  ["Camera output", "output"],
+  ["Constraints", "constraints"],
+  ["Cleanup", "cleanup"],
+  ["Troubleshooting", "troubleshooting"],
+] as const;
+---
+
+<DocsLayout
+  title="Camera & microphone"
+  description="Choose capture sources, configure the devices websites see, grant origin permissions, and capture media with your existing automation client."
+  topics={topics}
+>
+  <div class="doc-overview">
+    <p>
+      Use a camera, OBS Virtual Camera, or microphone as an input, then choose
+      the device names and camera output modes visible to your page. The SDK
+      configures the browser Context; your existing client runs the page and its
+      ordinary <code>navigator.mediaDevices</code> calls.
+    </p>
+  </div>
+
+  <p>
+    First follow <a href="/sdk/">SDK setup for your language</a>. This guide
+    assumes the SDK and your chosen automation client are installed. See{" "}
+    <a href="/docs/sdk/runtime/">runtime management</a> to select an executable
+    or release, and <a href="/docs/sdk/contexts/">Contexts and ownership</a> for
+    session cleanup.
+  </p>
+  <p class="callout">
+    These examples require Mimic {minimumSdkRuntimeVersion} or later; the SDK
+    downloads a compatible runtime automatically. Media inputs must be available
+    to the machine running Mimic. A device connected only to a remote automation
+    client is not a local input to that runtime.
+  </p>
+
+  <h2 id="example">Capture with your client</h2>
+  <p>
+    Each example selects the default camera and microphone, falling back to the
+    first available source of each kind. It exposes them as{" "}
+    <em>Studio Camera</em> and <em>Studio Microphone</em>, grants capture to{" "}
+    <code>https://example.com</code>, prints the resulting track settings, and
+    stops every track before closing the session.
+  </p>
+  <p>
+    To use OBS, start its virtual camera and select its video source by the
+    label returned during discovery. Keep the microphone selection independent:
+    a virtual camera does not supply an audio input automatically.
+  </p>
+  <SdkExplorer
+    languages={mediaExamples}
+    showInstall={false}
+    showScenarioPicker={false}
+  />
+
+  <h2 id="sources">Choose the input; define the public device</h2>
+  <p>
+    A capture source provides actual frames or audio samples. A media profile
+    defines the logical devices exposed by <code>enumerateDevices()</code>,
+    track labels, settings, and camera capabilities. Changing a public label
+    does not change which source supplies the data.
+  </p>
+  <p>
+    Call <code>Mimic.getMediaSources</code> for the new Context inside the media
+    factory. Discovery returns a private label, kind, default flag, and opaque{" "}
+    <code>sourceId</code>; it does not open a camera or microphone. Use that ID
+    in the device's <code>source</code> selector. For a chosen native label,
+    require exactly one match and report a missing or ambiguous source.
+  </p>
+  <p>
+    Treat source IDs as temporary, Context-bound handles. Discover them again
+    for a new Context or runtime; do not save them as portable device
+    identifiers. They are different from the origin-scoped <code>deviceId</code>{" "}
+    returned to web content. Native labels, paths, and source IDs stay in the
+    automation interface; configured pages receive the public device identity.
+  </p>
+  <dl class="media-fields">
+    <div>
+      <dt>
+        <code>key</code>
+      </dt>
+      <dd>
+        A unique logical name such as <code>camera</code> or{" "}
+        <code>microphone</code> within your configured catalog.
+      </dd>
+    </div>
+    <div>
+      <dt>
+        <code>label</code>
+      </dt>
+      <dd>
+        The public device and track name. Permission-dependent label redaction
+        still applies before capture permission is granted.
+      </dd>
+    </div>
+    <div>
+      <dt>
+        <code>group</code>
+      </dt>
+      <dd>
+        Give a camera and microphone the same group to associate their public
+        identities. If omitted, the group defaults to the device key.
+      </dd>
+    </div>
+    <div>
+      <dt>
+        <code>seed</code>
+      </dt>
+      <dd>
+        Makes generated recipe selection repeatable. It does not make web device
+        IDs interchangeable between origins or Contexts, and it does not
+        preserve a private source binding across runtime launches.
+      </dd>
+    </div>
+  </dl>
+  <p>
+    A configured catalog exposes only its listed inputs. An empty{" "}
+    <code>devices</code> array exposes no capture inputs; leaving media
+    unconfigured retains native enumeration. A missing configured source is
+    omitted rather than silently replaced with an unlisted device.
+  </p>
+
+  <h2 id="context">Configure before creating your page</h2>
+  <p>
+    The SDK's Context helper accepts a media configuration or a factory. Use a
+    factory when selecting discovered sources: it receives the new browser
+    Context ID and a Mimic command client, then returns the media configuration
+    before any application Page is created. The framework's own Context and Page
+    objects remain the ones your application uses.
+  </p>
+  <ol>
+    <li>Create the Context through the SDK helper.</li>
+    <li>Discover sources for that Context inside the factory.</li>
+    <li>Return the complete public device catalog.</li>
+    <li>
+      Grant permission for the intended origin, then open the page and capture.
+    </li>
+  </ol>
+  <p>
+    Always supply <code>browserContextId</code> when issuing media commands for
+    a non-default Context. Omitting it selects the runtime's default Context,
+    even when the command is sent through a Page session. Source discovery and
+    profile validation perform no capture. If a factory or configuration fails,
+    the SDK disposes the Context it just created.
+  </p>
+
+  <h2 id="permissions">Grant permission to the page's origin</h2>
+  <p>
+    Defining a media profile does not grant camera or microphone access. The
+    examples use <code>Browser.grantPermissions</code> with the new{" "}
+    <code>browserContextId</code>, the exact origin, and{" "}
+    <code>videoCapture</code> / <code>audioCapture</code>. Change the origin
+    together with the page URL when adapting the example to your application.
+  </p>
+  <p>
+    Use an HTTPS page or a trustworthy local origin for{" "}
+    <code>navigator.mediaDevices</code>. Wait for navigation before evaluating
+    capture code. Unset or denied permissions reject immediately in automation;
+    no interactive permission prompt is required. Revoking permission ends the
+    affected tracks and their clones.
+  </p>
+
+  <h2 id="output">Set camera output modes</h2>
+  <p>
+    Every explicit camera in <code>devices</code> needs a nonempty{" "}
+    <code>modes</code> list and a <code>defaultMode</code> that exactly matches
+    one of its entries. Add the following fields to the camera device to offer
+    VGA and HD output, with HD selected by default:
+  </p>
+  <CodeWindow title="Camera output fields" lang="json" code={cameraOutput} />
+  <p>
+    <code>processing.resize: "crop-and-scale"</code> lets Mimic produce the
+    declared output by cropping or scaling native frames. Without it, a custom
+    camera recipe must use a single mode with supported native geometry. An
+    explicit device's optional <code>profile</code> bounds its supplied recipe;
+    it does not fill in missing modes. The separate <code>camera</code>{" "}
+    shorthand expands presets automatically. Choose either shorthand or{" "}
+    <code>devices</code> in a configuration, never both.
+  </p>
+  <p>
+    Profile validation checks the recipe without opening hardware and returns{" "}
+    <code>nativeModesVerified: false</code>. Actual source support is checked
+    when capture starts. The source must sustain the recipe's maximum nominal
+    frame rate; scaling a frame adds no detail, and Mimic does not duplicate
+    frames to manufacture a higher capture rate.
+  </p>
+  <p>
+    A catalog can contain up to 16 devices and each camera up to 64 modes.
+    Dimensions must be integers from 1 to 8192, with at most 16 megapixels per
+    frame; frame rates must be from 1 to 120 FPS. These are recipe limits, not a
+    guarantee that a particular source can supply every accepted mode.
+  </p>
+  <p>
+    Microphones accept source, identity, and grouping fields. Camera modes and
+    video processing do not apply to audio inputs. Audio settings reflect the
+    capture backend; a public microphone label does not add echo cancellation,
+    noise suppression, or other signal processing.
+  </p>
+
+  <h2 id="constraints">Request and inspect the actual output</h2>
+  <p>
+    Use ordinary <code>getUserMedia()</code> constraints to select a public
+    device and output, then inspect <code>track.getSettings()</code>. The
+    examples request exact public device IDs so capture cannot choose a
+    different listed input. Required output constraints must be feasible; ideal
+    values express a preference among feasible outputs.
+  </p>
+  <p>
+    <code>track.applyConstraints()</code> uses the same output selection rules.
+    Impossible requests reject with <code>OverconstrainedError</code> and
+    preserve the previous settings and output. A clone shares its native input
+    but can select a different supported output. A declared base geometry
+    reports <code>resizeMode: "none"</code>; an adapted geometry reports{" "}
+    <code>"crop-and-scale"</code>, even when processing is enabled for both.
+  </p>
+  <p>
+    Facing direction is not inferred. Required <code>facingMode</code>, zoom,
+    focus, exposure, white balance, torch, PTZ, and ImageCapture controls are
+    outside the supported camera contract. Generic presets describe physical
+    device classes; they do not certify the behavior of a particular camera
+    model or driver.
+  </p>
+
+  <h2 id="cleanup">Stop capture before replacing the catalog</h2>
+  <p>
+    Stop every track in a <code>finally</code> block, including clones your
+    application created. Then close the owned Page or Context and the SDK
+    session. Closing a session created with <code>connect</code> leaves the
+    shared runtime running; a session created with <code>launch</code> also owns
+    its runtime process.
+  </p>
+  <p>
+    Catalog replacement is atomic and rejects while capture in that Context is
+    opening, active, or finishing cleanup. A rejected replacement preserves the
+    old catalog. Wait for capture teardown before configuring it again.
+    Navigation closes the departing document's capture while retaining the
+    Context's catalog for subsequent pages.
+  </p>
+
+  <h2 id="troubleshooting">When capture fails</h2>
+  <ul>
+    <li>
+      <strong>No matching source:</strong> inspect discovery results from the
+      same Context. Confirm the camera or virtual camera is running on the
+      runtime's machine, and use the actual input label when selecting a
+      specific source.
+    </li>
+    <li>
+      <strong>Profile rejected:</strong> check unique keys, source selectors,
+      complete camera modes, and an exact matching default mode. Remove video
+      processing fields from microphone devices.
+    </li>
+    <li>
+      <strong>Media API unavailable or permission denied:</strong> wait for the
+      correct secure page to load and grant permission to its origin in the same
+      Context.
+    </li>
+    <li>
+      <strong>Capture cannot start:</strong> validation does not prove native
+      mode support. Read private source diagnostics and{" "}
+      <code>Mimic.getMediaProfile</code> diagnostics through the automation
+      client; web-visible errors intentionally omit private backend details.
+    </li>
+    <li>
+      <strong>Profile update rejected:</strong> stop every original and cloned
+      track, let backend cleanup finish, and retry only after capture is closed.
+    </li>
+  </ul>
+  <p>
+    Continue with the <a href="/docs/sdk/reference/">SDK reference</a> for typed
+    media commands, or <a href="/docs/sdk/contexts/">Contexts and ownership</a>{" "}
+    to combine media with an environment profile and resource settings.
+  </p>
+</DocsLayout>
+
+<style>
+  .media-fields {
+    display: grid;
+    gap: 0;
+    margin: 24px 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .media-fields > div {
+    display: grid;
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 18px;
+    padding: 16px 20px;
+    background: var(--surface);
+  }
+  .media-fields > div + div {
+    border-top: 1px solid var(--line);
+  }
+  .media-fields dt {
+    font-weight: 650;
+  }
+  .media-fields dd {
+    margin: 0;
+    color: var(--muted);
+  }
+  @media (max-width: 520px) {
+    .media-fields > div {
+      grid-template-columns: 1fr;
+      gap: 5px;
+      padding: 14px 16px;
+    }
+  }
+</style>

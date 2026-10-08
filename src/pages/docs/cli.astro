@@ -1,0 +1,132 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+const topics = [["CLI reference", "cli"]] as const;
+---
+
+<DocsLayout
+  title="Command-line reference"
+  description="Run and configure the Mimic executable."
+  topics={topics}
+>
+  <h2 id="cli">CLI reference</h2>
+  <p>
+    The SDK starts and connects to the runtime for you. These flags are useful
+    when you{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/connect/`}>
+      manage the process yourself
+    </a>
+    .
+  </p>
+  <table class="cli-options">
+    <thead>
+      <tr>
+        <th>Flag</th>
+        <th>Default</th>
+        <th>Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>--listen</code>
+        </td>
+        <td>
+          <code>127.0.0.1:9222</code>
+        </td>
+        <td>CDP HTTP and WebSocket address.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>--chrome</code>
+        </td>
+        <td>
+          <code>152</code>
+        </td>
+        <td>
+          Loaded Chrome compatibility milestone. It does not install Chrome.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--browser-mode</code>
+        </td>
+        <td>
+          <code>headful</code>
+        </td>
+        <td>
+          Choose the observed environment profile: <code>headful</code> or{" "}
+          <code>headless</code>. Mimic does not open a browser window. SDK
+          launch uses the headless profile.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--resource-policy</code>
+        </td>
+        <td>none</td>
+        <td>
+          Path to a JSON resource policy applied to new Contexts. See{" "}
+          <a
+            href={`${import.meta.env.BASE_URL}docs/sdk/contexts/#resource-policy`}
+          >
+            resource policies
+          </a>
+          .
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--profile</code>
+        </td>
+        <td>none</td>
+        <td>
+          Named or exported workload profile created by Optimize. Environment
+          JSON uses CDP import/export.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--engine</code>
+        </td>
+        <td>
+          <code>v8</code>
+        </td>
+        <td>
+          JavaScript engine: <code>v8</code>, <code>quickjs</code>, or{" "}
+          <code>goja</code>. Fallbacks do not promise V8 equivalence.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--navigation-timeout</code>
+        </td>
+        <td>
+          <code>0</code>
+        </td>
+        <td>
+          Optional navigation execution cap as a duration, such as{" "}
+          <code>30s</code> or <code>2m</code>. Zero waits until completion or
+          cancellation.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--dev-preview</code>
+        </td>
+        <td>
+          <code>false</code>
+        </td>
+        <td>
+          Enables the visual debug viewer at <code>/debug/preview/</code>; this
+          is not native rendering.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</DocsLayout>
+
+<style>
+  .cli-options th:last-child {
+    min-width: 17rem;
+  }
+</style>

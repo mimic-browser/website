@@ -7,6 +7,7 @@ interface Props {
   label?: string;
   lang?: string;
   showcase?: boolean;
+  compact?: boolean;
 }
 const {
   title = "Terminal",
@@ -14,6 +15,7 @@ const {
   label = "Copy code",
   lang = "javascript",
   showcase = false,
+  compact = false,
 } = Astro.props;
 const highlighted = await codeToHtml(code, {
   lang,
@@ -46,14 +48,19 @@ const highlighted = await codeToHtml(code, {
 });
 ---
 
-<div class:list={["code-window", "panel", { showcase }]}>
+<div class:list={["code-window", "panel", { showcase, compact }]}>
   <div class="code-titlebar">
     {!showcase && <span>{title}</span>}
     <button type="button" aria-label={label} data-copy={code}>
-      <span class="copy-icon"><Copy size={14} strokeWidth={1.7} /></span><span
-        class="check-icon"><Check size={14} strokeWidth={1.8} /></span
-      >
-      <span class="copy-label" aria-live="polite">Copy</span>
+      <span class="copy-icon">
+        <Copy size={14} strokeWidth={1.7} />
+      </span>
+      <span class="check-icon">
+        <Check size={14} strokeWidth={1.8} />
+      </span>
+      <span class="copy-label" aria-live="polite">
+        Copy
+      </span>
     </button>
   </div>
   <div class="highlighted" set:html={highlighted} />
@@ -218,6 +225,51 @@ const highlighted = await codeToHtml(code, {
     }
     .code-titlebar {
       font-size: 12px;
+    }
+  }
+  .compact {
+    border-radius: 6px;
+    background: #0d121b;
+    box-shadow: none;
+  }
+  .compact .code-titlebar {
+    min-height: 36px;
+    padding: 4px 12px;
+    font-size: 12px;
+    background: #111722;
+  }
+  .compact button {
+    min-height: 28px;
+    width: auto;
+    padding: 4px 7px;
+    border-color: transparent;
+    background: transparent;
+  }
+  .compact button:hover {
+    background: #202a3b;
+  }
+  .compact .highlighted :global(pre) {
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  @media (min-width: 1500px) {
+    .compact .highlighted :global(pre) {
+      font-size: 14px;
+    }
+    .compact .copy-label {
+      font-size: 12px;
+    }
+  }
+  @media (max-width: 520px) {
+    .compact .code-titlebar {
+      padding: 2px 10px;
+    }
+    .compact button {
+      min-height: 36px;
+    }
+    .compact .highlighted :global(pre) {
+      padding: 12px;
     }
   }
 </style>

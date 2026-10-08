@@ -1,0 +1,744 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+import CodeWindow from "@/components/CodeWindow.astro";
+import { releaseVersion } from "@/lib/release";
+
+const base = import.meta.env.BASE_URL;
+const topics = [
+  ["Choose a version", "versions"],
+  ["Shared cache", "cache"],
+  ["Offline installation", "offline"],
+  ["Your executable", "executable"],
+  ["Process ownership", "ownership"],
+  ["Option reference", "options"],
+  ["Network & timeouts", "network"],
+  ["Troubleshooting", "troubleshooting"],
+] as const;
+const nodeOffline = `import { RuntimeManager } from "mimic-browser";
+import { launch } from "mimic-browser/playwright";
+
+const options = { runtimeVersion: "${releaseVersion}", timeout: 60_000 };
+
+// Prepare once while downloads are allowed. This does not start a browser.
+const executable = await new RuntimeManager(options).install();
+console.log(executable);
+
+// Reuse the verified installation without any installer network requests.
+const session = await launch({ ...options, allowDownload: false });
+try {
+  const context = await session.newContext();
+  const page = await context.newPage();
+  await page.setContent("<title>Offline runtime</title><h1>Ready</h1>");
+  console.log(await page.title());
+} finally {
+  await session.close();
+}`;
+const pythonOffline = `from mimic import RuntimeManager
+from mimic.playwright.sync_api import launch
+
+options = {"runtime_version": "${releaseVersion}", "timeout": 60}
+
+# Prepare once while downloads are allowed. This does not start a browser.
+executable = RuntimeManager(**options).install()
+print(executable)
+
+# Reuse the verified installation without any installer network requests.
+with launch(**options, allow_download=False) as session:
+    context = session.new_context()
+    page = context.new_page()
+    page.set_content("<title>Offline runtime</title><h1>Ready</h1>")
+    print(page.title())`;
+const nodeLock = `import { writeFile } from "node:fs/promises";
+import { RuntimeManager } from "mimic-browser";
+
+const manager = new RuntimeManager({ runtimeVersion: "${releaseVersion}" });
+const lock = await manager.resolveLock();
+await writeFile("mimic-runtime.lock.json", JSON.stringify(lock, null, 2) + "\\n");
+console.log("Saved mimic-runtime.lock.json");`;
+const nodeArchive = `import { readFile } from "node:fs/promises";
+import { RuntimeManager } from "mimic-browser";
+
+// Pass the official archive filename as the first command-line argument.
+const archivePath = process.argv[2];
+if (!archivePath) throw new Error("Supply the downloaded Mimic archive filename");
+const lock = JSON.parse(await readFile("mimic-runtime.lock.json", "utf8"));
+const executable = await new RuntimeManager({ lock, allowDownload: false })
+  .install({ archivePath });
+console.log(executable);`;
+const selectorRows = [
+  [
+    "JavaScript / TypeScript",
+    "runtimeVersion",
+    "lock (object)",
+    "executablePath",
+    "runtimeDir",
+    "allowDownload",
+  ],
+  [
+    "Python",
+    "runtime_version",
+    "lock (dict or filename)",
+    "executable_path",
+    "runtime_dir",
+    "allow_download",
+  ],
+  [
+    "C# / .NET",
+    "Version",
+    "LockFile",
+    "ExecutablePath",
+    "RuntimeDirectory",
+    "AllowDownload",
+  ],
+  [
+    "Java / Kotlin",
+    "version",
+    "lockFile",
+    "executablePath",
+    "runtimeDirectory",
+    "allowDownload",
+  ],
+  [
+    "Go",
+    "Version",
+    "LockFile",
+    "ExecutablePath",
+    "RuntimeDir",
+    "AllowDownload (*bool)",
+  ],
+  [
+    "Rust",
+    "version",
+    "lock_file",
+    "executable_path",
+    "runtime_dir",
+    "allow_download (Option<bool>)",
+  ],
+  [
+    "Ruby",
+    "runtime_version",
+    "lock_file",
+    "executable_path",
+    "runtime_dir",
+    "allow_download",
+  ],
+  [
+    "PHP",
+    "version",
+    "lockFile",
+    "executablePath",
+    "runtimeDirectory",
+    "allowDownload",
+  ],
+];
+const timeouts = [
+  [
+    "JavaScript / TypeScript",
+    "timeout: 60_000",
+    "The same millisecond value bounds each download, install-lock wait and runtime startup. signal accepts an AbortSignal on launch/connect and manager install/launch/resolveLock.",
+  ],
+  [
+    "Python",
+    "timeout=60",
+    "Seconds for installer socket operations, install-lock wait and startup. Async launch handles task cancellation by waiting for ownership acquisition and cleaning up; synchronous installation has no cancellation token.",
+  ],
+  [
+    "C# / .NET",
+    "Timeout: 60 s; LockTimeout: 120 s",
+    "TimeSpan values. Timeout bounds startup; installer HTTP timeout is 3 minutes. Async operations accept CancellationToken.",
+  ],
+  [
+    "Java / Kotlin",
+    "timeout: 60 s; lockTimeout: 120 s",
+    "Duration values. timeout bounds startup; HTTP requests use 3 minutes and connection establishment uses 30 seconds. Blocking operations observe thread interruption.",
+  ],
+  [
+    "Go",
+    "StartupTimeout: 30 s; LockTimeout: 120 s",
+    "time.Duration values; zero selects these defaults. Methods take context.Context. RuntimeManager.HTTPClient can customize the installer; its default request timeout is 2 minutes.",
+  ],
+  [
+    "Rust",
+    "startup_timeout: 30 s; lock_timeout: 60 s",
+    "std::time::Duration values. Installer HTTP timeout is 2 minutes. Cancel async work through the future/task; explicitly await session.close() for orderly teardown.",
+  ],
+  [
+    "Ruby",
+    "startup_timeout: 30 s; lock_timeout: 120 s",
+    "Numeric seconds. cancelled accepts a callable checked during installation and startup. HTTP uses a 20-second connection timeout and 120-second read timeout.",
+  ],
+  [
+    "PHP",
+    "timeout: 60 s; lockTimeout: 120 s",
+    "Numeric seconds. timeout bounds startup. Downloads use a 20-second connection timeout and 120-second total timeout. There is no installer cancellation token.",
+  ],
+];
+const installers = [
+  [
+    "JavaScript / TypeScript",
+    "new RuntimeManager(options).install({ archivePath, signal })",
+  ],
+  ["Python", "RuntimeManager(**options).install(archive_path=filename)"],
+  [
+    "C# / .NET",
+    "new RuntimeManager().InstallAsync(options, cancellationToken); options.ArchivePath",
+  ],
+  [
+    "Java / Kotlin",
+    "new RuntimeManager().install(options); options.archivePath",
+  ],
+  ["Go", "mimic.NewRuntimeManager(options).Install(ctx); options.ArchivePath"],
+  [
+    "Rust",
+    "RuntimeManager::new(options)?.install().await?; options.archive_path",
+  ],
+  [
+    "Ruby",
+    "MimicSDK::RuntimeManager.new(**options).install; archive_path: filename",
+  ],
+  ["PHP", "(new RuntimeManager())->install($options); $options->archivePath"],
+];
+---
+
+<DocsLayout
+  title="SDK runtime management"
+  description="Choose a Mimic runtime version, prepare an offline installation, share the cache across languages, and control process ownership and timeouts."
+  topics={topics}
+>
+  <p class="guide-breadcrumb">
+    <a href={`${base}docs/sdk/`}>SDK documentation</a> / Runtime management
+  </p>
+  <p class="guide-lead">
+    Call <code>launch</code> to download the selected Mimic release when needed,
+    start it headless and connect your client. Call <code>connect</code> when a
+    runtime is already running. You do not need to find an executable or install
+    Chromium.
+  </p>
+  <p>
+    Start with the <a href={`${base}sdk/`}>language and client setup</a> for
+    installation from the SDK's GitHub release.
+  </p>
+  <nav class="guide-jump" aria-label="Runtime guide sections">
+    <a href="#versions">Versions</a>
+    <a href="#cache">Shared cache</a>
+    <a href="#offline">Offline use</a>
+    <a href="#executable">Your executable</a>
+    <a href="#ownership">Ownership</a>
+    <a href="#options">Options</a>
+    <a href="#network">Network & timeouts</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+  </nav>
+
+  <h2 id="versions">Choose an exact version</h2>
+  <p>
+    Every SDK package carries a default runtime lock. A no-argument launch uses
+    that pinned release, so a newly published Mimic runtime does not silently
+    change an existing application. SDK package versions and Mimic runtime
+    versions are independent. Updating the SDK may update its default pin; use
+    an explicit runtime version or lock to keep your application on the same
+    one.
+  </p>
+  <p>
+    Acceptable selectors are exact versions such as{" "}
+    <code>{releaseVersion}</code>,<code>v{releaseVersion}</code> or an exact
+    beta release. Ranges, <code>latest</code> and wildcard selectors are
+    rejected. An explicit version and lock must agree.
+  </p>
+  <ol>
+    <li>An explicit runtime version or runtime lock selects the release.</li>
+    <li>
+      Otherwise, <code>MIMIC_RUNTIME_VERSION</code> selects it.
+    </li>
+    <li>Otherwise, the SDK's packaged default lock selects it.</li>
+  </ol>
+  <p>
+    Selecting another release resolves its manifest from that exact official
+    GitHub release. The SDK verifies the manifest checksum, archive length and
+    checksum, executable checksum and release identity. A saved runtime lock
+    also retains the release's source provenance. Keep it intact instead of
+    assembling one by hand.
+  </p>
+
+  <h2 id="cache">One persistent cache across languages</h2>
+  <div class="reference-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Default runtime directory</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Windows amd64</td>
+          <td>
+            <code>%LOCALAPPDATA%\Mimic\runtimes</code>
+          </td>
+        </tr>
+        <tr>
+          <td>Linux amd64</td>
+          <td>
+            <code>$XDG_CACHE_HOME/Mimic/runtimes</code>, or{" "}
+            <code>~/.cache/Mimic/runtimes</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    All SDKs reuse this layout. Each release/platform/binary hash has its own
+    installation, so several versions can coexist and concurrent installs do not
+    replace an executable another process is using. Set{" "}
+    <code>MIMIC_RUNTIME_DIR</code> or the corresponding language option to
+    choose another root. An explicit option takes precedence over the
+    environment variable.
+  </p>
+  <p>
+    Cached files are verified before reuse. Installation happens in a temporary
+    staging directory and becomes visible only when complete. The cache must be
+    writable and support atomic filesystem operations; keep it on local storage
+    when sharing it between applications on the same machine. Runtime
+    installation locks do not serialize your browser contexts or pages.
+  </p>
+  <p>
+    Local auto-install supports Windows amd64 and Linux amd64 with glibc 2.39 or
+    newer. Linux also needs the release's system libraries and fonts; see{" "}
+    <a href={`${base}docs/connect/#getting-started`}>platform requirements</a>.
+    macOS, ARM64 and musl-based Linux do not have packaged runtime artifacts.
+    Connecting to an already-running runtime does not perform local platform
+    installation checks.
+  </p>
+
+  <h2 id="offline">Prepare once, then run without downloads</h2>
+  <p>
+    Installation is explicit when you need it to be: call the runtime manager's
+    install method during setup, then launch with downloads disabled. Importing
+    the SDK, creating a manager and connecting to a running runtime never
+    download or start a browser.
+  </p>
+  <p>
+    These complete examples use the Playwright client from the setup guide. Run
+    the first preparation step while online; deployment can retain only the
+    offline launch section once the same cache is available.
+  </p>
+  <CodeWindow
+    title="offline.mjs · run with node offline.mjs"
+    lang="javascript"
+    code={nodeOffline}
+  />
+  <CodeWindow
+    title="offline.py · run with python offline.py"
+    lang="python"
+    code={pythonOffline}
+  />
+  <p>
+    <code>MIMIC_DOWNLOAD=0</code> disables installer network requests. A missing
+    installation or uncached manifest fails explicitly. It does not disable
+    network access from pages: configure browser networking separately. For a
+    portable environment policy, leave the explicit download option unset; .NET,
+    Java/Kotlin and PHP always honor <code>MIMIC_DOWNLOAD=0</code>, while the
+    other SDKs let an explicitly supplied download option override it.
+  </p>
+  <details>
+    <summary>Install an official archive on an air-gapped machine</summary>
+    <p>
+      Save the selected lock while online and copy it together with the matching
+      official platform archive to the destination. A custom version needs its
+      manifest too; copying only an executable into the cache is insufficient.
+      The installer still verifies the archive and extracted binary when
+      downloads are disabled.
+    </p>
+    <CodeWindow
+      title="save-lock.mjs · run with node save-lock.mjs"
+      lang="javascript"
+      code={nodeLock}
+    />
+    <CodeWindow
+      title="install-archive.mjs"
+      lang="javascript"
+      code={nodeArchive}
+    />
+    <p>
+      Place both files in your project directory. On Linux run{" "}
+      <code>
+        node install-archive.mjs mimic-v{releaseVersion}-linux-amd64.tar.gz
+      </code>
+      ; on Windows use <code>mimic-v{releaseVersion}-windows-amd64.zip</code>{" "}
+      instead.
+    </p>
+    <div class="reference-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Language</th>
+            <th>Install without starting a browser</th>
+          </tr>
+        </thead>
+        <tbody>
+          {installers.map(([language, api]) => (
+            <tr>
+              <>
+                <td>{language}</td>
+                <td>
+                  <code>{api}</code>
+                </td>
+              </>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <h2 id="executable">Use an executable you provide</h2>
+  <p>
+    Supply an executable option or <code>MIMIC_EXECUTABLE_PATH</code> for a
+    local build or a runtime managed by your deployment. The explicit option
+    wins over the environment variable, then the verified cache is the fallback.
+    A missing or invalid explicit executable is an error; it does not trigger a
+    download of a different binary.
+  </p>
+  <p>
+    An explicit version still checks the running Mimic version. An explicit lock
+    additionally checks the executable hash before starting it. With an explicit
+    executable and no explicit version, lock or version environment variable,
+    local development builds can run without pretending to be the packaged
+    default release. The SDK still verifies that it connected to Mimic.
+  </p>
+
+  <h2 id="ownership">Close what your session owns</h2>
+  <div class="reference-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>How you connect</th>
+          <th>What closing the session does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <code>launch</code>
+          </td>
+          <td>
+            Closes helper-created contexts, disconnects the client and shuts
+            down the owned Mimic process.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>connect</code>
+          </td>
+          <td>
+            Closes helper-created contexts and disconnects. The runtime and
+            other clients remain running.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Launch always starts headless on a dynamically assigned loopback port. Use
+    the session's actual endpoint when passing the runtime to another client; do
+    not assume a fixed port. Connect accepts an HTTP(S) discovery endpoint or
+    browser WS(S) endpoint and checks Mimic identity. It never installs or
+    starts a local process.
+  </p>
+  <p>
+    Use <code>try/finally</code>, a context manager or your language's disposal
+    construct. Startup failures, attachment failures and supported cancellation
+    paths clean up an owned child. Parent-death behavior depends on the runtime
+    release; explicit session closure is the portable guarantee. The original
+    v0.2.2 Linux runtime does not have the later Unix parent-death watcher.
+  </p>
+  <p>
+    The SDK retains genuine framework browser, context and page objects. A
+    Playwright driver passed into an integration is borrowed and is not stopped
+    on session close. See{" "}
+    <a href={`${base}docs/sdk/contexts/`}>contexts and profiles</a> for context
+    ownership and <a href={`${base}docs/sdk/media/`}>camera and microphone</a>{" "}
+    for capture lifetime.
+  </p>
+
+  <h2 id="options">Option names by language</h2>
+  <p>
+    JavaScript/TypeScript and Python accept runtime options directly on{" "}
+    <code>launch</code> and on <code>RuntimeManager</code>. Ruby uses keyword
+    arguments. .NET, Java/Kotlin, Go, Rust and PHP use their{" "}
+    <code>RuntimeOptions</code> type. Java exposes fields and fluent setters;
+    Kotlin uses the same Java API.
+  </p>
+  <details>
+    <summary>Version, cache and executable options in every language</summary>
+    <div class="reference-scroll wide-reference">
+      <table>
+        <thead>
+          <tr>
+            <th>Language</th>
+            <th>Version</th>
+            <th>Lock</th>
+            <th>Executable</th>
+            <th>Cache</th>
+            <th>Downloads</th>
+          </tr>
+        </thead>
+        <tbody>
+          {selectorRows.map(([language, ...values]) => (
+            <tr>
+              <td>{language}</td>
+              {values.map((value) => (
+                <td>
+                  <code>{value}</code>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  <p>
+    Node's <code>framework</code> option passes connection options to the
+    selected native client. Context emulation belongs in context options, not
+    runtime options. Node and Python expose <code>engine</code>, defaulting to{" "}
+    <code>v8</code>; changing it does not imply equal compatibility. .NET,
+    Java/Kotlin and PHP expose <code>Arguments</code>/<code>arguments</code> for
+    extra runtime CLI arguments and reject attempts to override headless mode or
+    the listener.
+  </p>
+
+  <h2 id="network">Downloads, browser proxies and timeouts</h2>
+  <p>
+    Installer traffic fetches official release metadata and archives. A browser
+    context proxy controls page requests and does not proxy these downloads.
+    Configure the native HTTP stack used by your SDK before creating the
+    manager; there is no shared SDK <code>downloadProxy</code> option.
+  </p>
+  <details>
+    <summary>Proxy and certificate configuration by language</summary>
+    <div class="reference-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>SDK</th>
+            <th>Installer network configuration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Node</td>
+            <td>
+              Undici's environment proxy agent uses HTTP_PROXY, HTTPS_PROXY and
+              NO_PROXY. Additional trust can be supplied through Node's
+              NODE_EXTRA_CA_CERTS before process startup.
+            </td>
+          </tr>
+          <tr>
+            <td>Python</td>
+            <td>
+              urllib uses its proxy discovery and the Python/OpenSSL trust
+              configuration.
+            </td>
+          </tr>
+          <tr>
+            <td>.NET</td>
+            <td>
+              HttpClient uses the platform proxy and certificate trust
+              configuration.
+            </td>
+          </tr>
+          <tr>
+            <td>Java / Kotlin</td>
+            <td>
+              JDK HttpClient uses its default ProxySelector and JVM trust store;
+              do not assume shell proxy variables configure the JVM.
+            </td>
+          </tr>
+          <tr>
+            <td>Go</td>
+            <td>
+              The default net/http transport uses environment proxy settings.
+              Set RuntimeManager.HTTPClient for a custom transport, certificate
+              policy or request limit.
+            </td>
+          </tr>
+          <tr>
+            <td>Rust</td>
+            <td>
+              reqwest's default proxy and TLS configuration; no per-manager HTTP
+              client override is exposed.
+            </td>
+          </tr>
+          <tr>
+            <td>Ruby</td>
+            <td>
+              URI proxy discovery and Net::HTTP/OpenSSL trust configuration.
+            </td>
+          </tr>
+          <tr>
+            <td>PHP</td>
+            <td>libcurl proxy and certificate configuration.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+  <p>
+    Runtime preparation, process startup and page navigation are separate waits.
+    The values below are runtime-manager defaults, not one end-to-end deadline.
+    Set navigation or selector timeouts through your framework's usual API.
+  </p>
+  <details>
+    <summary>Timeout defaults, units and cancellation</summary>
+    <div class="reference-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Language</th>
+            <th>Default options</th>
+            <th>Scope and cancellation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {timeouts.map(([language, defaults, scope]) => (
+            <tr>
+              <>
+                <td>{language}</td>
+                <td>
+                  <code>{defaults}</code>
+                </td>
+                <td>{scope}</td>
+              </>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  <p>
+    Node{" "}
+    <code>connect(endpoint, &#123; timeout, signal, framework &#125;)</code>{" "}
+    uses milliseconds for its SDK transport timeout; connection options inside{" "}
+    <code>framework</code> retain their native meanings. Python{" "}
+    <code>connect(endpoint, timeout=30)</code> uses seconds. Python launch's
+    manager timeout does not change its separate 30-second framework attachment
+    timeout. Cancellation can wait for native cleanup; it is not an instruction
+    to abandon a process still being acquired.
+  </p>
+
+  <h2 id="troubleshooting">Resolve setup failures</h2>
+  <div class="reference-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Failure</th>
+          <th>Next step</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unsupported platform or libc</td>
+          <td>
+            Use a supported runtime host and connect to it, or use the supported
+            Windows/Linux amd64 environment.
+          </td>
+        </tr>
+        <tr>
+          <td>Missing runtime while offline</td>
+          <td>
+            Prepare the same release and platform in the selected cache,
+            including its manifest, or supply the matching official archive and
+            lock.
+          </td>
+        </tr>
+        <tr>
+          <td>Integrity or conflicting provenance</td>
+          <td>
+            Check that the archive, lock and selected release match. Do not edit
+            checksums or reuse a release name for different bytes.
+          </td>
+        </tr>
+        <tr>
+          <td>Installation lock timeout</td>
+          <td>
+            Check the owner recorded under the cache's .locks directory. Do not
+            delete a live or unknown owner's lock. Repair a crashed install only
+            after confirming the same-host owner process is gone.
+          </td>
+        </tr>
+        <tr>
+          <td>Startup or attachment failure</td>
+          <td>
+            Read the SDK's captured child output and reported endpoint/identity
+            error. Check system libraries, executable permissions and the
+            selected native client.
+          </td>
+        </tr>
+        <tr>
+          <td>Runtime removed while in use</td>
+          <td>
+            Stop applications using it before cache maintenance. Retain live or
+            unverifiable lease records; deleting cache directories is not a
+            shutdown mechanism.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Continue with{" "}
+    <a href={`${base}docs/sdk/contexts/`}>contexts and profiles</a>,
+    <a href={`${base}docs/sdk/media/`}>media devices</a> or the{" "}
+    <a href={`${base}sdk/`}>launch and connect examples</a>.
+  </p>
+</DocsLayout>
+
+<style>
+  .guide-breadcrumb {
+    font-size: 0.85rem;
+    color: var(--quiet);
+  }
+  .guide-lead {
+    font-size: 1.15rem;
+    line-height: 1.75;
+  }
+  .guide-jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 26px 0 40px;
+    padding: 18px 0;
+    border-block: 1px solid var(--line);
+    font-size: 0.88rem;
+  }
+  .reference-scroll {
+    overflow-x: auto;
+    margin: 22px 0;
+  }
+  .reference-scroll table {
+    display: table;
+    width: 100%;
+    margin: 0;
+  }
+  .reference-scroll th,
+  .reference-scroll td {
+    vertical-align: top;
+  }
+  .reference-scroll th:first-child,
+  .reference-scroll td:first-child {
+    min-width: 112px;
+  }
+  .wide-reference table {
+    min-width: 950px;
+  }
+  details {
+    margin: 28px 0;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 650;
+  }
+</style>

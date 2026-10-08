@@ -1,0 +1,89 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SdkExplorer from "@/components/SdkExplorer.astro";
+import { sdkQuickstarts } from "@/lib/sdk-examples";
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="SDK Quickstart — Mimic"
+  description="Choose a language and browser client, install the SDK, and run your first Mimic script."
+>
+  <div class="sdk-page container">
+    <header class="sdk-heading">
+      <h1>SDK Quickstart</h1>
+      <p>
+        Run the demo with your preferred browser client. The first launch
+        downloads Mimic automatically; later runs reuse it.
+      </p>
+    </header>
+
+    <p class="platform-note">
+      Local launch requires Windows x64 or Linux x64; see the{" "}
+      <a href={`${base}download/`}>runtime requirements</a>. On another client
+      platform, connect to a supported host through an endpoint you can access.
+    </p>
+
+    <SdkExplorer languages={sdkQuickstarts} />
+
+    <footer class="sdk-next">
+      <p>
+        Configure runtime versions, profiles, and browser Contexts in the{" "}
+        <a href={`${base}docs/sdk/`}>SDK documentation</a>.
+      </p>
+      <p>
+        Managing the executable yourself?{" "}
+        <a href={`${base}docs/connect/#getting-started`}>
+          Connect directly over CDP
+        </a>
+        .
+      </p>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .sdk-page {
+    padding-block: 42px 64px;
+  }
+  .sdk-heading h1 {
+    margin: 0 0 12px;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    line-height: 1.12;
+    font-weight: 750;
+    letter-spacing: -0.04em;
+  }
+  .sdk-heading p {
+    max-width: 750px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  .platform-note {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+  .sdk-next {
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .sdk-next p {
+    margin: 0 0 8px;
+  }
+  .sdk-next a {
+    color: var(--blue-bright);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (max-width: 680px) {
+    .sdk-page {
+      padding-block: 28px 44px;
+    }
+  }
+</style>

@@ -122,7 +122,7 @@ function scan(dir) {
 scan(root);
 const guidePhrase =
   "Read Run Playwright without Chromium for a complete extraction example, or Mimic versus Chromium for workload selection and measured memory boundaries.";
-for (const file of ["index.html", "docs/index.html", "examples/index.html"]) {
+for (const file of ["index.html", "examples/index.html"]) {
   const text = textOf(documents.get(file)).replace(/\s+/g, " ");
   if (!text.includes(guidePhrase))
     failures.push(`${file}: missing correctly spaced guide sentence`);

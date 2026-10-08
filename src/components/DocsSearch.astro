@@ -1,0 +1,479 @@
+---
+import { Search, X, ArrowUpRight } from "lucide-astro";
+import {
+  documentationTopics,
+  documentationCategories,
+} from "@/lib/documentation";
+
+interface Props {
+  id?: string;
+  compact?: boolean;
+}
+const { id = "docs-search", compact = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const categoryLabels = new Map(
+  documentationCategories.map((category) => [category.id, category.label]),
+);
+---
+
+<docs-search class:list={["docs-search", { compact }]}>
+  <a
+    class="search-trigger"
+    href={`${base}docs/`}
+    data-search-trigger
+    aria-haspopup="dialog"
+    aria-controls={`${id}-dialog`}
+  >
+    <Search size={17} aria-hidden="true" />
+    <span>{compact ? "Quick search" : "Search documentation"}</span>
+    <kbd data-search-shortcut>Ctrl K</kbd>
+  </a>
+  <dialog id={`${id}-dialog`} aria-labelledby={`${id}-title`}>
+    <div class="search-header">
+      <h2 id={`${id}-title`}>Search documentation</h2>
+      <button type="button" data-search-close aria-label="Close search">
+        <X size={19} aria-hidden="true" />
+      </button>
+    </div>
+    <div class="search-input-wrap">
+      <Search size={21} aria-hidden="true" />
+      <input
+        type="search"
+        aria-label="Search documentation"
+        aria-controls={`${id}-results`}
+        placeholder="Try runtime version, proxies, or camera…"
+        autocomplete="off"
+        spellcheck="false"
+        data-search-input
+      />
+    </div>
+    <div class="result-summary">
+      <span data-search-count role="status" aria-live="polite">
+        {documentationTopics.length} topics
+      </span>
+      <span class="keyboard-help">↑ ↓ to move · Enter to open</span>
+    </div>
+    <ul id={`${id}-results`} class="search-results" data-search-results>
+      {documentationTopics.map((topic) => (
+        <li
+          data-search-result
+          data-search-text={[
+            topic.title,
+            topic.description,
+            categoryLabels.get(topic.category) ?? topic.category,
+            ...topic.keywords,
+          ].join(" ")}
+        >
+          <a href={`${base}${topic.path.replace(/^\//, "")}`}>
+            <div>
+              <span class="result-category">
+                {categoryLabels.get(topic.category) ?? topic.category}
+              </span>
+              <strong>{topic.title}</strong>
+              <p>{topic.description}</p>
+            </div>
+            <ArrowUpRight size={17} aria-hidden="true" />
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="search-empty" hidden data-search-empty>
+      <strong>No matching topics</strong>
+      <p>Try a shorter term, a command name, or a language.</p>
+    </div>
+    <div class="search-footer">
+      <span>Search titles, commands, and setup options</span>
+      <span>
+        <kbd>Esc</kbd> to close
+      </span>
+    </div>
+  </dialog>
+</docs-search>
+
+<script>
+  class DocsSearchElement extends HTMLElement {
+    private controller?: AbortController;
+
+    connectedCallback() {
+      if (this.controller) return;
+      this.controller = new AbortController();
+      const { signal } = this.controller;
+      const dialog = this.querySelector<HTMLDialogElement>("dialog");
+      const trigger = this.querySelector<HTMLAnchorElement>(
+        "[data-search-trigger]",
+      );
+      const input = this.querySelector<HTMLInputElement>("[data-search-input]");
+      const results = Array.from(
+        this.querySelectorAll<HTMLLIElement>("[data-search-result]"),
+      );
+      const count = this.querySelector<HTMLElement>("[data-search-count]");
+      const empty = this.querySelector<HTMLElement>("[data-search-empty]");
+      if (!dialog || !trigger || !input || !count || !empty) return;
+
+      const normalize = (text: string) =>
+        text
+          .normalize("NFKD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
+      const searchable = results.map((result) => ({
+        result,
+        text: normalize(result.dataset.searchText ?? ""),
+      }));
+      const visibleLinks = () =>
+        results
+          .filter((result) => !result.hidden)
+          .map((result) => result.querySelector<HTMLAnchorElement>("a")!)
+          .filter(Boolean);
+      const filter = () => {
+        const words = normalize(input.value)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+        let matches = 0;
+        searchable.forEach(({ result, text }) => {
+          result.hidden = !words.every((word) => text.includes(word));
+          if (!result.hidden) matches += 1;
+        });
+        count.textContent = `${matches} ${matches === 1 ? "topic" : "topics"}`;
+        empty.hidden = matches > 0;
+      };
+      const open = () => {
+        if (dialog.open) {
+          input.focus();
+          input.select();
+          return;
+        }
+        filter();
+        dialog.showModal();
+        input.focus();
+        input.select();
+      };
+      const shortcut = this.querySelector<HTMLElement>(
+        "[data-search-shortcut]",
+      );
+      if (shortcut && /Mac|iPhone|iPad/.test(navigator.userAgent)) {
+        shortcut.textContent = "⌘ K";
+      }
+
+      trigger.addEventListener(
+        "click",
+        (event) => {
+          if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+            return;
+          event.preventDefault();
+          open();
+        },
+        { signal },
+      );
+      input.addEventListener("input", filter, { signal });
+      this.querySelector("[data-search-close]")?.addEventListener(
+        "click",
+        () => dialog.close(),
+        { signal },
+      );
+      dialog.addEventListener(
+        "click",
+        (event) => {
+          if ((event.target as Element).closest("[data-search-result] a")) {
+            dialog.close();
+            return;
+          }
+          if (event.target !== dialog) return;
+          const rect = dialog.getBoundingClientRect();
+          if (
+            event.clientX < rect.left ||
+            event.clientX > rect.right ||
+            event.clientY < rect.top ||
+            event.clientY > rect.bottom
+          )
+            dialog.close();
+        },
+        { signal },
+      );
+      dialog.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Escape" && !event.isComposing) {
+            event.preventDefault();
+            dialog.close();
+            return;
+          }
+          if (
+            event.isComposing ||
+            event.altKey ||
+            event.ctrlKey ||
+            event.metaKey
+          )
+            return;
+          const links = visibleLinks();
+          if (event.key === "Enter" && event.target === input && links[0]) {
+            event.preventDefault();
+            links[0].click();
+            return;
+          }
+          if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+          const current = links.indexOf(
+            document.activeElement as HTMLAnchorElement,
+          );
+          if (event.target !== input && current < 0) return;
+          event.preventDefault();
+          if (!links.length) return;
+          const next =
+            current < 0
+              ? event.key === "ArrowDown"
+                ? 0
+                : links.length - 1
+              : (current +
+                  (event.key === "ArrowDown" ? 1 : -1) +
+                  links.length) %
+                links.length;
+          links[next].focus();
+          links[next].scrollIntoView({ block: "nearest" });
+        },
+        { signal },
+      );
+      document.addEventListener(
+        "keydown",
+        (event) => {
+          if (
+            (event.ctrlKey || event.metaKey) &&
+            !event.altKey &&
+            event.key.toLowerCase() === "k" &&
+            !event.isComposing &&
+            document.querySelector("docs-search") === this
+          ) {
+            event.preventDefault();
+            open();
+          }
+        },
+        { signal },
+      );
+      document.addEventListener(
+        "astro:before-swap",
+        () => {
+          if (dialog.open) dialog.close();
+        },
+        { signal },
+      );
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort();
+      this.controller = undefined;
+    }
+  }
+  if (!customElements.get("docs-search")) {
+    customElements.define("docs-search", DocsSearchElement);
+  }
+</script>
+
+<style>
+  docs-search {
+    display: block;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  .search-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 13px;
+    border: 1px solid var(--line-bright);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  .search-trigger:hover {
+    border-color: var(--blue);
+    color: var(--text);
+  }
+  .search-trigger kbd {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .compact .search-trigger {
+    background: transparent;
+  }
+  kbd {
+    display: inline-block;
+    padding: 2px 5px;
+    border: 1px solid var(--line-bright);
+    border-radius: 4px;
+    color: var(--quiet);
+    font: 0.68rem var(--sans);
+  }
+  dialog {
+    width: min(690px, calc(100vw - 32px));
+    max-height: min(720px, calc(100dvh - 48px));
+    margin: max(24px, 9vh) auto auto;
+    padding: 0;
+    border: 1px solid var(--line-bright);
+    border-radius: 16px;
+    background: #101625;
+    color: var(--text);
+    box-shadow: 0 28px 100px #0009;
+    overflow: hidden;
+  }
+  dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  dialog::backdrop {
+    background: #030712bf;
+    backdrop-filter: blur(5px);
+  }
+  .search-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 17px 20px 10px;
+  }
+  .search-header h2 {
+    margin: 0;
+    font-size: 0.94rem;
+    letter-spacing: 0;
+  }
+  .search-header button {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 6px;
+    color: var(--muted);
+    background: transparent;
+    cursor: pointer;
+  }
+  .search-header button:hover {
+    background: var(--surface-raised);
+  }
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 3px 20px 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--line-bright);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--blue-bright);
+  }
+  .search-input-wrap:focus-within {
+    border-color: var(--blue);
+  }
+  .search-input-wrap input {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    color: var(--text);
+    background: transparent;
+    font-size: 1rem;
+  }
+  .search-input-wrap input::placeholder {
+    color: var(--quiet);
+  }
+  .result-summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 23px 9px;
+    color: var(--quiet);
+    font-size: 0.74rem;
+  }
+  .search-results {
+    min-height: 0;
+    margin: 0;
+    padding: 0 9px 9px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+  }
+  .search-results li {
+    margin: 0;
+    padding: 0;
+  }
+  .search-results a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    color: var(--text);
+  }
+  .search-results a:hover,
+  .search-results a:focus-visible {
+    background: #1c2540;
+    outline-offset: -2px;
+  }
+  .search-results a > :global(svg) {
+    flex-shrink: 0;
+    color: var(--blue-bright);
+  }
+  .result-category {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--blue-bright);
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+  .search-results strong {
+    font-size: 0.94rem;
+    font-weight: 650;
+  }
+  .search-results p {
+    margin: 3px 0 0;
+    color: var(--quiet);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+  .search-empty {
+    padding: 30px 24px 42px;
+    text-align: center;
+  }
+  .search-empty strong {
+    font-size: 1rem;
+  }
+  .search-empty p {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .search-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 22px;
+    border-top: 1px solid var(--line);
+    color: var(--quiet);
+    font-size: 0.72rem;
+  }
+  @media (max-width: 560px) {
+    dialog {
+      margin-top: 16px;
+      max-height: calc(100dvh - 32px);
+    }
+    .keyboard-help,
+    .search-footer > span:first-child {
+      display: none;
+    }
+    .search-footer {
+      justify-content: flex-end;
+    }
+    .search-input-wrap {
+      margin-inline: 14px;
+      padding: 12px;
+    }
+    .search-header {
+      padding-inline: 16px;
+    }
+    .search-trigger kbd {
+      display: none;
+    }
+  }
+</style>

@@ -36,52 +36,62 @@ const cdp = `{
 <ArticleLayout
   title="Automate with your favorite tools"
   eyebrow="Examples"
-  description="Start Mimic locally, then connect through CDP. Use Python, Node.js or your own protocol client."
+  description="Use the SDK with your existing framework, or start Mimic yourself and connect through CDP."
 >
   <p class="page-actions">
-    <a class="button button-primary" href={`${base}download/`}>Download Mimic</a
-    >{" "}
-    <a class="button" href={`${base}docs/#getting-started`}>Setup guide →</a>
+    <a class="button button-primary" href={`${base}sdk/`}>
+      SDK quickstart
+    </a>{" "}
+    <a class="button" href={`${base}docs/connect/#getting-started`}>
+      Setup guide →
+    </a>
   </p>
   <p class="example-note">
     Demo site: <a href="https://books.toscrape.com/">Books to Scrape</a>.
   </p>
-  <h2>Start the runtime</h2><CodeWindow
+  <p>
+    Follow the <a href={`${base}sdk/`}>SDK guide</a> to start Mimic from your
+    app. The examples below connect directly to a runtime you manage yourself.
+  </p>
+  <h2>Direct CDP · Start the runtime</h2>
+  <CodeWindow
     title="Windows / Linux"
     lang="bash"
-    code={`# Windows\n./mimic.exe -listen 127.0.0.1:9222\n\n# Linux\n./mimic -listen 127.0.0.1:9222`}
+    code={`# Windows\n./mimic.exe --browser-mode headless --listen 127.0.0.1:9222\n\n# Linux\n./mimic --browser-mode headless --listen 127.0.0.1:9222`}
   />
-  <h2>Python · Extract content</h2><p>
+  <h2>Python · Extract content</h2>
+  <p>
     Install the client with <code>pip install playwright</code>. Connecting over
     CDP does not require downloading Playwright’s browser.
-  </p><CodeWindow title="extract.py" lang="python" code={python} />
-  <h2>Node.js · Collect links</h2><p>
-    Install with <code>npm install playwright-core</code>. Run the example as an <code
-      >.mjs</code
-    > file.
-  </p><CodeWindow title="links.mjs" code={node} />
-  <h2>Raw CDP · Read browser state</h2><p>
-    Connect your WebSocket client to a Page’s <code>webSocketDebuggerUrl</code> from{
-      " "
-    }
-    <code>http://127.0.0.1:9222/json/list</code>, after loading <code
-      >https://books.toscrape.com/</code
-    > with either example above. Then send this JSON message. The returned title
-    is{" "}
-    <code>All products | Books to Scrape - Sandbox</code>.
-  </p><CodeWindow title="CDP request" lang="json" code={cdp} />
+  </p>
+  <CodeWindow title="extract.py" lang="python" code={python} />
+  <h2>Node.js · Collect links</h2>
   <p>
-    CDP commands depend on the supported surface. <a
-      href={`${base}docs/#compatibility`}>Check compatibility</a
-    > before adapting your workload.
+    Install with <code>npm install playwright-core</code>. Run the example as an{" "}
+    <code>.mjs</code> file.
+  </p>
+  <CodeWindow title="links.mjs" code={node} />
+  <h2>Raw CDP · Read browser state</h2>
+  <p>
+    Connect your WebSocket client to a Page’s <code>webSocketDebuggerUrl</code>{" "}
+    from <code>http://127.0.0.1:9222/json/list</code>, after loading{" "}
+    <code>https://books.toscrape.com/</code> with either example above. Then
+    send this JSON message. The returned title is{" "}
+    <code>All products | Books to Scrape - Sandbox</code>.
+  </p>
+  <CodeWindow title="CDP request" lang="json" code={cdp} />
+  <p>
+    CDP commands depend on the supported surface.{" "}
+    <a href={`${base}docs/compatibility/`}>Check compatibility</a> before
+    adapting your workload.
   </p>
   <p>
-    Read <a href={`${base}playwright-without-chromium/`}
-      >Run Playwright without Chromium</a
-    >{" "}
-    for a complete extraction example, or <a href={`${base}mimic-vs-chromium/`}
-      >Mimic versus Chromium</a
-    >{" "}
-    for workload selection and measured memory boundaries.
+    Read{" "}
+    <a href={`${base}playwright-without-chromium/`}>
+      Run Playwright without Chromium
+    </a>{" "}
+    for a complete extraction example, or{" "}
+    <a href={`${base}mimic-vs-chromium/`}>Mimic versus Chromium</a> for workload
+    selection and measured memory boundaries.
   </p>
 </ArticleLayout>

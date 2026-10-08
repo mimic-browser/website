@@ -5,13 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && npm run test:spacing && npm run test:og && npm run test:routes",
+    "build": "npm run test:public && astro check && astro build && npm run test:public && npm run test:release && npm run test:spacing && npm run test:og && npm run test:routes && npm run test:sdk && npm run test:docs",
     "preview": "astro preview",
     "check": "astro check",
     "test:links": "node scripts/check-links.mjs",
+    "test:public": "node scripts/check-public-content.mjs",
     "test:routes": "node scripts/check-routes.mjs",
     "test:spacing": "node scripts/check-text-spacing.mjs",
-    "test:og": "node --experimental-strip-types scripts/check-blog-og.ts"
+    "test:og": "node --experimental-strip-types scripts/check-blog-og.ts",
+    "test:release": "node --test scripts/release.test.mjs && node scripts/check-release.mjs",
+    "test:release-switch": "node scripts/check-release-switch.mjs",
+    "release:sync": "node scripts/sync-release.mjs",
+    "test:sdk": "node scripts/check-sdk.mjs",
+    "test:docs": "node scripts/check-docs.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.6.0",

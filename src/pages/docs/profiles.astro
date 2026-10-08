@@ -1,0 +1,132 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+import { releaseDocURL } from "@/lib/release";
+const topics = [
+  ["Environment profiles", "profiles"],
+  ["Profile fields", "profile-fields"],
+] as const;
+---
+
+<DocsLayout
+  title="Environment profiles"
+  description="Choose a coherent browser environment and understand which fields can change."
+  topics={topics}
+>
+  <h2 id="profiles">Environment profiles</h2>
+  <p>
+    Generate a coherent environment through CDP, then save the returned profile
+    token for another Context. Pages, frames and workers inherit that Context's
+    environment. Generated and imported environments are immutable; change the
+    environment by creating a new Context. Cookies and storage are independent.
+  </p>
+  <p>
+    For complete examples, follow{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/sdk/contexts/#save-profile`}>
+      the Context profile guide
+    </a>
+    .
+  </p>
+  <p>
+    Environment JSON is a CDP import/export format, not a CLI configuration file
+    or an arbitrary createContext override. Explicit manual imports validate
+    against the installed baseline. Read the{" "}
+    <a href={releaseDocURL("environment-profiles.md")}>
+      current Context profile contract
+    </a>{" "}
+    for supported fields and coherence checks.
+  </p>
+
+  <h2 id="profile-fields">Profile fields</h2>
+  <p>
+    These groups describe exported observations. Managed Contexts lock
+    environment mutation; the dynamic boundaries below apply to ordinary mutable
+    CDP contexts.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Group</th>
+        <th>Configures</th>
+        <th>Mutation boundary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>display</code>, <code>window</code>
+        </td>
+        <td>Screen, available area, DPR, orientation, outer size, viewport</td>
+        <td>Most geometry is dynamic; color depth is creation-only.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>identity</code>
+        </td>
+        <td>User agent, platform, Client Hints metadata</td>
+        <td>Dynamic; does not install another Chrome implementation.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>hardware</code>
+        </td>
+        <td>Reported CPU count, memory bucket, performance class</td>
+        <td>Creation-only observations, not physical allocation.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>locale</code>
+        </td>
+        <td>Languages, Accept-Language reduction, timezone, Intl locale</td>
+        <td>
+          Languages are dynamic; timezone and Intl locale require a new Context.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>graphics</code>, <code>fonts</code>
+        </td>
+        <td>Reported adapter/capability and font baseline</td>
+        <td>
+          Selected values are read-only or reject unsupported customization.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>preferences</code>
+        </td>
+        <td>Color scheme, reduced motion, DNT</td>
+        <td>Theme and motion are dynamic; DNT is creation-only.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>network</code>
+        </td>
+        <td>Connection observations and network recipe</td>
+        <td>Proxy is a separate Context option; WebRTC uses real ICE.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>permissions</code>, <code>capabilities</code>
+        </td>
+        <td>Initial permissions, quota, keyboard layout</td>
+        <td>
+          Creation-only; unavailable physical backends remain unsupported.
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>features</code>
+        </td>
+        <td>Restrictions on existing exposure flags</td>
+        <td>Can restrict captured features, not enable uncaptured ones.</td>
+      </tr>
+      <tr>
+        <td>
+          <code>timing</code>
+        </td>
+        <td>Execution, navigation, and network scale factors</td>
+        <td>Creation-only; no arbitrary clock epoch injection.</td>
+      </tr>
+    </tbody>
+  </table>
+</DocsLayout>

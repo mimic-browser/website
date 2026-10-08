@@ -1,0 +1,83 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+import CodeWindow from "@/components/CodeWindow.astro";
+import {
+  launchCode,
+  playwrightInstall,
+  playwrightCode,
+  puppeteerInstall,
+  puppeteerCode,
+} from "@/lib/docs-snippets";
+const topics = [
+  ["Direct CDP setup", "getting-started"],
+  ["Playwright", "playwright"],
+  ["Puppeteer", "puppeteer"],
+] as const;
+---
+
+<DocsLayout
+  title="Connect directly over CDP"
+  description="Start Mimic yourself and attach your browser client."
+  topics={topics}
+>
+  <h2 id="getting-started">Direct CDP setup</h2>
+  <p>
+    Download the latest Windows or Linux archive from{" "}
+    <a href={`${import.meta.env.BASE_URL}download/`}>the download page</a>,
+    verify it against the included <code>SHA256SUMS</code>, and extract it. No
+    Chrome, Go, Rust, display server, or GPU is required for the packaged
+    executable.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Runtime requirements</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Windows amd64</td>
+        <td>
+          Verified on Windows 11. Run <code>mimic.exe</code>.
+        </td>
+      </tr>
+      <tr>
+        <td>Linux amd64</td>
+        <td>
+          glibc 2.39+, libgcc_s, and installed Liberation, DejaVu, or Noto
+          fonts. Ubuntu 24.04+.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <CodeWindow title="Start Mimic" lang="bash" code={launchCode} />
+  <p>
+    Keep the process running while your client is connected. The endpoint has no
+    authentication and is intended for trusted local clients.
+  </p>
+
+  <h2 id="playwright">Playwright</h2>
+  <p>
+    Install <code>playwright-core</code> so the client does not download a
+    browser:
+  </p>
+  <CodeWindow title="Install Playwright" lang="bash" code={playwrightInstall} />
+  <CodeWindow title="playwright.mjs" lang="javascript" code={playwrightCode} />
+  <CodeWindow title="Run the demo" lang="bash" code="node playwright.mjs" />
+  <p class="example-note">
+    Demo site: <a href="https://books.toscrape.com/">Books to Scrape</a>.
+  </p>
+  <p>
+    Wait for an application-specific element or state when hydration continues
+    after the load event. Supported workflows include locators, forms,
+    fetch-driven DOM updates, frames, Shadow DOM, popups, cookies, history,
+    multiple Pages, and network events; this is not a promise that every
+    Playwright feature is available.
+  </p>
+
+  <h2 id="puppeteer">Puppeteer</h2>
+  <CodeWindow title="Install Puppeteer" lang="bash" code={puppeteerInstall} />
+  <CodeWindow title="puppeteer.mjs" lang="javascript" code={puppeteerCode} />
+  <CodeWindow title="Run the demo" lang="bash" code="node puppeteer.mjs" />
+</DocsLayout>

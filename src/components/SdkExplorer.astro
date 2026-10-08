@@ -1,0 +1,748 @@
+---
+import CodeWindow from "./CodeWindow.astro";
+
+interface ExampleFile {
+  filename: string;
+  lang: string;
+  code: string;
+}
+interface Example extends ExampleFile {
+  id: string;
+  label: string;
+  run: string;
+  note?: string;
+  available?: boolean;
+  files?: ExampleFile[];
+  expectedOutput?: string;
+}
+interface Client {
+  id: string;
+  label: string;
+  install: string;
+  installTitle?: string;
+  installAlternatives?: { label: string; lang: string; code: string }[];
+  dependencyInstall?: string;
+  sourceInstall?: string;
+  installNote?: string;
+  examples: Example[];
+}
+interface Language {
+  id: string;
+  label: string;
+  requirements?: string;
+  clients: Client[];
+}
+interface Props {
+  languages: Language[];
+  id?: string;
+  showInstall?: boolean;
+  showScenarioPicker?: boolean;
+}
+const {
+  languages,
+  id = "sdk-explorer",
+  showInstall = true,
+  showScenarioPicker = true,
+} = Astro.props;
+const elementId = (...parts: string[]) => [id, ...parts].join("-");
+if (
+  !languages.length ||
+  languages.some(
+    (language) =>
+      !language.clients.length ||
+      language.clients.some((client) => !client.examples.length),
+  )
+) {
+  throw new Error(
+    "SDK explorer requires a client and example for each language.",
+  );
+}
+---
+
+<section class="sdk-explorer" id={id} data-sdk-explorer aria-label="SDK setup">
+  <div class="language-picker">
+    <div class="picker-heading">
+      <span class="picker-label">Language</span>
+    </div>
+    <div class="language-tabs" role="tablist" aria-label="Programming language">
+      {languages.map((language, index) => (
+        <button
+          type="button"
+          role="tab"
+          id={elementId("language", language.id)}
+          aria-controls={elementId("language-panel", language.id)}
+          aria-selected={index === 0}
+          tabindex={index === 0 ? 0 : -1}
+          data-sdk-kind="language"
+          data-sdk-value={language.id}
+        >
+          {language.label}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {languages.map((language, languageIndex) => (
+    <div
+      role="tabpanel"
+      id={elementId("language-panel", language.id)}
+      aria-labelledby={elementId("language", language.id)}
+      data-sdk-language-panel={language.id}
+      hidden={languageIndex !== 0}
+    >
+      <div class="client-picker">
+        <span class="picker-label">Browser client</span>
+        <div
+          class="client-tabs"
+          role="tablist"
+          aria-label={`${language.label} browser client`}
+        >
+          {language.clients.map((client, index) => (
+            <button
+              type="button"
+              role="tab"
+              id={elementId(language.id, "client", client.id)}
+              aria-controls={elementId(language.id, "client-panel", client.id)}
+              aria-selected={index === 0}
+              tabindex={index === 0 ? 0 : -1}
+              data-sdk-kind="client"
+              data-sdk-value={client.id}
+            >
+              {client.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {language.clients.map((client, clientIndex) => (
+        <div
+          role="tabpanel"
+          id={elementId(language.id, "client-panel", client.id)}
+          aria-labelledby={elementId(language.id, "client", client.id)}
+          data-sdk-client-panel={client.id}
+          hidden={clientIndex !== 0}
+        >
+          <div class="scenario-picker" hidden={!showScenarioPicker}>
+            <span class="picker-label">Action</span>
+            <div
+              class="scenario-tabs"
+              role="tablist"
+              aria-label={`${language.label} ${client.label} scenario`}
+            >
+              {client.examples.map((example, index) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={elementId(language.id, client.id, "scenario", example.id)}
+                  aria-controls={elementId(
+                    language.id,
+                    client.id,
+                    "example",
+                    example.id,
+                  )}
+                  aria-selected={index === 0}
+                  tabindex={index === 0 ? 0 : -1}
+                  data-sdk-kind="scenario"
+                  data-sdk-value={example.id}
+                >
+                  {example.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div class="guide-body">
+            {showInstall && (
+              <div class="setup-step install-step" data-sdk-install>
+                <div class="step-heading">
+                  <span class="step-number" aria-hidden="true">
+                    1
+                  </span>
+                  <h3>Install</h3>
+                </div>
+                {language.requirements && (
+                  <p class="dependency-note">{language.requirements}</p>
+                )}
+                {client.installNote && (
+                  <p class="dependency-note" role="note" data-sdk-install-note>
+                    {client.installNote}
+                  </p>
+                )}
+                {client.install && (
+                  <CodeWindow
+                    compact={true}
+                    title={client.installTitle ?? "Install the SDK"}
+                    lang="bash"
+                    code={client.install}
+                  />
+                )}
+                {client.installAlternatives?.map((alternative) => (
+                  <details class="source-install">
+                    <summary>{alternative.label}</summary>
+                    <CodeWindow
+                      compact={true}
+                      title={alternative.label}
+                      lang={alternative.lang}
+                      code={alternative.code}
+                    />
+                  </details>
+                ))}
+                {client.dependencyInstall && (
+                  <>
+                    <p class="dependency-note">
+                      Add {client.label} if it is not installed.
+                    </p>
+                    <CodeWindow
+                      compact={true}
+                      title={`Add ${client.label}`}
+                      lang="bash"
+                      code={client.dependencyInstall}
+                    />
+                  </>
+                )}
+                {client.sourceInstall && (
+                  <details class="source-install">
+                    <summary>Install from Git</summary>
+                    <CodeWindow
+                      compact={true}
+                      title="Git installation"
+                      lang="bash"
+                      code={client.sourceInstall}
+                    />
+                  </details>
+                )}
+              </div>
+            )}
+
+            {client.examples.map((example, exampleIndex) => (
+              <div
+                role="tabpanel"
+                id={elementId(language.id, client.id, "example", example.id)}
+                aria-labelledby={elementId(
+                  language.id,
+                  client.id,
+                  "scenario",
+                  example.id,
+                )}
+                data-sdk-example-panel={example.id}
+                data-sdk-available={example.available !== false}
+                hidden={exampleIndex !== 0}
+              >
+                {example.available === false ? (
+                  <div class="availability-note" role="note">
+                    <strong>{example.label}</strong>
+                    <p>
+                      {example.note ||
+                        "This browser client does not support this scenario."}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {example.note && <p class="example-note">{example.note}</p>}
+                    <div class="setup-step files-step">
+                      <div class="step-heading">
+                        <span class="step-number" aria-hidden="true">
+                          {showInstall ? 2 : 1}
+                        </span>
+                        <h3>Create files</h3>
+                      </div>
+                      {example.files
+                        ?.filter((file) => file.code.trim())
+                        .map((file) => (
+                          <CodeWindow
+                            compact={true}
+                            title={file.filename}
+                            lang={file.lang}
+                            code={file.code}
+                            label={`Copy ${file.filename}`}
+                          />
+                        ))}
+                      {example.code.trim() && (
+                        <CodeWindow
+                          compact={true}
+                          title={example.filename}
+                          lang={example.lang}
+                          code={example.code}
+                          label={`Copy ${example.filename}`}
+                        />
+                      )}
+                    </div>
+                    {example.run && (
+                      <div class="setup-step run-step">
+                        <div class="step-heading">
+                          <span class="step-number" aria-hidden="true">
+                            {showInstall ? 3 : 2}
+                          </span>
+                          <h3>Run</h3>
+                        </div>
+                        <CodeWindow
+                          compact={true}
+                          title="Run the example"
+                          lang="bash"
+                          code={example.run}
+                        />
+                        {example.expectedOutput && (
+                          <div class="demo-output">
+                            <span>Expected output</span>
+                            <code>{example.expectedOutput}</code>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  ))}
+  <p
+    class="selection-status"
+    aria-live="polite"
+    aria-atomic="true"
+    data-sdk-status
+  ></p>
+</section>
+
+<script>
+  type Selection = { language?: string; client?: string; scenario?: string };
+  const controllers = new WeakMap<
+    HTMLElement,
+    (selection: Selection, updateURL?: boolean) => void
+  >();
+
+  function fromURL(): Selection {
+    const params = new URL(location.href).searchParams;
+    return {
+      language: params.get("lang") || undefined,
+      client: params.get("client") || undefined,
+      scenario: params.get("scenario") || undefined,
+    };
+  }
+
+  function initializeExplorer(root: HTMLElement) {
+    root.dataset.sdkPath = location.pathname;
+    const existing = controllers.get(root);
+    if (existing) {
+      existing(fromURL());
+      return;
+    }
+    let current: Selection = {};
+    const rememberedClients = new Map<string, string>();
+    function tabs(scope: HTMLElement, kind: string) {
+      return [
+        ...scope.querySelectorAll<HTMLButtonElement>(
+          `[data-sdk-kind="${kind}"]`,
+        ),
+      ];
+    }
+    function choose(candidates: HTMLButtonElement[], requested?: string) {
+      return (
+        candidates.find(
+          (candidate) => candidate.dataset.sdkValue === requested,
+        ) || candidates[0]
+      );
+    }
+    function activate(
+      candidates: HTMLButtonElement[],
+      selected: HTMLButtonElement,
+    ) {
+      for (const candidate of candidates) {
+        const active = candidate === selected;
+        candidate.setAttribute("aria-selected", String(active));
+        candidate.tabIndex = active ? 0 : -1;
+        const panel = document.getElementById(
+          candidate.getAttribute("aria-controls") || "",
+        );
+        panel?.toggleAttribute("hidden", !active);
+      }
+    }
+    function select(selection: Selection, updateURL = false) {
+      const languages = tabs(root, "language");
+      const language = choose(languages, selection.language);
+      const languagePanel = document.getElementById(
+        language.getAttribute("aria-controls")!,
+      )!;
+      const clients = tabs(languagePanel, "client");
+      const client = choose(clients, selection.client);
+      const clientPanel = document.getElementById(
+        client.getAttribute("aria-controls")!,
+      )!;
+      const scenarios = tabs(clientPanel, "scenario");
+      const scenario = choose(scenarios, selection.scenario);
+      activate(languages, language);
+      activate(clients, client);
+      activate(scenarios, scenario);
+      current = {
+        language: language.dataset.sdkValue!,
+        client: client.dataset.sdkValue!,
+        scenario: scenario.dataset.sdkValue!,
+      };
+      rememberedClients.set(current.language!, current.client!);
+      root.dataset.language = current.language;
+      root.dataset.client = current.client;
+      root.dataset.scenario = current.scenario;
+      const status = root.querySelector<HTMLElement>("[data-sdk-status]");
+      if (status)
+        status.textContent = `${language.textContent?.trim()}, ${client.textContent?.trim()}, ${scenario.textContent?.trim()}`;
+      if (updateURL) {
+        const url = new URL(location.href);
+        url.searchParams.set("lang", current.language!);
+        url.searchParams.set("client", current.client!);
+        url.searchParams.set("scenario", current.scenario!);
+        if (url.href !== location.href) {
+          const state = { ...history.state, scrollX, scrollY };
+          history.replaceState(state, "", location.href);
+          history.pushState(state, "", url);
+        }
+      }
+    }
+    controllers.set(root, select);
+    root.addEventListener("click", (event) => {
+      const tab = (event.target as Element).closest<HTMLButtonElement>(
+        "[data-sdk-kind]",
+      );
+      if (!tab || !root.contains(tab)) return;
+      const kind = tab.dataset.sdkKind;
+      const value = tab.dataset.sdkValue!;
+      if (kind === "language") {
+        select(
+          {
+            language: value,
+            client: rememberedClients.get(value),
+            scenario: current.scenario,
+          },
+          true,
+        );
+      } else if (kind === "client") {
+        select({ ...current, client: value }, true);
+      } else {
+        select({ ...current, scenario: value }, true);
+      }
+    });
+    root.addEventListener("keydown", (event) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+        return;
+      const tab = (event.target as Element).closest<HTMLButtonElement>(
+        "[data-sdk-kind]",
+      );
+      const list = tab?.closest('[role="tablist"]');
+      if (!tab || !list) return;
+      const buttons = [
+        ...list.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+      ];
+      const next =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? buttons.length - 1
+            : (buttons.indexOf(tab) +
+                (event.key === "ArrowRight" ? 1 : -1) +
+                buttons.length) %
+              buttons.length;
+      event.preventDefault();
+      buttons[next].click();
+      buttons[next].focus({ preventScroll: true });
+      buttons[next].scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    select(fromURL());
+  }
+
+  function initializeExplorers() {
+    document
+      .querySelectorAll<HTMLElement>("[data-sdk-explorer]")
+      .forEach(initializeExplorer);
+  }
+  initializeExplorers();
+  document.addEventListener("astro:page-load", initializeExplorers);
+  window.addEventListener(
+    "popstate",
+    (event) => {
+      const roots = [
+        ...document.querySelectorAll<HTMLElement>("[data-sdk-explorer]"),
+      ].filter((root) => root.dataset.sdkPath === location.pathname);
+      if (!roots.length) return;
+      // Selection history belongs to this page. Letting the page router fetch
+      // it again can replace a newer selection after that fetch finishes.
+      event.stopImmediatePropagation();
+      roots.forEach((root) => controllers.get(root)?.(fromURL()));
+      const state = history.state;
+      if (
+        typeof state?.scrollX === "number" &&
+        typeof state?.scrollY === "number"
+      )
+        window.scrollTo(state.scrollX, state.scrollY);
+    },
+    { capture: true },
+  );
+</script>
+
+<style>
+  .sdk-explorer {
+    --tab-accent: #aab9ff;
+    margin-block: 20px 28px;
+    min-width: 0;
+    text-align: left;
+  }
+  .sdk-explorer [hidden] {
+    display: none !important;
+  }
+  .language-picker {
+    padding: 14px 0 0;
+  }
+  .picker-heading {
+    margin-bottom: 8px;
+  }
+  .picker-label {
+    display: block;
+    color: #dfe5f2;
+    font-size: 0.8rem;
+    font-weight: 650;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+  }
+  .language-tabs,
+  .client-tabs,
+  .scenario-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .language-tabs {
+    padding: 0 0 10px;
+  }
+  button[role="tab"] {
+    flex-shrink: 0;
+    border: 1px solid transparent;
+    cursor: pointer;
+    color: var(--muted);
+    background: transparent;
+    font-size: 0.86rem;
+    font-weight: 550;
+    line-height: 1.4;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition:
+      background 120ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+  button[role="tab"]:hover {
+    color: var(--text);
+    background: #202c40;
+  }
+  button[role="tab"][aria-selected="true"] {
+    color: #edf1ff;
+    background: #26344d;
+    border-color: #536792;
+  }
+  button[role="tab"]:focus-visible {
+    outline: 2px solid var(--tab-accent);
+    outline-offset: -3px;
+  }
+  .language-tabs button[aria-selected="true"] {
+    background: #b7c4ff;
+    color: #111a32;
+    border-color: #cad4ff;
+  }
+  .client-picker {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+  .client-tabs button {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+  .scenario-picker {
+    padding: 12px 0 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .scenario-picker .picker-label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .scenario-tabs button {
+    padding: 8px 12px;
+    border-color: #2b374c;
+  }
+  .scenario-tabs button[aria-selected="true"] {
+    background: #1d2a43;
+    color: #c4d0ff;
+    border-color: #637bab;
+  }
+  .guide-body {
+    padding: 20px 0 0;
+  }
+  .setup-step + .setup-step,
+  .files-step + .run-step {
+    margin-top: 20px;
+  }
+  .install-step {
+    margin-bottom: 20px;
+  }
+  .step-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-bottom: 9px;
+  }
+  .step-number {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 21px;
+    flex-shrink: 0;
+    border: 1px solid var(--line-bright);
+    border-radius: 5px;
+    color: #b4c6ed;
+    font: 600 0.73rem var(--sans);
+  }
+  .step-heading h3 {
+    margin: 0;
+    font-size: 0.94rem;
+    font-weight: 650;
+    color: #edf1f9;
+    letter-spacing: -0.01em;
+  }
+  .sdk-explorer :global(.code-window) {
+    margin-block: 0;
+    border-color: #2c374c;
+    border-radius: 8px;
+  }
+  .sdk-explorer :global(.code-window + .code-window) {
+    margin-top: 10px;
+  }
+  .source-install {
+    border: 0;
+    padding: 0;
+    margin: 10px 0 0;
+    background: none;
+  }
+  .dependency-note {
+    color: var(--quiet);
+    font-size: 0.8rem;
+    margin: 10px 0 8px;
+  }
+  .demo-output {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 10px 0 0;
+    margin-top: 10px;
+  }
+  .demo-output span {
+    color: var(--quiet);
+    font-size: 0.78rem;
+  }
+  .demo-output code {
+    color: #b6d8cf;
+    font-size: 0.88rem;
+  }
+  .source-install summary {
+    width: fit-content;
+    color: #a4b8de;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .source-install summary:hover {
+    color: #d6e0f4;
+  }
+  .source-install[open] summary {
+    margin-bottom: 9px;
+  }
+  .example-note {
+    padding: 8px 0 8px 12px;
+    margin: 0 0 18px;
+    border-left: 2px solid #53658a;
+    color: #bfcde2;
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+  .availability-note {
+    border-left: 2px solid var(--line-bright);
+    padding: 12px 16px;
+  }
+  .availability-note strong {
+    color: #edf1f9;
+    font-size: 0.94rem;
+  }
+  .availability-note p {
+    color: var(--muted);
+    margin: 6px 0 0;
+    font-size: 0.86rem;
+  }
+  .selection-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  @media (max-width: 680px) {
+    .sdk-explorer {
+      margin-block: 16px 24px;
+    }
+    .language-picker {
+      padding-top: 10px;
+    }
+    .picker-heading {
+      margin-bottom: 8px;
+    }
+    .language-tabs {
+      padding-bottom: 8px;
+    }
+    .language-tabs button {
+      flex: 1 1 auto;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+    }
+    .client-picker {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px 0;
+    }
+    .client-tabs button {
+      padding: 6px 9px;
+    }
+    .scenario-picker {
+      padding: 10px 0 12px;
+    }
+    .scenario-tabs {
+      gap: 6px;
+    }
+    .scenario-tabs button {
+      flex: 1 1 auto;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    .guide-body {
+      padding-top: 16px;
+    }
+    .sdk-explorer :global(.code-titlebar > span) {
+      overflow-wrap: anywhere;
+      min-width: 0;
+    }
+    .sdk-explorer :global(.code-titlebar button) {
+      flex-shrink: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    button[role="tab"] {
+      transition: none;
+    }
+  }
+</style>

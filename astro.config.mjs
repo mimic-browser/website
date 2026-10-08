@@ -8,6 +8,15 @@ export default defineConfig({
   // Public links and static directory output still use trailing slashes.
   trailingSlash: "ignore",
   output: "static",
+  vite: {
+    server: {
+      watch: {
+        // Windows edits on a WSL-mounted checkout need polling for live updates.
+        usePolling: Boolean(process.env.WSL_DISTRO_NAME),
+        interval: 300,
+      },
+    },
+  },
   integrations: [
     sitemap({
       serialize(item) {

@@ -1,0 +1,548 @@
+---
+import { ArrowRight, Search, BookOpen, Terminal, X } from "lucide-astro";
+import DocsSearch from "./DocsSearch.astro";
+import {
+  documentationTopics,
+  documentationCategories,
+} from "@/lib/documentation";
+
+const base = import.meta.env.BASE_URL;
+const categoryLabels = new Map(
+  documentationCategories.map((category) => [category.id, category.label]),
+);
+const initialCount = documentationTopics.filter(
+  (topic) => topic.hub !== false,
+).length;
+---
+
+<docs-hub class="docs-hub container">
+  <header class="hub-intro">
+    <div class="intro-heading">
+      <span class="eyebrow">Documentation</span>
+      <DocsSearch id="docs-hub-search" compact />
+    </div>
+    <h1>What do you want to build?</h1>
+    <p class="intro-copy">
+      Run your first script, configure a browser Context, or find the command
+      you need. Start with your language and keep the automation tools you know.
+    </p>
+    <a class="start-card" href={`${base}sdk/`}>
+      <span class="start-icon">
+        <Terminal size={25} aria-hidden="true" />
+      </span>
+      <span class="start-copy">
+        <span class="start-eyebrow">New to Mimic?</span>
+        <strong>Run the SDK demo</strong>
+        <span>Choose your language. Install, copy the script, and run it.</span>
+      </span>
+      <ArrowRight size={23} aria-hidden="true" />
+    </a>
+  </header>
+
+  <section class="hub-catalog" aria-labelledby="docs-topics-heading">
+    <div class="catalog-heading">
+      <h2 id="docs-topics-heading">Explore the docs</h2>
+      <span class="topic-count" data-hub-count role="status" aria-live="polite">
+        {initialCount} guides
+      </span>
+    </div>
+    <div class="hub-controls" data-hub-controls hidden>
+      <label class="hub-search">
+        <Search size={20} aria-hidden="true" />
+        <span class="sr-only">Search guides and reference</span>
+        <input
+          type="search"
+          placeholder="Search guides, commands, and options…"
+          autocomplete="off"
+          spellcheck="false"
+          data-hub-input
+          aria-controls="docs-topic-grid"
+        />
+        <button type="button" data-hub-clear aria-label="Clear search" hidden>
+          <X size={17} aria-hidden="true" />
+        </button>
+      </label>
+      <div class="category-filter" role="group" aria-label="Filter by topic">
+        <button type="button" data-hub-category="all" aria-pressed="true">
+          All topics
+        </button>
+        {documentationCategories.map((category) => (
+          <button
+            type="button"
+            data-hub-category={category.id}
+            aria-pressed="false"
+          >
+            {category.label}
+          </button>
+        ))}
+      </div>
+    </div>
+    <div id="docs-topic-grid" class="topic-grid" data-hub-grid>
+      {documentationTopics.map((topic) => (
+        <a
+          class="topic-card"
+          href={`${base}${topic.path.replace(/^\//, "")}`}
+          data-hub-topic
+          data-topic-category={topic.category}
+          data-topic-overview={topic.hub !== false ? "true" : "false"}
+          data-topic-text={[
+            topic.title,
+            topic.description,
+            categoryLabels.get(topic.category) ?? topic.category,
+            ...topic.keywords,
+          ].join(" ")}
+          hidden={topic.hub === false}
+        >
+          <span class="card-category">
+            {categoryLabels.get(topic.category) ?? topic.category}
+          </span>
+          <h3>{topic.title}</h3>
+          <p>{topic.description}</p>
+          <span class="card-footer">
+            Read guide <ArrowRight size={17} aria-hidden="true" />
+          </span>
+        </a>
+      ))}
+    </div>
+    <div class="hub-empty" data-hub-empty hidden>
+      <span class="empty-icon">
+        <BookOpen size={25} aria-hidden="true" />
+      </span>
+      <h3>No matching topics</h3>
+      <p>Try a shorter search or explore all the guides.</p>
+      <button type="button" data-hub-reset>
+        Show all topics <ArrowRight size={16} aria-hidden="true" />
+      </button>
+    </div>
+  </section>
+</docs-hub>
+
+<script>
+  class DocsHubElement extends HTMLElement {
+    private controller?: AbortController;
+
+    connectedCallback() {
+      if (this.controller) return;
+      this.controller = new AbortController();
+      const { signal } = this.controller;
+      const input = this.querySelector<HTMLInputElement>("[data-hub-input]");
+      const count = this.querySelector<HTMLElement>("[data-hub-count]");
+      const empty = this.querySelector<HTMLElement>("[data-hub-empty]");
+      const clear = this.querySelector<HTMLButtonElement>("[data-hub-clear]");
+      const buttons = Array.from(
+        this.querySelectorAll<HTMLButtonElement>("[data-hub-category]"),
+      );
+      if (!input || !count || !empty || !clear) return;
+      const normalize = (value: string) =>
+        value
+          .normalize("NFKD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
+      const topics = Array.from(
+        this.querySelectorAll<HTMLAnchorElement>("[data-hub-topic]"),
+      ).map((element) => ({
+        element,
+        text: normalize(element.dataset.topicText ?? ""),
+        category: element.dataset.topicCategory,
+        overview: element.dataset.topicOverview === "true",
+      }));
+      let category = "all";
+      const filter = () => {
+        const words = normalize(input.value)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+        let matches = 0;
+        topics.forEach((topic) => {
+          const visible =
+            (words.length > 0 || topic.overview) &&
+            (category === "all" || topic.category === category) &&
+            words.every((word) => topic.text.includes(word));
+          topic.element.hidden = !visible;
+          if (visible) matches += 1;
+        });
+        const noun = words.length ? "result" : "guide";
+        count.textContent = `${matches} ${noun}${matches === 1 ? "" : "s"}`;
+        empty.hidden = matches > 0;
+        clear.hidden = input.value.length === 0;
+        buttons.forEach((button) =>
+          button.setAttribute(
+            "aria-pressed",
+            String(button.dataset.hubCategory === category),
+          ),
+        );
+      };
+      input.addEventListener("input", filter, { signal });
+      buttons.forEach((button) =>
+        button.addEventListener(
+          "click",
+          () => {
+            category = button.dataset.hubCategory ?? "all";
+            filter();
+          },
+          { signal },
+        ),
+      );
+      clear.addEventListener(
+        "click",
+        () => {
+          input.value = "";
+          filter();
+          input.focus();
+        },
+        { signal },
+      );
+      this.querySelector("[data-hub-reset]")?.addEventListener(
+        "click",
+        () => {
+          input.value = "";
+          category = "all";
+          filter();
+          input.focus();
+        },
+        { signal },
+      );
+      input.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Escape" && input.value) {
+            event.preventDefault();
+            input.value = "";
+            filter();
+          }
+        },
+        { signal },
+      );
+      this.querySelector<HTMLElement>("[data-hub-controls]")?.removeAttribute(
+        "hidden",
+      );
+      filter();
+    }
+
+    disconnectedCallback() {
+      this.controller?.abort();
+      this.controller = undefined;
+    }
+  }
+  if (!customElements.get("docs-hub")) {
+    customElements.define("docs-hub", DocsHubElement);
+  }
+</script>
+
+<style>
+  docs-hub {
+    display: block;
+    padding-top: 66px;
+    padding-bottom: 100px;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  .intro-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  h1 {
+    max-width: 900px;
+    margin: 29px 0 19px;
+    font-size: clamp(2.6rem, 5vw, 4.2rem);
+    line-height: 1.06;
+    letter-spacing: -0.055em;
+    font-weight: 750;
+  }
+  .intro-copy {
+    max-width: 670px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.09rem;
+    line-height: 1.75;
+  }
+  .start-card {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 36px;
+    padding: 25px 28px;
+    border: 1px solid #4a578c;
+    border-radius: 14px;
+    background: linear-gradient(110deg, #202d50, #151d31 73%);
+  }
+  .start-card:hover {
+    border-color: var(--blue-bright);
+    background: linear-gradient(110deg, #283961, #182239 73%);
+  }
+  .start-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 57px;
+    height: 57px;
+    border: 1px solid #4b6092;
+    border-radius: 12px;
+    background: #2a3961;
+    color: #c3ceff;
+  }
+  .start-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .start-eyebrow {
+    color: #9eafff;
+    font-size: 0.74rem;
+    font-weight: 600;
+  }
+  .start-copy strong {
+    color: #f3f5ff;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+  }
+  .start-copy > span:last-child {
+    color: #b7c3e2;
+    font-size: 0.91rem;
+  }
+  .start-card > :global(svg) {
+    flex-shrink: 0;
+    color: #aebeff;
+  }
+  .hub-catalog {
+    margin-top: 58px;
+  }
+  .catalog-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 21px;
+  }
+  .catalog-heading h2 {
+    margin: 0;
+    font-size: 1.45rem;
+    letter-spacing: -0.025em;
+  }
+  .topic-count {
+    color: var(--quiet);
+    font-size: 0.8rem;
+  }
+  .hub-controls {
+    margin-bottom: 26px;
+  }
+  .hub-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid var(--line-bright);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--quiet);
+  }
+  .hub-search:focus-within {
+    border-color: var(--blue);
+  }
+  .hub-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.94rem;
+  }
+  .hub-search input::placeholder {
+    color: var(--quiet);
+  }
+  .hub-search input::-webkit-search-cancel-button {
+    display: none;
+  }
+  .hub-search button {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    padding: 3px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--quiet);
+    cursor: pointer;
+  }
+  .category-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 17px;
+  }
+  .category-filter button {
+    padding: 8px 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .category-filter button:hover {
+    border-color: var(--line-bright);
+    color: var(--text);
+  }
+  .category-filter button[aria-pressed="true"] {
+    border-color: #6379bf;
+    background: #253354;
+    color: #dbe3ff;
+  }
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .topic-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  .topic-card:hover {
+    border-color: #586d9e;
+    background: #151f32;
+  }
+  .card-category {
+    color: var(--blue-bright);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .topic-card h3 {
+    margin: 12px 0 9px;
+    font-size: 1.1rem;
+    line-height: 1.3;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .topic-card p {
+    margin: 0 0 24px;
+    color: var(--muted);
+    font-size: 0.87rem;
+    line-height: 1.65;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    align-self: stretch;
+    margin-top: auto;
+    color: var(--quiet);
+    font-size: 0.76rem;
+  }
+  .card-footer :global(svg) {
+    color: var(--blue-bright);
+  }
+  .hub-empty {
+    padding: 52px 24px;
+    border: 1px dashed var(--line-bright);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .empty-icon {
+    display: inline-flex;
+    color: var(--blue-bright);
+  }
+  .hub-empty h3 {
+    margin: 12px 0 7px;
+    font-size: 1.16rem;
+  }
+  .hub-empty p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .hub-empty button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 10px 14px;
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--blue-bright);
+    cursor: pointer;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  @media (max-width: 1000px) {
+    .topic-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 650px) {
+    docs-hub {
+      padding-top: 34px;
+      padding-bottom: 64px;
+    }
+    .intro-heading {
+      gap: 12px;
+    }
+    h1 {
+      margin-top: 28px;
+      font-size: clamp(2.35rem, 9vw, 3.3rem);
+    }
+    .intro-copy {
+      font-size: 1rem;
+    }
+    .start-card {
+      align-items: flex-start;
+      gap: 14px;
+      padding: 22px 18px;
+    }
+    .start-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+    }
+    .start-copy strong {
+      font-size: 1.16rem;
+    }
+    .start-card > :global(svg) {
+      display: none;
+    }
+    .start-copy > span:last-child {
+      font-size: 0.84rem;
+    }
+    .hub-catalog {
+      margin-top: 40px;
+    }
+    .topic-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .topic-card {
+      padding: 22px;
+    }
+    .category-filter {
+      gap: 7px;
+    }
+    .category-filter button {
+      padding: 7px 10px;
+      font-size: 0.77rem;
+    }
+  }
+</style>

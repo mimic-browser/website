@@ -1,0 +1,630 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+import CodeWindow from "../../../components/CodeWindow.astro";
+import { minimumSdkRuntimeVersion } from "../../../lib/sdk-release";
+
+const node = `import { launch } from "mimic-browser/playwright";
+
+const session = await launch();
+try {
+  const context = await session.newContext({
+    profile: { generate: { seed: "demo-account" } },
+    resourcePolicy: {
+      reportOnly: true,
+      presets: ["noSpeculativeLoads"],
+      budgets: { maxRequests: 100, maxConcurrent: 8 },
+    },
+  });
+  try {
+    const page = await context.newPage();
+    await page.setContent("<h1>One coherent environment</h1>");
+    console.log(await page.evaluate(() => ({
+      language: navigator.language,
+      viewport: [innerWidth, innerHeight],
+      userAgent: navigator.userAgent,
+    })));
+  } finally {
+    await context.close();
+  }
+} finally {
+  await session.close();
+}`;
+
+const python = `from mimic.playwright.sync_api import launch
+from mimic.generated import (
+    GenerateProfileOptions,
+    GenerateProfileSelection,
+    ResourceBudgets,
+    ResourcePolicy,
+)
+
+with launch() as session:
+    context = session.new_context(
+        profile=GenerateProfileSelection(
+            generate=GenerateProfileOptions(seed="demo-account")
+        ),
+        resource_policy=ResourcePolicy(
+            report_only=True,
+            presets=["noSpeculativeLoads"],
+            budgets=ResourceBudgets(max_requests=100, max_concurrent=8),
+        ),
+    )
+    try:
+        page = context.new_page()
+        page.set_content("<h1>One coherent environment</h1>")
+        print(page.evaluate("""() => ({
+            language: navigator.language,
+            viewport: [innerWidth, innerHeight],
+            userAgent: navigator.userAgent
+        })"""))
+    finally:
+        context.close()`;
+
+const csharp = `using Mimic.Playwright;
+using System.Text.Json.Nodes;
+
+await using var session = await PlaywrightSession.LaunchAsync();
+var configuration = new JsonObject
+{
+    ["profile"] = new JsonObject
+    {
+        ["generate"] = new JsonObject { ["seed"] = "demo-account" }
+    },
+    ["resourcePolicy"] = new JsonObject
+    {
+        ["reportOnly"] = true,
+        ["presets"] = new JsonArray("noSpeculativeLoads")
+    }
+};
+var context = await session.NewConfiguredContextAsync(configuration);
+try
+{
+    var page = await context.NewPageAsync();
+    await page.SetContentAsync("<h1>One coherent environment</h1>");
+    Console.WriteLine(await page.Locator("h1").TextContentAsync());
+}
+finally
+{
+    await context.CloseAsync();
+}`;
+
+const portable = `import { readFile, writeFile } from "node:fs/promises";
+import { launch } from "mimic-browser/playwright";
+
+const session = await launch();
+try {
+  const generated = await session.mimic.generateProfile({ seed: "demo-account" });
+  const exported = await session.mimic.exportProfile({ profile: generated.profile });
+  await writeFile("mimic-profile.json", JSON.stringify(exported.profile, null, 2));
+
+  const descriptor = JSON.parse(await readFile("mimic-profile.json", "utf8"));
+  const restored = await session.mimic.importProfile({ profile: descriptor });
+  console.log("Profile:", restored.profileId, "Warnings:", restored.warnings);
+
+  const context = await session.newContext({ profile: restored.profile });
+  try {
+    const page = await context.newPage();
+    await page.setContent("<h1>Restored environment</h1>");
+    console.log(await page.locator("h1").textContent());
+  } finally {
+    await context.close();
+  }
+} finally {
+  await session.close();
+}`;
+
+const manual = `{
+  "mode": "manual",
+  "profile": {
+    "hardware": { "logicalProcessors": 8, "deviceMemoryGB": 8 },
+    "locale": {
+      "languages": ["en-US", "en"],
+      "intlLocale": "en-US",
+      "timezone": "America/New_York"
+    },
+    "preferences": { "colorScheme": "dark", "reducedMotion": false }
+  }
+}`;
+
+const policy = `{
+  "reportOnly": true,
+  "rules": [
+    {
+      "id": "skip-images-and-fonts",
+      "match": { "kinds": ["image", "font"] },
+      "work": { "cacheRead": false, "network": false }
+    }
+  ],
+  "budgets": {
+    "maxRequests": 100,
+    "maxConcurrent": 8,
+    "maxResponseBytes": 8388608,
+    "maxBodyBytes": 33554432,
+    "maxRetainedBytes": 16777216
+  }
+}`;
+
+const proxy = `{
+  "server": "http://127.0.0.1:8080",
+  "username": "proxy-user",
+  "password": "proxy-password"
+}`;
+
+const topics = [
+  ["Choose a context", "choose-context"],
+  ["Create a managed context", "create-context"],
+  ["Save a profile", "save-profile"],
+  ["Manual profiles", "manual-profile"],
+  ["Proxies", "proxies"],
+  ["Resource policy", "resource-policy"],
+  ["Media setup", "media"],
+  ["Ownership and cleanup", "lifecycle"],
+  ["Other languages", "language-apis"],
+] as const;
+---
+
+<DocsLayout
+  title="Contexts and profiles"
+  description="Create isolated browser contexts, choose a coherent environment, configure proxies and resource policies, and preserve native framework objects."
+  topics={topics}
+>
+  <p>
+    A context groups pages that share an environment, cookies and storage.
+    Configure it before opening its first page; keep using your framework's
+    Page, Locator and navigation methods afterward. Start with{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/sdk/`}>SDK installation</a> if you
+    do not have a session yet.
+  </p>
+
+  <h2 id="choose-context">Choose how the environment is owned</h2>
+  <p>
+    An ordinary context uses the automation framework's usual options. For
+    example, <code>session.newContext()</code> returns a real Playwright
+    BrowserContext, and its ordinary emulation settings remain mutable. In Node,
+    framework context options belong under <code>framework</code>; Python
+    accepts them as normal keyword arguments.
+  </p>
+  <p>
+    A managed context gives Mimic ownership of a coherent environment profile.
+    Choose it when related observations—viewport, screen, locale, preferences,
+    fonts and graphics—must come from one validated configuration. In Node and
+    Python, supplying <code>profile</code> or <code>proxy</code> selects this
+    mode. A proxy without an explicit profile generates one. Media or resource
+    policy alone does not change an ordinary context into a managed identity.
+  </p>
+  <p>
+    Managed environments are immutable. Configure identity in the profile;
+    creating a new context is the supported way to change its viewport or
+    identity. Combining a managed profile with framework emulation such as{" "}
+    <code>viewport</code>, <code>userAgent</code>, <code>locale</code>,
+    <code>timezoneId</code> or <code>colorScheme</code> is rejected. Later CDP
+    identity mutations return <code>profileLocked</code>. Request interception
+    and injected scripts can still alter observations; profile ownership is not
+    a security sandbox.
+  </p>
+  <aside class="context-note">
+    <strong>Runtime support</strong>
+    <p>
+      Framework context bridges that use <code>Mimic.configureContext</code>{" "}
+      require Mimic {minimumSdkRuntimeVersion} or later. The SDK downloads a
+      compatible runtime automatically. When connecting to a runtime you started
+      separately, check its{" "}
+      <a href={`${import.meta.env.BASE_URL}docs/sdk/runtime/`}>
+        runtime version
+      </a>
+      .
+    </p>
+  </aside>
+
+  <h2 id="create-context">Create a managed context</h2>
+  <p>
+    These complete examples generate an environment, install a resource policy
+    in observation-only mode, and then create a page. All configuration finishes
+    before the context is returned. A validation failure disposes the newly
+    created context and surfaces the error.
+  </p>
+  <div class="language-examples">
+    <details open>
+      <summary>JavaScript / TypeScript · Playwright</summary>
+      <p>
+        Save as <code>contexts.mjs</code>, then run{" "}
+        <code>node contexts.mjs</code>.
+      </p>
+      <CodeWindow title="contexts.mjs" code={node} lang="javascript" />
+    </details>
+    <details>
+      <summary>Python · synchronous Playwright</summary>
+      <p>
+        Save as <code>contexts.py</code>, then run{" "}
+        <code>python contexts.py</code>.
+      </p>
+      <CodeWindow title="contexts.py" code={python} lang="python" />
+      <p>
+        For async code, import from <code>mimic.playwright.async_api</code>,
+        await <code>launch()</code> and context/page operations, and use{" "}
+        <code>async with</code> for the session.
+      </p>
+    </details>
+    <details>
+      <summary>C# · Playwright</summary>
+      <p>
+        With <code>mimic-browser.Playwright</code> installed, replace{" "}
+        <code>Program.cs</code> and run <code>dotnet run</code>. The explicitly
+        named <code>NewConfiguredContextAsync</code> helper selects managed
+        mode.
+      </p>
+      <CodeWindow title="Program.cs" code={csharp} lang="csharp" />
+    </details>
+  </div>
+  <p>
+    Browser selection in a generated profile describes the installed observation
+    bundle: <code>browser: "chrome"</code>, <code>version: 152</code> and{" "}
+    <code>platform: "windows"</code>. It does not download a different browser
+    or select the Mimic runtime release. Omitting the seed generates a random
+    one; an empty seed, unknown fields, nulls and unsupported selectors fail.
+  </p>
+
+  <h2 id="save-profile">Save and restore a profile</h2>
+  <p>
+    A profile token is a portable string, not a server-side registry entry.
+    Generate a token, export its descriptor as JSON, and import that descriptor
+    to validate it before creating another context. The example below writes{" "}
+    <code>mimic-profile.json</code> and restores it in the same session; keep
+    that file to import in a later session.
+  </p>
+  <CodeWindow
+    title="profile.mjs · node profile.mjs"
+    code={portable}
+    lang="javascript"
+  />
+  <p>
+    Generate, import and export allocate no context or page. Tokens contain the
+    environment, not cookies, storage, proxy credentials or media source
+    bindings. Import checks the installed base and resolved environment;
+    unavailable or changed data returns <code>incompatibleProfile</code>. A seed
+    alone does not guarantee identical output across releases. Different seeds
+    can produce the same <code>profileId</code>, and different profiles do not
+    guarantee different GPUs or public IP addresses.
+  </p>
+
+  <h2 id="manual-profile">Make deliberate manual changes</h2>
+  <p>
+    Pass a manual environment to <code>session.mimic.importProfile</code> with{" "}
+    <code>mode: "manual"</code>, then pass its returned <code>profile</code>{" "}
+    token to the context helper. This JSON is the import command's argument; it
+    is not a context configuration or CLI profile file.
+  </p>
+  <CodeWindow title="Arguments for importProfile" code={manual} lang="json" />
+  <p>
+    Named fields merge into the installed baseline; arrays replace complete
+    arrays. Known invalid values and cross-field conflicts are rejected.
+    Returned warnings explain limits of validation rather than bypassing it.
+    Browser and network identity retain the installed baseline. Graphics/fonts
+    must retain the baseline or match one complete supported recipe; editing
+    individual renderer/font fields or mixing recipes is rejected. Custom
+    timezone and Intl locale require V8's native Intl support.
+  </p>
+  <p>
+    To edit an exported descriptor, take its <code>environment</code> member and
+    import that through manual mode. Do not rewrite its hash.
+    <code>getProfile</code> reports effective observations; its result is not
+    accepted as context-creation input.
+  </p>
+
+  <h2 id="proxies">Route a context through a proxy</h2>
+  <p>
+    The context-level <code>proxy</code> accepts <code>server</code>,
+    <code>username</code> and <code>password</code>. HTTP, HTTPS and SOCKS5
+    endpoints are supported. Keep credentials in separate fields instead of URL
+    userinfo; load real credentials from your application's configuration. The
+    following shape goes beside <code>profile</code> in context settings.
+  </p>
+  <CodeWindow title="proxy property" code={proxy} lang="json" />
+  <p>
+    A failed proxy does not fall back to a direct request, and proxy mode
+    disables HTTP/3. HTTP(S) resource loads and Worker fetch use the context's
+    proxy. A timezone or language does not infer the proxy's geography. ICE
+    metadata does not establish UDP/WebRTC routing. Profile reads and errors
+    omit proxy credentials. The runtime installer has separate proxy/network
+    settings: a browser context proxy does not route SDK downloads.
+  </p>
+
+  <h2 id="resource-policy">Control resource work explicitly</h2>
+  <p>
+    A resource policy belongs to one context and its pages, frames, workers and
+    WebSockets. Without a policy, the ordinary compatibility path remains in
+    effect. Start with <code>reportOnly: true</code> to observe the proposed
+    decisions before changing a workload's behavior.
+  </p>
+  <CodeWindow title="resourcePolicy property" code={policy} lang="json" />
+  <p>
+    Rules run in order; the first match wins. Explicit rules precede presets. A
+    resource kind reflects why a request was made:
+    <code>fetch("photo.png")</code> is a Fetch request, not an image request.
+    The example would deny image/font cache reads and network acquisitions;
+    report-only mode records the decision while delivering ordinary results.
+  </p>
+  <details class="reference-details">
+    <summary>Policy fields, presets and budget behavior</summary>
+    <table>
+      <thead>
+        <tr>
+          <th>Setting</th>
+          <th>Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <code>noVisualAssets</code>, <code>dataExtraction</code>
+          </td>
+          <td>
+            Deny cache reads and network acquisition for image, font, media and
+            favicon kinds.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>noSpeculativeLoads</code>
+          </td>
+          <td>Deny preload and prefetch mechanisms.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>headersOnly</code>
+          </td>
+          <td>
+            Admit status/headers but stop response bodies. It is unsuitable for
+            ordinary page navigation that needs HTML.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>match</code>
+          </td>
+          <td>
+            Select kinds, hosts, exact HTTP origins, URL glob, owner, mechanism
+            or top-level site. Leading-dot hosts match subdomains; schemeful
+            top-level sites use the registrable domain.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>cacheRead</code>, <code>network</code>
+          </td>
+          <td>
+            With cache reads allowed and network disabled, a cache hit succeeds
+            and a miss fails. Redirect targets are checked again.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>body</code>, <code>prefixBytes</code>
+          </td>
+          <td>
+            Choose full, none or prefix; prefix requires a positive byte count.
+            Partial Fetch bodies error on consumption, including clones. They
+            are not cached or retained for CDP body retrieval.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>decode: false</code>
+          </td>
+          <td>
+            For images, retain intrinsic metadata where available and deny later
+            pixel materialization. It is a fidelity tradeoff.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>cacheRetain</code>, <code>debugRetain</code>
+          </td>
+          <td>
+            Control HTTP-cache and CDP response-body retention separately.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>maxRequests</code>, <code>maxConcurrent</code>
+          </td>
+          <td>Limit network acquisitions, not cache hits.</td>
+        </tr>
+        <tr>
+          <td>
+            <code>maxResponseBytes</code>, <code>maxBodyBytes</code>
+          </td>
+          <td>
+            Limit individual response size and cumulative body-reader/cache-copy
+            bytes. These do not cap transport buffering.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <code>maxDecodedBytes</code>, <code>maxRetainedBytes</code>
+          </td>
+          <td>
+            Bound cumulative logical image pixel work and retained response-body
+            storage. They are not process memory limits.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Budget zero means unlimited. A nonzero <code>maxWireBytes</code> is
+      unsupported and rejected. Timers, animations and scheduler behavior do not
+      change. Blocking fonts, images, scripts or bodies changes observable
+      behavior and needs workload-specific validation.
+    </p>
+  </details>
+  <p>
+    <code>Mimic.updateResourcePolicy</code> takes{" "}
+    <code>{"{ browserContextId, policy }"}</code> and publishes an atomic
+    update. In-flight loads and redirects keep their captured policy generation;
+    an update does not cancel them or clear caches.
+    <code>Mimic.getResourcePolicyStats</code> requires the explicit context ID.
+    Its body-read and known-avoided-byte counters are not a claim of exact wire
+    traffic saved. See the{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/sdk/reference/`}>
+      command reference
+    </a>
+    .
+  </p>
+
+  <h2 id="media">Configure capture before opening a page</h2>
+  <p>
+    A context helper accepts a media configuration or a media factory. The
+    factory receives the owning context ID and the session's Mimic command
+    client, so it can discover private capture sources for that exact context.
+    It finishes before the helper returns a context for user pages. Failure
+    closes the context. The media catalog remains separate from the saved
+    environment token.
+  </p>
+  <p>
+    Source selection, public camera/microphone identity and site permission are
+    separate decisions. Discovery/configuration does not open capture or grant
+    permission. Use the{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/sdk/media/`}>
+      camera and microphone guide
+    </a>{" "}
+    for complete recipes and track cleanup.
+  </p>
+
+  <h2 id="lifecycle">Own and close your contexts</h2>
+  <p>
+    Close a context when its job finishes, even if its last page is already
+    closed. Page closure alone does not dispose context storage. Context helpers
+    track what they create; if you create a context directly through the native
+    framework, manage that handle's lifetime yourself.
+  </p>
+  <p>
+    Closing a launched SDK session closes its contexts, disconnects its clients
+    and stops its owned runtime. Closing a connected session cleans up its own
+    contexts and connections while preserving the external runtime and other
+    clients' contexts. Keep separate accounts in separate contexts; limit the
+    number of live contexts when processing many jobs.
+  </p>
+
+  <h2 id="language-apis">Use the helper your framework supports</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Integration</th>
+        <th>Context entry point</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Node Playwright / Puppeteer</td>
+        <td>
+          <code>newContext(settings)</code>; native options live under{" "}
+          <code>framework</code>. Returns the framework's BrowserContext.
+        </td>
+      </tr>
+      <tr>
+        <td>Python Playwright / Pyppeteer</td>
+        <td>
+          <code>
+            new_context(profile=..., proxy=..., resource_policy=..., media=...)
+          </code>
+          . Async helpers await creation and factories.
+        </td>
+      </tr>
+      <tr>
+        <td>C# Playwright / PuppeteerSharp</td>
+        <td>
+          <code>NewContextAsync</code> for ordinary contexts, media and policy;{" "}
+          <code>NewConfiguredContextAsync</code> explicitly selects managed
+          configuration. Factories use <code>mediaFactory</code>.
+        </td>
+      </tr>
+      <tr>
+        <td>Java / Kotlin Playwright</td>
+        <td>
+          <code>newContext</code> for ordinary configuration;{" "}
+          <code>newConfiguredContext</code> for managed profiles. Uses
+          Playwright Java's native BrowserContext.
+        </td>
+      </tr>
+      <tr>
+        <td>Go Rod</td>
+        <td>
+          <code>NewContext</code> or <code>NewConfiguredContext</code>; the
+          native Rod Browser handle represents the context. The configured media
+          variant is <code>NewConfiguredContextWithMedia</code>.
+        </td>
+      </tr>
+      <tr>
+        <td>Go chromedp</td>
+        <td>
+          <code>LaunchConfigured</code> / <code>ConnectConfigured</code>{" "}
+          configure the session's context before its initial target. The media
+          variants end in <code>WithMedia</code>.
+        </td>
+      </tr>
+      <tr>
+        <td>Rust chromiumoxide</td>
+        <td>
+          <code>new_context(ConfigureContextParams)</code> returns the native
+          BrowserContextId; leave its input context ID empty.{" "}
+          <code>new_context_with_media</code> accepts the factory.
+        </td>
+      </tr>
+      <tr>
+        <td>Ruby Ferrum</td>
+        <td>
+          <code>new_context</code> accepts profile, proxy, resource_policy and
+          media keywords; returns a Ferrum Context.
+        </td>
+      </tr>
+      <tr>
+        <td>PHP chrome-php</td>
+        <td>
+          <code>newContext</code> returns a Mimic context handle because the
+          framework has no Context class. <code>newPage($context)</code> returns
+          a real Chrome PHP Page.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Generated command models follow each language's naming conventions. Context
+    IDs are explicit command arguments, not inferred from an ambient current
+    page. Continue with{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/sdk/reference/`}>
+      types and commands
+    </a>{" "}
+    or{" "}
+    <a href={`${import.meta.env.BASE_URL}docs/sdk/runtime/`}>
+      runtime installation and ownership
+    </a>
+    .
+  </p>
+</DocsLayout>
+
+<style>
+  .context-note {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--blue);
+    background: var(--surface);
+    border-radius: 0 10px 10px 0;
+  }
+  .context-note p {
+    margin-bottom: 0;
+  }
+  .language-examples details,
+  .reference-details {
+    margin: 1rem 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1rem 1.15rem;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  details[open] summary {
+    margin-bottom: 1rem;
+  }
+</style>

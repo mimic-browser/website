@@ -1,0 +1,951 @@
+---
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+import CodeWindow from "../../../components/CodeWindow.astro";
+import reference from "../../../lib/mimic-reference.json";
+import { minimumSdkRuntimeVersion } from "../../../lib/sdk-release";
+
+const base = import.meta.env.BASE_URL;
+const topics = [
+  ["Find a command", "commands"],
+  ["Use an extension", "example"],
+  ["Choose the scope", "scope"],
+  ["Language bindings", "bindings"],
+  ["Types & validation", "types"],
+  ["Errors & cleanup", "errors"],
+] as const;
+const definitions = new Map(
+  reference.definitions.map((item) => [item.name, item]),
+);
+const typeLink = (name: string) => `#${definitions.get(name)?.id}`;
+const fieldConstraints = (value: object) =>
+  Object.entries(value)
+    .map(([key, item]) => `${key}: ${JSON.stringify(item)}`)
+    .join(" · ");
+const searchText = (command: (typeof reference.commands)[number]) => {
+  const parts = [
+    command.name,
+    command.description,
+    command.notes,
+    command.scope,
+  ];
+  const pending = [command.params.reference, command.result.reference];
+  const visited = new Set<string>();
+  while (pending.length) {
+    const name = pending.pop();
+    if (!name || visited.has(name)) continue;
+    visited.add(name);
+    const definition = definitions.get(name);
+    if (!definition) continue;
+    parts.push(
+      name,
+      definition.description,
+      ...definition.fields.map(
+        (field) => `${field.name} ${field.type} ${field.description}`,
+      ),
+    );
+    pending.push(...definition.references);
+  }
+  return parts.join(" ").toLowerCase();
+};
+const example = `import { launch } from "mimic-browser/playwright";
+import { ProtocolError, OMITTED } from "mimic-browser";
+
+const session = await launch();
+try {
+  // Browser-level command: no Page attachment is needed.
+  const version = await session.mimic.getVersion();
+  console.log("Mimic", version.version, "Chrome", version.chromeVersion);
+
+  const context = await session.newContext();
+  const page = await context.newPage(); // A real Playwright Page.
+  const pageMimic = await session.forPage(page);
+  await pageMimic.startTrace();
+  try {
+    await page.setContent("<title>Extension example</title><h1>Hello</h1>");
+    console.log(await page.title());
+    const status = await pageMimic.getStatus();
+    const trace = await pageMimic.getTrace();
+    console.log(status, "Recorded events:", trace.events?.length ?? 0);
+  } finally {
+    await pageMimic.stopTrace();
+  }
+} catch (error) {
+  if (error instanceof ProtocolError) {
+    console.error(error.code, error.message);
+    if (error.data !== OMITTED) console.error(error.data);
+  }
+  throw error;
+} finally {
+  await session.close();
+  if (session.closeErrors.length) console.error(session.closeErrors);
+}`;
+const bindings = [
+  {
+    language: "JavaScript / TypeScript",
+    call: "await session.mimic.getVersion()",
+    binding: "await session.forPage(page)",
+    detail:
+      "Playwright and Puppeteer. The returned client binds session commands to that real Page.",
+  },
+  {
+    language: "Python",
+    call: "session.mimic.get_version()",
+    binding: "session.for_page(page)",
+    detail:
+      "Sync Playwright uses direct calls; await both operations with the async API. Generated fields use snake_case.",
+  },
+  {
+    language: "C# / .NET",
+    call: "await session.Mimic.Commands.GetVersionAsync()",
+    binding: "ForContextAsync(context) / ForContext(context)",
+    detail:
+      "Playwright / PuppeteerSharp Context helpers. Page sessions use ProtocolConnection.Session(id) after Target.attachToTarget on that same connection.",
+  },
+  {
+    language: "Java / Kotlin",
+    call: "session.mimic().commands().getVersion(new Generated.GetVersionParams())",
+    binding: "session.forContext(context)",
+    detail:
+      "Playwright, with the same Java artifact usable from Kotlin. Page sessions use ProtocolConnection.session(id) after an explicit attachment on that connection.",
+  },
+  {
+    language: "Go",
+    call: "session.Mimic.GetVersion(ctx, mimic.GetVersionParams{})",
+    binding: "session.ForPage(page) / session.ForPage(ctx)",
+    detail:
+      "Rod accepts its real Page; chromedp accepts the target context and returns a client plus an error. Commands take context.Context.",
+  },
+  {
+    language: "Rust",
+    call: "session.mimic.get_version(GetVersionParams::default()).await?",
+    binding: "session.for_page(&page).await?",
+    detail:
+      "chromiumoxide. Generated parameters and result fields use snake_case; native Page objects stay unchanged.",
+  },
+  {
+    language: "Ruby",
+    call: "session.mimic.get_version",
+    binding: "session.for_page(page)",
+    detail: "Ferrum. Generated models and methods use snake_case.",
+  },
+  {
+    language: "PHP",
+    call: "$session->mimic->commands->getVersion()",
+    binding: "$session->forPage($page)",
+    detail:
+      "chrome-php. forPage returns a Context capability handle, not a page-session client. Use $connection->session($id) for an explicitly attached page session.",
+  },
+];
+---
+
+<DocsLayout
+  title="SDK API reference"
+  description="Search Mimic extensions, inspect their wire types, and see the runtime behavior behind each command."
+  topics={topics}
+>
+  <div class="doc-overview">
+    <p>
+      Your framework still owns navigation, locators, evaluation and events.
+      Mimic adds runtime identity, profiles, resource policy, media and
+      diagnostics alongside those native APIs.
+    </p>
+  </div>
+
+  <h2 id="commands">Find a command</h2>
+  <p>
+    This is the current extension contract. A generated type describes a
+    message; its support note describes the implemented behavior.{" "}
+    <strong>Partial</strong> means the stated limits apply. Use Mimic
+    {minimumSdkRuntimeVersion} or later; the SDK selects a compatible default.
+    When connecting to a separate executable, check its{" "}
+    <a href={`${base}docs/sdk/runtime/`}>runtime version</a>.
+  </p>
+  <div class="api-controls" role="search" aria-label="Mimic commands">
+    <div class="api-search">
+      <label for="api-query">Search methods, fields or types</label>
+      <input
+        id="api-query"
+        type="search"
+        placeholder="Try media, browserContextId, trace…"
+        autocomplete="off"
+        aria-controls="api-commands"
+      />
+    </div>
+    <div>
+      <label for="api-scope">Scope</label>
+      <select id="api-scope" aria-controls="api-commands">
+        <option value="">All scopes</option>
+        <option value="browser">Browser</option>
+        <option value="context">Context</option>
+        <option value="session">Page session</option>
+      </select>
+    </div>
+    <button type="button" id="api-clear">
+      Clear
+    </button>
+  </div>
+  <p id="api-count" class="api-count" role="status" aria-live="polite">
+    {reference.commands.length} commands
+  </p>
+  <div id="api-commands" class="api-list">
+    {reference.commands.map((command) => (
+      <details
+        class="method-card"
+        id={command.id}
+        data-command
+        data-scope={command.scope}
+        data-search={searchText(command)}
+      >
+        <summary>
+          <span class="method-title">
+            <code>{command.name}</code>
+            <span class="method-description">
+              {command.description.split(". ")[0].replace(/\.$/, "")}
+            </span>
+          </span>
+          <span class="method-tags">
+            <span class="scope-tag">
+              {command.scope === "session" ? "page session" : command.scope}
+            </span>
+            <span class:list={["support-tag", command.status]}>
+              {command.status}
+            </span>
+          </span>
+        </summary>
+        <div class="method-body">
+          <p>{command.notes}</p>
+          {command.description !== command.notes && (
+            <p>{command.description}</p>
+          )}
+          <a class="permalink" href={`#${command.id}`}>
+            Link to this command
+          </a>
+          {(
+            [
+              ["Parameters", command.params],
+              ["Result", command.result],
+            ] as const
+          ).map(([label, shape]) => (
+            <section
+              class="shape-block"
+              aria-label={`${command.name} ${label.toLowerCase()}`}
+            >
+              <h3>
+                {label}{" "}
+                <a href={typeLink(shape.reference)}>
+                  <code>{shape.type}</code>
+                </a>
+              </h3>
+              {shape.fields.length ? (
+                <dl class="field-list">
+                  {shape.fields.map((field) => (
+                    <div>
+                      <dt>
+                        <code>{field.name}</code>{" "}
+                        <span>{field.required ? "required" : "optional"}</span>
+                      </dt>
+                      <dd>
+                        <code class="field-type">{field.type}</code>{" "}
+                        {field.description && <p>{field.description}</p>}
+                        {Object.keys(field.constraints).length > 0 && (
+                          <small>{fieldConstraints(field.constraints)}</small>
+                        )}
+                        {field.references.length > 0 && (
+                          <span class="type-links">
+                            {" "}
+                            References:{" "}
+                            {field.references.map((name, index) => (
+                              <>
+                                {index > 0 && ", "}
+                                <a href={typeLink(name)}>{name}</a>
+                              </>
+                            ))}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p class="empty-shape">Empty object; no fields.</p>
+              )}
+            </section>
+          ))}
+          <p class="shape-note">
+            Required marks unconditional fields. Follow the type link for exact
+            unions, mutually exclusive fields and other schema constraints.
+          </p>
+        </div>
+      </details>
+    ))}
+  </div>
+  <button
+    class="show-more"
+    id="api-more"
+    type="button"
+    aria-controls="api-commands"
+    hidden
+  >
+    Show more commands
+  </button>
+  <p id="api-empty" class="callout" hidden>
+    No matching commands. Try a shorter field name or clear the scope filter.
+  </p>
+
+  <h2 id="example">Use an extension with a native Page</h2>
+  <p>
+    After <a href={`${base}sdk/`}>installing the Playwright integration</a>,
+    save this as <code>extensions.mjs</code> and run{" "}
+    <code>node extensions.mjs</code>. It uses a local document and closes the
+    owned runtime when finished.
+  </p>
+  <CodeWindow title="extensions.mjs" lang="javascript" code={example} />
+  <p>
+    Trace collection starts explicitly and records Mimic runtime events. It is
+    not a replacement for Chrome's full tracing system.
+  </p>
+
+  <h2 id="scope">Choose the scope explicitly</h2>
+  <div class="scope-grid">
+    <div>
+      <h3>Browser</h3>
+      <p>
+        Call <code>session.mimic</code> for version, profile generation and
+        browser-level catalogs. No Page is selected implicitly.
+      </p>
+    </div>
+    <div>
+      <h3>Context</h3>
+      <p>
+        Supply <code>browserContextId</code> when the command accepts it, or use
+        a documented Context helper. An optional ID can select the default
+        Context when omitted; a Page attachment does not fill it in.
+      </p>
+    </div>
+    <div>
+      <h3>Page session</h3>
+      <p>
+        Bind a client to the real Page before calling trace, status, snapshot or
+        execution commands. SDK session IDs and framework session IDs are
+        connection-local.
+      </p>
+    </div>
+  </div>
+  <p>
+    Do not copy a session ID from a different connection. If an adapter has no
+    Page helper, use <code>Target.attachToTarget</code> with{" "}
+    <code>flatten: true</code> on the SDK transport, then bind its returned
+    session ID on that transport. A Context helper only supplies a Context ID;
+    it does not attach to a Page.
+  </p>
+  <p>
+    <a href={`${base}docs/sdk/contexts/`}>Context configuration</a> explains
+    profile and resource-policy ownership.{" "}
+    <a href={`${base}docs/sdk/media/`}>Media configuration</a> explains
+    Context-bound private sources and public device identity.
+  </p>
+
+  <h2 id="bindings">Language bindings</h2>
+  <p>
+    Each SDK uses its language's naming conventions and generated
+    parameter/result models. These entry points assume an existing integration
+    session.
+  </p>
+  <div class="binding-list">
+    {bindings.map((binding) => (
+      <details>
+        <summary>{binding.language}</summary>
+        <div>
+          <p>
+            <strong>Version:</strong> <code>{binding.call}</code>
+          </p>
+          <p>
+            <strong>Scope helper:</strong> <code>{binding.binding}</code>
+          </p>
+          <p>{binding.detail}</p>
+        </div>
+      </details>
+    ))}
+  </div>
+  <p>
+    These helpers accompany actual framework Browser, Context and Page objects.
+    Use the native framework's API for its normal operations; generated Mimic
+    methods do not recreate Playwright or Puppeteer. CDP events remain owned by
+    the framework. The current Mimic extension domain declares no separate
+    events.
+  </p>
+
+  <h2 id="types">Types & validation</h2>
+  <p>
+    The names below are wire model names. Optional means the field may be
+    omitted; it does not mean <code>null</code> is valid. Use your binding's
+    unset/optional representation to preserve omission. The runtime also
+    validates cross-field coherence, resource ownership and current state beyond
+    these JSON shapes.
+  </p>
+  <label class="type-search-label" for="type-query">
+    Find a type or field
+  </label>
+  <input
+    id="type-query"
+    class="type-search"
+    type="search"
+    placeholder="MediaConfiguration, ProfileDescriptor…"
+    autocomplete="off"
+    aria-controls="api-types"
+  />
+  <p class="api-count" id="type-count" role="status" aria-live="polite">
+    {reference.definitions.length} types
+  </p>
+  <div id="api-types" class="type-list">
+    {reference.definitions.map((definition) => (
+      <details
+        id={definition.id}
+        data-type
+        data-search={JSON.stringify(definition).toLowerCase()}
+      >
+        <summary>
+          <code>{definition.name}</code>
+          <span>
+            {definition.fields.length
+              ? `${definition.fields.length} fields`
+              : definition.type}
+          </span>
+        </summary>
+        <div class="type-body">
+          {definition.description && <p>{definition.description}</p>}
+          {definition.references.length > 0 && (
+            <p class="type-links">
+              References:{" "}
+              {definition.references.map((name, index) => (
+                <>
+                  {index > 0 && ", "}
+                  <a href={typeLink(name)}>{name}</a>
+                </>
+              ))}
+            </p>
+          )}
+          <pre
+            tabindex="0"
+            aria-label={`${definition.name} JSON Schema`}
+          ><code>{JSON.stringify(definition.schema, null, 2)}</code></pre>
+          <a class="permalink" href={`#${definition.id}`}>
+            Link to this type
+          </a>
+        </div>
+      </details>
+    ))}
+  </div>
+  <button
+    class="show-more"
+    id="type-more"
+    type="button"
+    aria-controls="api-types"
+    hidden
+  >
+    Show more types
+  </button>
+  <p class="shape-note">
+    This site's snapshot combines the SDK's{" "}
+    <code>{reference.metadata.schemaSource}</code> with runtime{" "}
+    <code>{reference.metadata.supportSource}</code>. It is independent of the
+    installed runtime; use <code>Mimic.getVersion</code> and{" "}
+    <code>Mimic.getCompatibilityMatrix</code> to inspect the connected
+    implementation.
+  </p>
+
+  <h2 id="errors">Errors, timeouts & cleanup</h2>
+  <details class="guidance">
+    <summary>Protocol errors and unsupported behavior</summary>
+    <div>
+      <p>
+        A valid generated call can still fail because the runtime does not
+        implement it, the selected scope is wrong, or the Context is locked or
+        busy. Keep the protocol error code, message and structured data when
+        reporting a failure. Native framework operations continue to produce
+        native framework errors.
+      </p>
+      <p>
+        Unknown methods and invalid parameters remain errors. Raw/experimental
+        access sends an explicit method and JSON through the same SDK transport;
+        it does not add runtime support or silently fall back to another
+        command. In Node,{" "}
+        <code>client.experimental.call("getVersion", &#123;&#125;)</code> takes
+        the exact Mimic leaf name.
+      </p>
+    </div>
+  </details>
+  <details class="guidance">
+    <summary>Timeouts and retries</summary>
+    <div>
+      <p>
+        A client timeout or cancellation stops waiting; it does not prove that
+        the runtime rolled back the request. Check state before retrying a
+        mutation, especially Context creation or profile replacement. Set
+        framework navigation/action timeouts through the framework, and SDK
+        transport timeouts through that binding's transport options.
+      </p>
+      <p>
+        Do not automatically retry all protocol errors. Preserve the original
+        response and determine whether the operation is safe to repeat.
+      </p>
+    </div>
+  </details>
+  <details class="guidance">
+    <summary>Connection and process ownership</summary>
+    <div>
+      <p>
+        Close the integration in <code>finally</code> or its language's disposal
+        construct. A launched session owns its runtime process. A connected
+        session owns its connection and Contexts it created; closing it must
+        leave the shared runtime running. Explicitly dispose resources created
+        through raw commands yourself.
+      </p>
+      <p>
+        A disconnected transport rejects pending requests. Page-bound extension
+        clients belong to that connection and Page lifecycle. Reconnect and bind
+        again after either is replaced.
+      </p>
+    </div>
+  </details>
+</DocsLayout>
+
+<script>
+  let activeReference:
+    | {
+        query: HTMLInputElement;
+        reveal: () => void;
+        dispose: () => void;
+      }
+    | undefined;
+
+  function initializeApiReference() {
+    const query = document.querySelector<HTMLInputElement>("#api-query");
+    const scope = document.querySelector<HTMLSelectElement>("#api-scope");
+    const typeQuery = document.querySelector<HTMLInputElement>("#type-query");
+    if (!query || !scope || !typeQuery) {
+      activeReference?.dispose();
+      return;
+    }
+    // Astro can change a same-page hash through history without hashchange.
+    if (activeReference?.query === query) {
+      activeReference.reveal();
+      return;
+    }
+    activeReference?.dispose();
+    const lifecycle = new AbortController();
+    const options = { signal: lifecycle.signal };
+    const commands = Array.from(
+      document.querySelectorAll<HTMLDetailsElement>("[data-command]"),
+    );
+    const types = Array.from(
+      document.querySelectorAll<HTMLDetailsElement>("[data-type]"),
+    );
+    const terms = (value: string) =>
+      value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    let commandLimit = 8;
+    let typeLimit = 8;
+    function filterCommands() {
+      let count = 0;
+      let shown = 0;
+      const words = terms(query!.value);
+      for (const command of commands) {
+        const visible =
+          (!scope!.value || command.dataset.scope === scope!.value) &&
+          words.every((word) => command.dataset.search?.includes(word));
+        if (visible) count++;
+        command.hidden = !visible || count > commandLimit;
+        if (!command.hidden) shown++;
+      }
+      document.querySelector("#api-count")!.textContent =
+        `${shown} shown · ${count} matching commands`;
+      document.querySelector<HTMLElement>("#api-empty")!.hidden = count > 0;
+      document.querySelector<HTMLButtonElement>("#api-more")!.hidden =
+        shown >= count;
+    }
+    function filterTypes() {
+      let count = 0;
+      let shown = 0;
+      const words = terms(typeQuery!.value);
+      for (const type of types) {
+        const visible = words.every((word) =>
+          type.dataset.search?.includes(word),
+        );
+        if (visible) count++;
+        type.hidden = !visible || count > typeLimit;
+        if (!type.hidden) shown++;
+      }
+      document.querySelector("#type-count")!.textContent =
+        `${shown} shown · ${count} matching types`;
+      document.querySelector<HTMLButtonElement>("#type-more")!.hidden =
+        shown >= count;
+    }
+    function revealAnchor() {
+      let id: string;
+      try {
+        id = decodeURIComponent(location.hash.slice(1));
+      } catch {
+        return;
+      }
+      const target = document.getElementById(id);
+      if (!(target instanceof HTMLDetailsElement)) return;
+      if (target.hasAttribute("data-command")) {
+        query!.value = "";
+        scope!.value = "";
+        commandLimit = Math.max(commandLimit, commands.indexOf(target) + 1);
+        filterCommands();
+      } else if (target.hasAttribute("data-type")) {
+        typeQuery!.value = "";
+        typeLimit = Math.max(typeLimit, types.indexOf(target) + 1);
+        filterTypes();
+      }
+      target.open = true;
+      requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
+    }
+    const resetCommandFilter = () => {
+      commandLimit = 8;
+      filterCommands();
+    };
+    query.addEventListener("input", resetCommandFilter, options);
+    scope.addEventListener("change", resetCommandFilter, options);
+    typeQuery.addEventListener(
+      "input",
+      () => {
+        typeLimit = 8;
+        filterTypes();
+      },
+      options,
+    );
+    document.querySelector("#api-clear")?.addEventListener(
+      "click",
+      () => {
+        query.value = "";
+        scope.value = "";
+        resetCommandFilter();
+        query.focus();
+      },
+      options,
+    );
+    document.querySelector("#api-more")?.addEventListener(
+      "click",
+      () => {
+        commandLimit += 8;
+        filterCommands();
+      },
+      options,
+    );
+    document.querySelector("#type-more")?.addEventListener(
+      "click",
+      () => {
+        typeLimit += 8;
+        filterTypes();
+      },
+      options,
+    );
+    window.addEventListener("hashchange", revealAnchor, options);
+    document.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.button !== 0 ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
+        const link =
+          event.target instanceof Element
+            ? event.target.closest<HTMLAnchorElement>("a[href]")
+            : null;
+        if (!link) return;
+        const target = new URL(link.href, location.href);
+        if (
+          target.origin === location.origin &&
+          target.pathname === location.pathname &&
+          target.search === location.search &&
+          target.hash &&
+          target.hash === location.hash
+        )
+          revealAnchor();
+      },
+      options,
+    );
+    const dispose = () => {
+      lifecycle.abort();
+      if (activeReference?.query === query) activeReference = undefined;
+    };
+    activeReference = { query, reveal: revealAnchor, dispose };
+    document.addEventListener("astro:before-swap", dispose, {
+      once: true,
+      signal: lifecycle.signal,
+    });
+    filterCommands();
+    filterTypes();
+    revealAnchor();
+  }
+  initializeApiReference();
+  document.addEventListener("astro:page-load", initializeApiReference);
+</script>
+
+<style>
+  .api-controls {
+    display: flex;
+    align-items: end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .api-search {
+    flex: 1 1 290px;
+  }
+  .api-controls label,
+  .type-search-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    font-weight: 650;
+  }
+  .api-controls input,
+  .api-controls select,
+  .type-search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 11px 12px;
+    font: inherit;
+    font-size: 0.9rem;
+  }
+  .api-controls button {
+    padding: 11px 16px;
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    background: var(--surface-raised);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  pre:focus-visible {
+    outline: 2px solid var(--blue-bright);
+    outline-offset: 3px;
+  }
+  .api-count {
+    color: var(--quiet);
+    font-size: 0.82rem;
+    margin: 12px 0 18px;
+  }
+  .show-more {
+    padding: 10px 16px;
+    margin-top: 14px;
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    background: var(--surface-raised);
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.85rem;
+  }
+  .show-more[hidden] {
+    display: none;
+  }
+  .api-list,
+  .type-list,
+  .binding-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    gap: 10px;
+  }
+  details {
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    scroll-margin-top: 100px;
+  }
+  details[hidden],
+  #api-empty[hidden] {
+    display: none;
+  }
+  summary {
+    cursor: pointer;
+    padding: 17px 18px;
+  }
+  summary::marker {
+    color: var(--blue-bright);
+  }
+  summary code {
+    color: var(--blue-bright);
+    overflow-wrap: anywhere;
+  }
+  .method-title {
+    display: inline;
+  }
+  .method-description {
+    display: block;
+    margin: 6px 0 0 17px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+  .method-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin: 10px 0 0 17px;
+  }
+  .scope-tag,
+  .support-tag {
+    font-size: 0.68rem;
+    border: 1px solid var(--line-bright);
+    border-radius: 12px;
+    padding: 2px 8px;
+    color: var(--muted);
+  }
+  .support-tag.implemented {
+    border-color: #47685c;
+    color: #a6d4bb;
+  }
+  .support-tag.partial {
+    border-color: #706044;
+    color: #dfc592;
+  }
+  .method-body,
+  .type-body,
+  .binding-list details > div,
+  .guidance > div {
+    padding: 0 20px 20px;
+  }
+  .method-body > p:first-child {
+    margin-top: 2px;
+  }
+  .permalink,
+  .shape-note,
+  .empty-shape {
+    font-size: 0.8rem;
+  }
+  .shape-note,
+  .empty-shape {
+    color: var(--quiet);
+  }
+  .shape-block h3 {
+    font-size: 0.97rem;
+    margin: 26px 0 12px;
+  }
+  .shape-block h3 a {
+    display: block;
+    font-weight: 400;
+    font-size: 0.78rem;
+    margin-top: 3px;
+  }
+  .field-list {
+    margin: 0;
+  }
+  .field-list > div {
+    border-top: 1px solid var(--line);
+    padding: 12px 0;
+  }
+  .field-list dt {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .field-list dt span {
+    font-size: 0.7rem;
+    color: var(--quiet);
+  }
+  .field-list dd {
+    margin: 5px 0 0;
+    overflow-wrap: anywhere;
+    font-size: 0.85rem;
+  }
+  .field-type {
+    font-size: 0.8rem;
+    white-space: normal;
+  }
+  .field-list dd small {
+    display: block;
+    color: var(--quiet);
+    margin-top: 4px;
+  }
+  .field-list dd p {
+    margin: 7px 0;
+  }
+  .type-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.77rem;
+    margin-top: 7px;
+  }
+  .type-list summary {
+    font-size: 0.88rem;
+  }
+  .type-list summary > span {
+    color: var(--quiet);
+    margin-left: 12px;
+    font-size: 0.73rem;
+  }
+  .type-body pre {
+    max-width: 100%;
+    max-height: 500px;
+    overflow: auto;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+  .scope-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .scope-grid > div {
+    padding: 17px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .scope-grid h3 {
+    font-size: 1rem;
+    margin: 0 0 8px;
+  }
+  .scope-grid p {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .binding-list {
+    margin: 22px 0;
+  }
+  .binding-list p {
+    overflow-wrap: anywhere;
+    font-size: 0.88rem;
+  }
+  .guidance {
+    margin: 12px 0;
+  }
+  @media (max-width: 760px) {
+    .scope-grid {
+      grid-template-columns: 1fr;
+    }
+    .api-controls > div:not(.api-search) {
+      flex: 1;
+    }
+    .method-body,
+    .type-body {
+      padding-inline: 14px;
+    }
+    summary {
+      padding: 15px 12px;
+    }
+  }
+</style>

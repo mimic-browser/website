@@ -1,0 +1,133 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+const base = import.meta.env.BASE_URL;
+const topics = [
+  ["Your first script", "first-script"],
+  ["Launch or connect", "sessions"],
+  ["Native browser objects", "native-objects"],
+  ["Configure Mimic", "configuration"],
+] as const;
+---
+
+<DocsLayout
+  title="Using the SDK"
+  description="Let the SDK manage Mimic, then automate it with the browser client you already know."
+  topics={topics}
+>
+  <h2 id="first-script">Run your first script</h2>
+  <p>
+    <a href={`${base}sdk/#sdk-explorer`}>Choose your language and client</a> to
+    get installation commands and a complete demo. Run the commands, save the
+    demo script, and run it to print <code>Example Domain</code>.
+  </p>
+  <p>
+    The SDK downloads a verified Mimic runtime from GitHub releases when it is
+    first needed and reuses the local cache. Your automation client is a
+    separate dependency; install the one you want to use.
+  </p>
+  <h2 id="sessions">Launch or connect</h2>
+  <div class="session-grid">
+    <a href={`${base}sdk/?scenario=launch#sdk-explorer`}>
+      <strong>Launch</strong>
+      <span>
+        Acquire the runtime, start a process and return a connected session.
+        Closing the session also stops the process it owns.
+      </span>
+    </a>
+    <a href={`${base}sdk/?scenario=connect#sdk-explorer`}>
+      <strong>Connect</strong>
+      <span>
+        Attach to a Mimic process you manage elsewhere. Closing the session
+        disconnects your client and leaves that process running.
+      </span>
+    </a>
+  </div>
+  <h2 id="native-objects">Keep your native browser API</h2>
+  <p>
+    The session exposes your client's browser or connection. Create Pages,
+    navigate, locate elements and evaluate JavaScript using that client's
+    ordinary API. Page and Context objects remain native objects, so your
+    existing helpers can work with them.
+  </p>
+  <p>
+    Choose Playwright or Puppeteer in JavaScript, sync or async Playwright in
+    Python, or the appropriate client for another language.{" "}
+    <a href={`${base}sdk/#sdk-explorer`}>
+      Each integration has its own runnable demo.
+    </a>
+  </p>
+  <h2 id="configuration">Configure only what you need</h2>
+  <nav class="guide-grid" aria-label="SDK configuration guides">
+    <a href={`${base}docs/sdk/runtime/`}>
+      <strong>Runtime & installation</strong>
+      <span>Versions, cache, offline preparation and launch options.</span>
+    </a>
+    <a href={`${base}docs/sdk/contexts/`}>
+      <strong>Contexts & profiles</strong>
+      <span>
+        Isolation, native options, coherent identities, proxies and resource
+        policies.
+      </span>
+    </a>
+    <a href={`${base}docs/sdk/media/`}>
+      <strong>Camera & microphone</strong>
+      <span>
+        Capture sources, public device identities, modes and permissions.
+      </span>
+    </a>
+    <a href={`${base}docs/sdk/reference/`}>
+      <strong>API reference</strong>
+      <span>Mimic commands, types, parameters and support boundaries.</span>
+    </a>
+  </nav>
+  <p>
+    Mimic's supported browser behavior determines what your client can do. Check
+    the <a href={`${base}docs/compatibility/`}>compatibility guide</a> when a
+    workload needs rendering or an unsupported browser capability.
+  </p>
+  <p>
+    Managing your own process? You can also{" "}
+    <a href={`${base}docs/connect/`}>connect directly over CDP</a>.
+  </p>
+</DocsLayout>
+
+<style>
+  .session-grid,
+  .guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 24px 0 36px;
+  }
+  .session-grid a,
+  .guide-grid a {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    text-decoration: none;
+  }
+  .session-grid strong,
+  .guide-grid strong {
+    color: var(--blue-bright);
+  }
+  .session-grid span,
+  .guide-grid span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .session-grid a:hover,
+  .guide-grid a:hover {
+    border-color: var(--blue);
+    background: var(--surface-raised);
+  }
+  @media (max-width: 600px) {
+    .session-grid,
+    .guide-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

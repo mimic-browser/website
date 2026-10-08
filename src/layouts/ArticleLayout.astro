@@ -13,18 +13,36 @@ interface Props {
   description: string;
   eyebrow: string;
   icon?: keyof typeof icons;
+  compactHeader?: boolean;
 }
-const { title, description, eyebrow, icon = "code" } = Astro.props;
+const {
+  title,
+  description,
+  eyebrow,
+  icon = "code",
+  compactHeader = false,
+} = Astro.props;
 const Icon = icons[icon];
 ---
 
 <BaseLayout title={`${title} — Mimic`} description={description}>
-  <section class="container article-head">
-    <span class="eyebrow"><Icon size={18} />{eyebrow}</span><h1>{title}</h1><p>
-      {description}
-    </p>
+  <section
+    class:list={[
+      "container",
+      "article-head",
+      { "compact-head": compactHeader },
+    ]}
+  >
+    <span class="eyebrow">
+      <Icon size={18} />
+      {eyebrow}
+    </span>
+    <h1>{title}</h1>
+    <p>{description}</p>
   </section>
-  <article class="container article-body prose"><slot /></article>
+  <article class="container article-body prose">
+    <slot />
+  </article>
 </BaseLayout>
 <style>
   .article-head .eyebrow::before {
@@ -102,6 +120,18 @@ const Icon = icons[icon];
   @media (max-width: 760px) {
     .article-head::before {
       inset-inline: -18px;
+    }
+  }
+  .article-head.compact-head {
+    padding-top: 54px;
+    padding-bottom: 18px;
+  }
+  .compact-head p {
+    margin-bottom: 0;
+  }
+  @media (max-width: 760px) {
+    .article-head.compact-head {
+      padding-top: 36px;
     }
   }
 </style>

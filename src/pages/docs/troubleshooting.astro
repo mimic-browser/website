@@ -1,0 +1,35 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+const topics = [["Troubleshooting", "troubleshooting"]] as const;
+---
+
+<DocsLayout
+  title="Troubleshooting"
+  description="Resolve installation, connection and automation failures."
+  topics={topics}
+>
+  <h2 id="troubleshooting">Troubleshooting</h2>
+  <h3>The client cannot connect</h3>
+  <p>
+    Confirm Mimic prints its listening URL, keep the process alive, and use the
+    same HTTP origin in <code>connectOverCDP</code> or <code>browserURL</code>.
+    Avoid exposing the unauthenticated endpoint publicly.
+  </p>
+  <h3>The application loaded but is not ready</h3>
+  <p>
+    The browser load event can precede hydration. Wait for a selector, text, or
+    application state that represents readiness instead of relying only on{" "}
+    <code>waitUntil: "load"</code>.
+  </p>
+  <h3>A command is unsupported</h3>
+  <p>
+    Query <code>Mimic.getCompatibilityMatrix</code> and reduce the workflow to
+    the command and observable behavior it needs. A command accepted for client
+    initialization may still have an explicit unsupported boundary.
+  </p>
+  <h3>Linux text geometry differs</h3>
+  <p>
+    Install Liberation, DejaVu, or Noto fonts. Exact Windows text metrics
+    require matching legally available reference fonts.
+  </p>
+</DocsLayout>
