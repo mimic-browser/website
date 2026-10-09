@@ -1,14 +1,12 @@
-# Mimic v0.2.2
+# Mimic v0.2.4
 
-Changes since v0.2.1:
+Changes since v0.2.3:
 
-- Build release executables from the release tag so the startup banner and `Mimic.getVersion` report `v0.2.2`. Release packaging now rejects development versions, mismatched revisions, and dirty binaries, including reused CI artifacts and extracted packages.
-- Preserve canonical DOM tree state when page scripts override public accessors, including iframe insertion, connectivity, viewport observations, mutation records, event paths, and removal. Resolve quirks-mode percentage heights through auto-height block containers. These fixes let the captured HUMAN widget complete its press-and-hold execution path without runtime errors; acceptance of a fresh server challenge remains unverified.
-- Preserve CSS length comparison functions (`min`, `max`, `clamp`) in inline styles and stylesheet CSSOM, including mixed units, nested calculations and pending custom-property substitution. This fixes responsive dimensions and typography disappearing from the live developer preview, including a hero image whose container collapsed to zero height. Focused regression tests retain normal headful Chrome 152 observations and verify preview serialization.
-- Queue beacon requests and load applied CSS background images through the document resource lifecycle.
-- Avoid unused body streams for beacon uploads. Preserve binary snapshots, borrowed Navigator operations and keepalive quotas across engines. Transport regression tests check each accepted upload independently of page setup time.
-- Admit CSS background discovery from canonical style inputs before entering JavaScript. Unstyled pages no longer run unrelated style callbacks during task checkpoints, fixing regressions when page code replaces JavaScript intrinsics. CSSOM changes and linked sheets continue to trigger resource discovery.
-- Support XPath evaluator construction and compiled attribute predicates.
-- Add the contributor Compatibility Doctor and field-evidence workflow. Keep Go metadata inspection offline and report inspection failures without making them fatal.
+- Keep internal snapshot preparation contexts and pages out of browser automation discovery. Creating and closing application contexts now produces a stable public context list while the runtime prepares its cache.
+- Wait for internal snapshot preparation and page cleanup during shutdown, preventing overlapping preparation from retaining resources or using a closed realm.
+- Complete accepted page, context and browser close commands even when the automation client immediately disconnects, while still cancelling ordinary session work on disconnect.
+- Add PNG screenshots through the standard CDP `Page.captureScreenshot` command. They reflect the current DOM after script interactions, but visual accuracy is not guaranteed; the separate renderer does not represent Mimic's script-visible layout. See [approximate screenshots](https://github.com/mimic-browser/runtime/blob/v0.2.4/docs/approximate-screenshots.md) for the supported scope.
+- Improve approximate painting of SVG, CSS grid sidebars, styled controls and literal `::before`/`::after` text. The screenshot renderer now uses a maintained, static-only `go-webengine` fork without its browser, JavaScript or module-bundling packages.
+- Preserve resource timing order when separate fetch starts resolve to the same exposed `startTime`.
 
-Mimic remains a renderer-free public beta for Windows and Linux amd64. The developer preview is drawn by the viewer's browser; this release does not add a pixel renderer or full responsive image candidate selection to Mimic. Full source changes: [v0.2.1...v0.2.2](https://github.com/mimic-browser/runtime/compare/v0.2.1...v0.2.2).
+Mimic remains a public beta for Windows and Linux amd64. Browser automation support follows the documented CDP scope. Full source changes: [v0.2.3...v0.2.4](https://github.com/mimic-browser/runtime/compare/v0.2.3...v0.2.4).

@@ -3,7 +3,7 @@
 ## What is Mimic?
 
 A browser execution runtime for workflows that need JavaScript and browser state
-without rendered pixels. It occupies the space between raw HTTP clients and full browsers.
+without embedding Chromium. It occupies the space between raw HTTP clients and full browsers.
 
 ## Is it headless Chrome?
 
@@ -19,15 +19,19 @@ replacement. Start with the [verified runnable examples](examples/README.md).
 
 ## What can I get out of a page?
 
-Evaluated JavaScript values, DOM content, and static DOM snapshots with available
-assets. A DOM snapshot is not a screenshot or a complete offline copy of an application.
+Evaluated JavaScript values, DOM content, static DOM snapshots with available
+assets, and approximate PNG screenshots. A DOM snapshot is not a screenshot or
+a complete offline copy of an application.
 
 ## Does it render pages?
 
-Mimic does not produce rendered page pixels or require a GPU. Screenshots,
-rendered PDFs and full CSS layout remain outside the current scope. Canvas and
-WebGL observations model what scripts can read; captured camera frames feed
-video, canvas and bitmap observations without a rendered page.
+Mimic returns approximate PNGs through standard CDP `Page.captureScreenshot`,
+using a separate renderer without a GPU requirement. Visual accuracy is not
+guaranteed: the image can differ from Chrome and does not represent Mimic's
+script-visible layout. Rendered PDFs and full CSS layout remain unsupported.
+See the [screenshot scope and limitations](https://github.com/mimic-browser/runtime/blob/main/docs/approximate-screenshots.md).
+Canvas and WebGL observations model what scripts can read; captured camera
+frames feed video, canvas and bitmap observations without rendering the page.
 
 ## Can I use a camera or microphone?
 

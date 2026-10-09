@@ -3,12 +3,12 @@
     {
       "name": "mimic-v0.2.4-linux-amd64.tar.gz",
       "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.4/mimic-v0.2.4-linux-amd64.tar.gz",
-      "size": 51027813
+      "size": 54931452
     },
     {
       "name": "mimic-v0.2.4-windows-amd64.zip",
       "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.4/mimic-v0.2.4-windows-amd64.zip",
-      "size": 47678094
+      "size": 51590953
     },
     {
       "name": "release-manifest.json",
@@ -21,9 +21,9 @@
       "size": 286
     }
   ],
-  "body": "# Mimic v0.2.4\r\n\r\nChanges since v0.2.3:\r\n\r\n- Keep internal snapshot preparation contexts and pages out of browser automation discovery. Creating and closing application contexts now produces a stable public context list while the runtime prepares its cache.\r\n- Wait for internal snapshot preparation and page cleanup during shutdown, preventing overlapping preparation from retaining resources or using a closed realm.\r\n- Complete accepted page, context and browser close commands even when the automation client immediately disconnects, while still cancelling ordinary session work on disconnect.\r\n\r\nMimic remains a renderer-free public beta for Windows and Linux amd64. Browser automation support follows the documented CDP scope. Full source changes: [v0.2.3...v0.2.4](https://github.com/mimic-browser/runtime/compare/v0.2.3...v0.2.4).\r\n",
+  "body": "# Mimic v0.2.4\r\n\r\nChanges since v0.2.3:\r\n\r\n- Keep internal snapshot preparation contexts and pages out of browser automation discovery. Creating and closing application contexts now produces a stable public context list while the runtime prepares its cache.\r\n- Wait for internal snapshot preparation and page cleanup during shutdown, preventing overlapping preparation from retaining resources or using a closed realm.\r\n- Complete accepted page, context and browser close commands even when the automation client immediately disconnects, while still cancelling ordinary session work on disconnect.\r\n- Add PNG screenshots through the standard CDP `Page.captureScreenshot` command. They reflect the current DOM after script interactions, but visual accuracy is not guaranteed; the separate renderer does not represent Mimic's script-visible layout. See [approximate screenshots](https://github.com/mimic-browser/runtime/blob/b73cd5ec1a51af98dc95015c057bdb8775aa1bd7/docs/approximate-screenshots.md) for the supported scope.\r\n- Improve approximate painting of SVG, CSS grid sidebars, styled controls and literal `::before`/`::after` text. The screenshot renderer now uses a maintained, static-only `go-webengine` fork without its browser, JavaScript or module-bundling packages.\r\n- Preserve resource timing order when separate fetch starts resolve to the same exposed `startTime`.\r\n\r\nMimic remains a public beta for Windows and Linux amd64. Browser automation support follows the documented CDP scope. Full source changes: [v0.2.3...v0.2.4](https://github.com/mimic-browser/runtime/compare/v0.2.3...v0.2.4).\r\n",
   "html_url": "https://github.com/mimic-browser/runtime/releases/tag/v0.2.4",
   "published_at": "2026-10-08T12:32:18Z",
-  "updated_at": "2026-10-08T13:19:40Z",
+  "updated_at": "2026-10-08T17:46:02Z",
   "tag_name": "v0.2.4"
 }
