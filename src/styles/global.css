@@ -318,26 +318,33 @@ pre {
   }
 }
 
+/* External links share the same arrow as the authored Lucide icons. */
 a[href^="https://"]::after
 {
-  content: "↗";
+  content: "";
   display: inline-block;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
   margin-left: 0.3em;
-  font-size: 0.82em;
-  line-height: 1;
+  vertical-align: -0.25em;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10M7 17 17 7'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
-a[aria-label][href^="https://"]::after
+a[aria-label][href^="https://"]::after,
+a[href^="https://"]:has(.lucide-arrow-up-right, .lucide-arrow-right)::after
 {
   content: none;
 }
 .button[href^="https://"]::after
 {
-  content: "↗";
-  width: 14px;
-  flex: 0 0 14px;
-  font-size: 14px;
-  line-height: 1;
   margin: 0;
+}
+.lucide-arrow-up-right {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 .prose {
   min-width: 0;
