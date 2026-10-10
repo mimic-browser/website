@@ -7,10 +7,16 @@ const metrics = [
     icon: Layers,
     label: "Memory",
     before: "4,102 MiB",
-    after: "748 MiB",
-    ratio: 18.2,
+    after: "728 MiB",
+    ratio: 17.74,
   },
-  { icon: Cpu, label: "CPU", before: "195 ms", after: "39 ms", ratio: 20 },
+  {
+    icon: Cpu,
+    label: "Ready RSS",
+    before: "380 MiB",
+    after: "41 MiB",
+    ratio: 10.75,
+  },
   {
     icon: Wifi,
     label: "Downloaded",
@@ -64,8 +70,8 @@ const metrics = [
       >Results &amp; methodology <ArrowUpRight size={14} /></a
     >
     <p class="evidence">
-      Separate tests: 50-page memory, static-session CPU, Books downloads with
-      Optimize. Encoded body bytes, not wire traffic.
+      Separate tests: 50-page and ready memory, Books downloads with Optimize.
+      Encoded body bytes, not wire traffic.
     </p>
   </div>
 </section>

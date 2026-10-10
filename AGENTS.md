@@ -21,3 +21,5 @@ material limitations. Public text is English.
 - Keep setup examples copyable and describe available behavior accurately.
 - For local review, use a dev server. Do not publish or push unless requested.
   Do not launch headful browsers or programs requiring user interaction.
+
+- Replacing the public benchmark means updating every current presentation together: runtime README, benchmark entry point, performance summary, website home and comparison pages, charts/images, downloads and methodology links. Present only the latest measured checkpoint; remove previous checkpoint links and stale speed/CPU claims from current surfaces. A memory-only update publishes memory results only. Preserve frozen historical evidence and exact reference provenance in the current methodology; do not present archived results as current claims.
