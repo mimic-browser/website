@@ -1,29 +1,29 @@
 {
   "assets": [
     {
-      "name": "mimic-v0.2.4-linux-amd64.tar.gz",
-      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.4/mimic-v0.2.4-linux-amd64.tar.gz",
-      "size": 54931452
+      "name": "mimic-v0.2.7-linux-amd64.tar.gz",
+      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.7/mimic-v0.2.7-linux-amd64.tar.gz",
+      "size": 55564299
     },
     {
-      "name": "mimic-v0.2.4-windows-amd64.zip",
-      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.4/mimic-v0.2.4-windows-amd64.zip",
-      "size": 51590953
+      "name": "mimic-v0.2.7-windows-amd64.zip",
+      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.7/mimic-v0.2.7-windows-amd64.zip",
+      "size": 52247494
     },
     {
       "name": "release-manifest.json",
-      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.4/release-manifest.json",
+      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.7/release-manifest.json",
       "size": 1727
     },
     {
       "name": "SHA256SUMS",
-      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.4/SHA256SUMS",
+      "browser_download_url": "https://github.com/mimic-browser/runtime/releases/download/v0.2.7/SHA256SUMS",
       "size": 286
     }
   ],
-  "body": "# Mimic v0.2.4\r\n\r\nChanges since v0.2.3:\r\n\r\n- Keep internal snapshot preparation contexts and pages out of browser automation discovery. Creating and closing application contexts now produces a stable public context list while the runtime prepares its cache.\r\n- Wait for internal snapshot preparation and page cleanup during shutdown, preventing overlapping preparation from retaining resources or using a closed realm.\r\n- Complete accepted page, context and browser close commands even when the automation client immediately disconnects, while still cancelling ordinary session work on disconnect.\r\n- Add PNG screenshots through the standard CDP `Page.captureScreenshot` command. They reflect the current DOM after script interactions, but visual accuracy is not guaranteed; the separate renderer does not represent Mimic's script-visible layout. See [approximate screenshots](https://github.com/mimic-browser/runtime/blob/b73cd5ec1a51af98dc95015c057bdb8775aa1bd7/docs/approximate-screenshots.md) for the supported scope.\r\n- Improve approximate painting of SVG, CSS grid sidebars, styled controls and literal `::before`/`::after` text. The screenshot renderer now uses a maintained, static-only `go-webengine` fork without its browser, JavaScript or module-bundling packages.\r\n- Preserve resource timing order when separate fetch starts resolve to the same exposed `startTime`.\r\n\r\nMimic remains a public beta for Windows and Linux amd64. Browser automation support follows the documented CDP scope. Full source changes: [v0.2.3...v0.2.4](https://github.com/mimic-browser/runtime/compare/v0.2.3...v0.2.4).\r\n",
-  "html_url": "https://github.com/mimic-browser/runtime/releases/tag/v0.2.4",
-  "published_at": "2026-10-08T12:32:18Z",
-  "updated_at": "2026-10-08T17:46:02Z",
-  "tag_name": "v0.2.4"
+  "body": "# Mimic v0.2.7 — Public Beta\r\n\r\nThis release reduces bootstrap and installed-font memory retention while preserving native callable behavior, lazy operation identity, and Page isolation.\r\n\r\n- Avoid redundant JavaScript wrappers around native platform operations.\r\n- Preserve snapshot function state without retaining compiled installation bytecode; invalidate snapshots created with the previous policy.\r\n- Decode immutable installed-font coverage once per resource on demand, keeping shaping faces and author fonts owned by each Page.\r\n- Prevent CDP Pages from auto-attaching to their own targets and reject unsafe Console eager evaluations.\r\n\r\nThe [memory checkpoint](https://github.com/mimic-browser/runtime/blob/7ee69f39e7a584e07c38658e04517168402e968d/benchmark/runs/14-memory-20261010/public-summary.md) documents measured reductions in ready and active process-tree RSS, with the saved September Chrome 152 reference and workload-specific limits. Generated lazy operations retain the established publication order required by semantic installers; Navigator, SVG, camera/WebRTC and ordinary/restored realm checks cover these boundaries.\r\n\r\nThis checkpoint covers memory rather than the full performance benchmark. Snapshot bytecode clearing reduced static batch throughput by approximately 7% in a separate paired diagnostic; Wikipedia workflow checks showed no material slowdown. Compatibility remains workload-dependent.\r\n\r\nKnown capacity limitation: the final React-100 memory wave failed with a native access violation. Two later alternating control/candidate pairs completed all their React-100 waves, so the failure was not reproduced or attributed. React-100 remains uncertified; failed observations are excluded from successful memory comparisons. Static and CPU completed 100-Page series, and React completed 50 Pages.\r\n",
+  "html_url": "https://github.com/mimic-browser/runtime/releases/tag/v0.2.7",
+  "published_at": "2026-10-10T04:36:14Z",
+  "updated_at": "2026-10-10T04:36:14Z",
+  "tag_name": "v0.2.7"
 }
