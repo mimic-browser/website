@@ -54,29 +54,35 @@ const evidence =
     proving that a page looks correct. Mimic's modeled DOM, style and geometry
     observations are bounded; they do not replace full browser rendering.
   </p>
-  <h2>Memory evidence from the current benchmark</h2>
+  <h2>Workload evidence from the current benchmark</h2>
   <p>
-    The <a href={evidence}>October 10, 2026 memory benchmark</a> compares Mimic with
-    frozen Chrome 152 reference observations on Windows 11, an Intel i7-14700KF and
-    32 GiB RAM.
+    The <a href={evidence}>October 10, 2026 workload benchmark</a> compares Mimic
+    with frozen Chrome 152 reference observations on Windows 11, an Intel i7-14700KF
+    and 32 GiB RAM.
   </p>
   <table>
     <thead
       ><tr><th>Measured metric</th><th>Mimic</th><th>Chrome 152</th></tr></thead
     ><tbody
       ><tr
-        ><td>Ready process-tree RSS</td><td>40.80 MiB</td><td>379.54 MiB</td
+        ><td>Throughput, 50 static Pages</td><td>164.62 Pages/s</td><td
+          >22.11 Pages/s</td
+        ></tr
+      ><tr
+        ><td>CPU per Page, same batch</td><td>69.94 ms</td><td>133.38 ms</td
         ></tr
       ><tr
         ><td>Active RSS, 50 static Pages</td><td>727.78 MiB</td><td
           >4102.04 MiB</td
         ></tr
-      ></tbody>
+      ></tbody
+    >
   </table>
   <p>
     RSS sums the process tree and can count shared pages more than once. This
-    memory-only checkpoint does not certify throughput or cold latency. Exact
-    binary and reference provenance are recorded in the methodology.
+    checkpoint also recovers CPU and batch throughput from saved captures, with
+    a documented instrumentation-boundary difference. Exact binary and reference
+    provenance are recorded in the methodology.
   </p>
   <p>
     All 120 measured single-page attempts passed. Static and CPU completed 100

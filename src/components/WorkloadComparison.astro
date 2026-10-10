@@ -12,10 +12,11 @@ const metrics = [
   },
   {
     icon: Cpu,
-    label: "Ready RSS",
-    before: "380 MiB",
-    after: "41 MiB",
-    ratio: 10.75,
+    label: "Pages/s",
+    before: "22.11",
+    after: "164.62",
+    ratio: 100,
+    baselineRatio: 13.43,
   },
   {
     icon: Wifi,
@@ -39,39 +40,43 @@ const metrics = [
       <span>Measured examples</span><span>Before</span><span>With Mimic</span>
     </div>
     {
-      metrics.map(({ icon: Icon, label, before, after, ratio }) => (
-        <div class="metric">
-          <div class="metric-label">
-            <>
-              <Icon size={18} />
-              <span>{label}</span>
-            </>
+      metrics.map(
+        ({ icon: Icon, label, before, after, ratio, baselineRatio = 100 }) => (
+          <div class="metric">
+            <div class="metric-label">
+              <>
+                <Icon size={18} />
+                <span>{label}</span>
+              </>
+            </div>
+            <div class="heavy">
+              <>
+                <strong>{before}</strong>
+                <div class="meter">
+                  <i style={`width:${baselineRatio}%`} />
+                </div>
+              </>
+            </div>
+            <div class="light">
+              <>
+                <strong>{after}</strong>
+                <div class="meter">
+                  <i style={`width:${ratio}%`} />
+                </div>
+              </>
+            </div>
           </div>
-          <div class="heavy">
-            <>
-              <strong>{before}</strong>
-              <div class="meter">
-                <i />
-              </div>
-            </>
-          </div>
-          <div class="light">
-            <>
-              <strong>{after}</strong>
-              <div class="meter">
-                <i style={`width:${ratio}%`} />
-              </div>
-            </>
-          </div>
-        </div>
-      ))
+        ),
+      )
     }
     <a class="methodology" href={`${base}benchmarks/`}
       >Results &amp; methodology <ArrowUpRight size={14} /></a
     >
     <p class="evidence">
-      Separate tests: 50-page and ready memory, Books downloads with Optimize.
-      Encoded body bytes, not wire traffic.
+      Separate tests: 50-page memory and throughput, Books acquisition with
+      Optimize. Speed compares Chrome and Mimic at equal concurrency.
+      Acquisition compares Optimize on versus off; encoded body bytes, not wire
+      traffic.
     </p>
   </div>
 </section>

@@ -154,7 +154,7 @@ const capabilities = [
         <div class="unified-grid">
           <article>
             <h3>
-              <Cpu size={22} /> Less browser work
+              <Layers size={22} /> More room to work
             </h3>
             <strong>5.64×</strong>
             <p>Less active memory at 50 static pages.</p>
@@ -176,14 +176,14 @@ const capabilities = [
           </article>
           <article>
             <h3>
-              <Layers size={22} /> More room to work
+              <Cpu size={22} /> More pages per second
             </h3>
-            <strong>9.30×</strong>
-            <p>Less memory at startup.</p>
+            <strong>7.45×</strong>
+            <p>Faster processing at equal concurrency.</p>
             <div
               class="metric-comparison"
               aria-hidden="true"
-              style="--usage: 10.75%"
+              style="--usage: 100%; --baseline: 13.43%"
             >
               <div>
                 <span>Chrome</span>
@@ -194,7 +194,7 @@ const capabilities = [
                 <i class="metric-result"></i>
               </div>
             </div>
-            <small>Ready RSS · 41 MiB vs. Chrome: 380 MiB</small>
+            <small>50 static Pages · 164.62 vs. Chrome: 22.11 Pages/s</small>
           </article>
           <article>
             <h3>
@@ -210,7 +210,7 @@ const capabilities = [
               style="--usage: 1.855%"
             >
               <div>
-                <span>Chrome</span>
+                <span>Mimic Default</span>
                 <i class="metric-baseline"></i>
               </div>
               <div>
@@ -218,7 +218,7 @@ const capabilities = [
                 <i class="metric-result"></i>
               </div>
             </div>
-            <small>Books extraction · vs. Chrome · body bytes</small>
+            <small>Books extraction · Optimize on vs. off · body bytes</small>
           </article>
         </div>
         <a class="unified-methodology" href={`${base}benchmarks/`}>
@@ -2449,7 +2449,7 @@ const capabilities = [
     border-radius: 2px;
   }
   .metric-baseline {
-    width: 100%;
+    width: var(--baseline, 100%);
     background: #31415a;
   }
   .metric-result {
