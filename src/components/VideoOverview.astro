@@ -1,0 +1,229 @@
+---
+import { ArrowRight, Play } from "lucide-astro";
+
+const base = import.meta.env.BASE_URL;
+const videoUrl = "https://www.youtube.com/watch?v=H3VluSWofTM";
+---
+
+<section class="overview-band" aria-labelledby="overview-title">
+  <div class="container overview-layout">
+    <div class="overview-copy">
+      <span class="eyeline">Mimic in 1 minute</span>
+      <h2 id="overview-title">When HTTP<br />isn’t enough.</h2>
+      <p>
+        See where Mimic fits between a plain HTTP request and a full browser,
+        with familiar automation code and lower resource overhead.
+      </p>
+      <a class="overview-link" href={videoUrl} target="_blank" rel="noopener noreferrer">
+        Watch on YouTube <ArrowRight size={16} aria-hidden="true" />
+      </a>
+    </div>
+    <div class="overview-media" data-video-overview>
+      <button
+        class="overview-poster"
+        type="button"
+        aria-label="Play the one-minute Mimic overview"
+        data-overview-play
+      >
+        <img
+          src={`${base}images/mimic-overview-poster.webp`}
+          width="1120"
+          height="630"
+          alt="HTTP, Mimic and Chrome compared by browser capabilities and resource usage"
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="overview-play-icon" aria-hidden="true">
+          <Play size={23} fill="currentColor" />
+        </span>
+        <span class="overview-video-label" aria-hidden="true">
+          Watch the overview <span>0:59</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<style>
+  .overview-band {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--line);
+    background: #080f19;
+  }
+  .overview-layout {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: clamp(32px, 5vw, 76px);
+    align-items: center;
+  }
+  .overview-copy h2 {
+    margin: 17px 0 20px;
+    font-family: var(--display);
+    font-size: clamp(32px, 3.4vw, 46px);
+    font-weight: 750;
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+  }
+  .overview-copy p {
+    max-width: 410px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  .overview-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 25px;
+    color: #a5b5ff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .overview-link:hover {
+    color: #d7dfff;
+  }
+  .overview-media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border: 1px solid #52648055;
+    border-radius: 16px;
+    background: #111114;
+    box-shadow: 0 20px 54px #0003;
+  }
+  .overview-poster {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: #111114;
+    color: #f2f5ff;
+    cursor: pointer;
+  }
+  .overview-poster img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .overview-poster::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 45%, #050910dd);
+    pointer-events: none;
+  }
+  .overview-play-icon {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border: 1px solid #c3cdff66;
+    border-radius: 50%;
+    background: #718bff;
+    color: #0d172d;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 8px 30px #0005;
+    transition: background 160ms ease, box-shadow 160ms ease;
+  }
+  .overview-play-icon :global(svg) {
+    margin-left: 3px;
+  }
+  .overview-poster:hover .overview-play-icon {
+    background: #a3b4ff;
+    box-shadow: 0 8px 38px #718bff44;
+  }
+  .overview-poster:focus-visible {
+    outline: 3px solid #b8c4ff;
+    outline-offset: -5px;
+  }
+  .overview-video-label {
+    position: absolute;
+    z-index: 1;
+    right: 21px;
+    bottom: 17px;
+    left: 21px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .overview-video-label > span {
+    color: #b5bfd8;
+    font-variant-numeric: tabular-nums;
+  }
+  .overview-media :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  @media (max-width: 720px) {
+    .overview-band {
+      padding: 40px 0;
+    }
+    .overview-layout {
+      grid-template-columns: 1fr;
+      gap: 26px;
+    }
+    .overview-copy h2 {
+      margin-top: 12px;
+    }
+    .overview-copy p {
+      max-width: 520px;
+      font-size: 15px;
+    }
+    .overview-link {
+      margin-top: 18px;
+    }
+    .overview-media {
+      border-radius: 12px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .overview-play-icon {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function initializeVideoOverview() {
+    document
+      .querySelectorAll<HTMLElement>("[data-video-overview]")
+      .forEach((container) => {
+        const button = container.querySelector<HTMLButtonElement>(
+          "[data-overview-play]",
+        );
+        if (!button || button.dataset.initialized) return;
+        button.dataset.initialized = "true";
+        button.addEventListener(
+          "click",
+          () => {
+            const iframe = document.createElement("iframe");
+            iframe.src =
+              "https://www.youtube-nocookie.com/embed/H3VluSWofTM?autoplay=1&rel=0&playsinline=1";
+            iframe.title = "Mimic — Browser Automation Without Chromium";
+            iframe.allow =
+              "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share";
+            iframe.allowFullscreen = true;
+            iframe.referrerPolicy = "strict-origin-when-cross-origin";
+            button.replaceWith(iframe);
+            iframe.focus();
+          },
+          { once: true },
+        );
+      });
+  }
+
+  initializeVideoOverview();
+  document.addEventListener("astro:page-load", initializeVideoOverview);
+</script>
