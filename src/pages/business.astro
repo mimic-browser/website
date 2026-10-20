@@ -1,0 +1,497 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { ArrowRight, BriefcaseBusiness, Code2, Cpu, Gauge, Info, KeyRound, Layers, Mail, Puzzle, ReceiptText, Server } from "lucide-astro";
+
+const base = import.meta.env.BASE_URL;
+const contact = "mailto:slava@mimic.boo?subject=Mimic%20for%20Business";
+const benefits = [
+  {
+    icon: Server,
+    title: "Lower server costs",
+    text: "When your tasks need less processing power and memory, you may be able to use smaller or fewer servers on your own infrastructure.",
+  },
+  {
+    icon: Layers,
+    title: "Grow within your existing capacity",
+    text: "Lower resource use can leave room for more jobs before you need more servers, helping avoid costs rising in step with demand.",
+  },
+  {
+    icon: Code2,
+    title: "Keep your existing tools",
+    text: "Continue with Playwright, Puppeteer and your existing automation setup where supported. Check what can stay and what needs adapting before investing in a migration.",
+  },
+  {
+    icon: Puzzle,
+    title: "Get help with adoption",
+    text: "Work with us to assess fit, adapt your workflows and plan deployment. Agree on technical support for the tasks your business relies on.",
+  },
+];
+const services = [
+  { icon: Gauge, title: "Workload assessment", text: "Check compatibility and measure resource use." },
+  { icon: Layers, title: "Savings analysis", text: "Compare potential savings with adoption costs." },
+  { icon: Puzzle, title: "Integration assistance", text: "Help adapt and deploy your workflows." },
+  { icon: KeyRound, title: "License & support", text: "Commercial licensing, updates and technical support." },
+];
+---
+
+<BaseLayout
+  title="For Business — Commercial Licensing & Support — Mimic"
+  description="Explore whether Mimic can lower browser automation costs or help you do more on existing servers. Workload assessment, savings analysis, integration, licensing and support."
+>
+  <div class="container business-page">
+    <section class="business-intro" aria-labelledby="business-title">
+      <div class="intro-copy">
+        <span class="eyebrow">For Business</span>
+        <h1 id="business-title">Run more automation.<br /><span>Spend less on infrastructure.</span></h1>
+        <p class="lead">
+          Mimic runs browser automation with less overhead. On suitable workloads,
+          that can mean lower server bills or more work from the servers you already have.
+        </p>
+        <a class="text-link" href={`${base}benchmarks/`}>
+          Explore the benchmarks <ArrowRight size={16} aria-hidden="true" />
+        </a>
+      </div>
+
+      <aside class="panel commercial-offer" aria-labelledby="offer-title">
+        <div class="offer-heading">
+          <div>
+            <span class="offer-label">Commercial licensing &amp; support</span>
+            <h2 id="offer-title">Make the business case</h2>
+          </div>
+          <span class="offer-icon" aria-hidden="true"><BriefcaseBusiness size={20} /></span>
+        </div>
+        <p class="offer-description">
+          We assess your tasks, estimate the potential savings and help plan a rollout.
+          Agree on the scope before committing to deployment.
+        </p>
+        <ul class="services">
+          {services.map(({ icon: Icon, title, text }) => (
+            <li>
+              <Icon size={17} aria-hidden="true" />
+              <div><strong>{title}</strong><p>{text}</p></div>
+            </li>
+          ))}
+        </ul>
+        <p class="pricing-note"><strong>Custom Pricing</strong> · Based on your workload and support needs.</p>
+        <div class="offer-contact">
+          <a class="button button-primary contact-button" href={contact}>
+            Discuss Your Workload <ArrowRight size={16} aria-hidden="true" />
+          </a>
+          <a class="email-link" href={contact}>
+            <Mail size={16} aria-hidden="true" /> <span>slava@mimic.boo</span>
+          </a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="business-benefits" aria-labelledby="benefits-title">
+      <h2 id="benefits-title">Where the value comes from.</h2>
+      <div class="benefit-grid">
+        {benefits.map(({ icon: Icon, title, text }) => (
+          <article>
+            <Icon size={21} aria-hidden="true" />
+            <h3>{title}</h3>
+            <p>{text}</p>
+          </article>
+        ))}
+      </div>
+      <aside class="cost-example" aria-labelledby="example-title">
+        <header class="example-heading">
+          <span class="example-label">For example</span>
+          <h3 id="example-title">A daily data collection job</h3>
+          <p>How lower resource use could affect your running costs.</p>
+        </header>
+        <ol class="savings-flow" aria-label="How lower resource use can reduce costs">
+          <li class="savings-step">
+            <div class="step-content">
+              <h4><Cpu size={24} aria-hidden="true" /><span>Less CPU &amp; RAM</span></h4>
+              <p>To complete the same job.</p>
+            </div>
+            <span class="step-connector" aria-hidden="true"><ArrowRight size={20} /></span>
+          </li>
+          <li class="savings-step">
+            <div class="step-content">
+              <h4><Server size={24} aria-hidden="true" /><span>Less server capacity</span></h4>
+              <p>Smaller or fewer servers.</p>
+            </div>
+            <span class="step-connector" aria-hidden="true"><ArrowRight size={20} /></span>
+          </li>
+          <li class="savings-step">
+            <div class="step-content">
+              <h4><ReceiptText size={24} aria-hidden="true" /><span>Potentially lower monthly costs</span></h4>
+              <p>Less infrastructure to pay for.</p>
+            </div>
+          </li>
+        </ol>
+        <div class="example-note">
+          <Info size={15} aria-hidden="true" />
+          <p>
+            This depends on your job passing compatibility checks and using fewer resources in testing.
+            Any savings must outweigh licensing, support and migration costs.
+          </p>
+        </div>
+      </aside>
+      <p class="compatibility-note">
+        Mimic is a source-available public beta with partial browser compatibility.
+        Savings are not guaranteed; we evaluate them on your tasks. Review the{" "}
+        <a href={`${base}docs/compatibility/`}>compatibility boundaries</a>
+        {" "}and <a href={`${base}license/`}>public license</a> before evaluating it.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .business-page {
+    padding-block: 52px 72px;
+  }
+  .business-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: center;
+  }
+  h1 {
+    margin: 18px 0 20px;
+    font-family: var(--display);
+    font-size: clamp(32px, 3.1vw, 48px);
+    font-weight: 780;
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+  }
+  h1 span {
+    color: var(--blue-bright);
+  }
+  .lead {
+    max-width: 470px;
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--blue-bright);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .text-link:hover,
+  .email-link:hover span {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .commercial-offer {
+    padding: 26px;
+    border-color: #718bff40;
+    background: linear-gradient(135deg, #182641, var(--surface) 65%);
+    box-shadow: 0 12px 36px #00000014;
+  }
+  .offer-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .offer-label {
+    color: var(--blue-bright);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .offer-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #718bff30;
+    border-radius: 10px;
+    background: #718bff0c;
+    color: var(--blue-bright);
+  }
+  .commercial-offer h2 {
+    margin: 7px 0 0;
+    font-size: 28px;
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+  }
+  .offer-description {
+    margin: 14px 0 0;
+    max-width: 420px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .services {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 16px;
+    margin: 22px 0;
+    padding: 20px 0;
+    border-block: 1px solid #718bff20;
+    list-style: none;
+  }
+  .services li {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    min-width: 0;
+  }
+  .services li > :global(svg) {
+    margin-top: 2px;
+    flex: none;
+    color: var(--blue-bright);
+  }
+  .services strong {
+    display: block;
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 650;
+  }
+  .services p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .pricing-note {
+    margin: -4px 0 16px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .pricing-note strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .offer-contact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .contact-button {
+    min-height: 42px;
+    padding-inline: 17px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .email-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .email-link > :global(svg) {
+    color: var(--blue-bright);
+    flex: none;
+  }
+  .business-benefits {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+  }
+  .business-benefits h2 {
+    margin: 0 0 26px;
+    font-size: clamp(25px, 3vw, 30px);
+    line-height: 1.2;
+    letter-spacing: -0.035em;
+  }
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 56px;
+  }
+  .benefit-grid article > :global(svg) {
+    color: var(--blue-bright);
+  }
+  .benefit-grid h3 {
+    margin: 10px 0 7px;
+    font-size: 16px;
+    font-weight: 650;
+  }
+  .benefit-grid p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  .cost-example {
+    margin-top: 28px;
+    padding: 28px 28px 22px;
+    border: 1px solid #718bff38;
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .example-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--blue-bright);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .example-label::before {
+    content: "";
+    width: 14px;
+    height: 2px;
+    background: currentColor;
+  }
+  .example-heading h3 {
+    margin: 8px 0 6px;
+    font-size: 24px;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+  }
+  .example-heading p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .savings-flow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 56px;
+    margin: 30px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .savings-step {
+    position: relative;
+    min-width: 0;
+  }
+  .step-content h4 {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    align-items: start;
+    gap: 12px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 650;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+  .step-content h4 > span {
+    text-wrap: balance;
+  }
+  .step-content h4 > :global(svg) {
+    margin-top: 1px;
+    color: #9bb3ff;
+    stroke-width: 1.8;
+  }
+  .step-content p {
+    margin: 8px 0 0;
+    padding-left: 36px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .step-connector {
+    position: absolute;
+    top: 3px;
+    right: -38px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: var(--blue-bright);
+    opacity: 0.65;
+  }
+  .example-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding-top: 20px;
+    border-top: 1px solid #718bff20;
+    color: #9daac4;
+  }
+  .example-note > :global(svg) {
+    flex: none;
+    margin-top: 2px;
+  }
+  .example-note p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  .compatibility-note {
+    margin: 28px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .compatibility-note a {
+    color: var(--blue-bright);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  @media (max-width: 1100px) {
+    .business-intro {
+      gap: 32px;
+    }
+    .commercial-offer {
+      padding: 22px;
+    }
+  }
+  @media (max-width: 1000px) {
+    .savings-flow {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+      margin-block: 28px;
+    }
+    .step-connector {
+      top: 100%;
+      right: auto;
+      left: 2px;
+      height: 40px;
+    }
+    .step-connector > :global(svg) {
+      transform: rotate(90deg);
+    }
+  }
+  @media (max-width: 760px) {
+    .business-page {
+      padding-block: 32px 52px;
+    }
+    .business-intro,
+    .benefit-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+    h1 {
+      font-size: clamp(32px, 7vw, 48px);
+    }
+    .lead {
+      font-size: 16px;
+    }
+    .cost-example {
+      padding: 24px 20px 20px;
+    }
+    .business-benefits {
+      margin-top: 36px;
+      padding-top: 28px;
+    }
+  }
+  @media (max-width: 380px) {
+    .commercial-offer {
+      padding: 18px;
+    }
+    .offer-icon {
+      width: 36px;
+      height: 36px;
+    }
+    .services {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+    .offer-contact {
+      gap: 8px;
+    }
+  }
+</style>

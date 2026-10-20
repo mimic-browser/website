@@ -2,13 +2,17 @@
 import Logo from "./Logo.astro";
 import { ArrowRight } from "lucide-astro";
 const base = import.meta.env.BASE_URL;
+const businessPath = `${base}business/`;
+const salesHref = "mailto:slava@mimic.boo?subject=Mimic%20for%20Business";
+const isBusiness = Astro.url.pathname.replace(/\/$/, "") === businessPath.replace(/\/$/, "");
 const links = [
   { label: "Home", href: base },
   { label: "SDK", href: `${base}sdk/` },
   { label: "Benchmarks", href: `${base}benchmarks/` },
 
   { label: "Docs", href: `${base}docs/` },
-  { label: "Blog", href: `${base}blog/` },
+  { label: "For Business", href: `${base}business/` },
+  { label: "News", href: `${base}blog/` },
   { label: "GitHub", href: "https://github.com/mimic-browser/runtime" },
 ];
 ---
@@ -29,7 +33,13 @@ const links = [
     ><nav id="site-nav" aria-label="Primary navigation">
       {links.map((link) => <a href={link.href}>{link.label}</a>)}<a
         class="button button-primary download"
-        href={`${base}sdk/`}>Get started <ArrowRight size={16} /></a
+        data-header-action
+        data-business-path={businessPath}
+        data-sales-href={salesHref}
+        data-sdk-href={`${base}sdk/`}
+        href={isBusiness ? salesHref : `${base}sdk/`}>
+        <span data-header-action-label>{isBusiness ? "Contact Sales" : "Get started"}</span>
+        <ArrowRight size={16} aria-hidden="true" /></a
       >
     </nav>
   </div>
@@ -80,6 +90,13 @@ const links = [
   updateHeader();
   function updateNavigation() {
     const current = location.pathname.replace(/\/$/, "") || "/";
+    const action = nav?.querySelector<HTMLAnchorElement>("[data-header-action]");
+    const label = action?.querySelector<HTMLElement>("[data-header-action-label]");
+    if (action && label) {
+      const business = current === action.dataset.businessPath?.replace(/\/$/, "");
+      action.href = (business ? action.dataset.salesHref : action.dataset.sdkHref)!;
+      label.textContent = business ? "Contact Sales" : "Get started";
+    }
     nav?.querySelectorAll("a").forEach((link) => {
       const target = new URL(link.href, location.href);
       const path = target.pathname.replace(/\/$/, "") || "/";
@@ -162,6 +179,9 @@ const links = [
     color: #d5d8ef;
     font-size: 13px;
   }
+  nav > a {
+    white-space: nowrap;
+  }
   nav > a:not(.button):hover {
     color: #8da0ff;
   }
@@ -213,10 +233,10 @@ const links = [
       padding-inline: 23px;
     }
   }
-  @media (max-width: 1000px) {
+  @media (max-width: 1180px) {
     nav {
-      margin-left: 40px;
-      gap: 22px;
+      margin-left: 24px;
+      gap: 14px;
     }
   }
   @media (max-width: 900px) {

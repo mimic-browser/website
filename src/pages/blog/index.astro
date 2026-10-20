@@ -9,16 +9,16 @@ const posts = (await getCollection("blog")).sort((a, b) => b.data.published.getT
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title="Blog — Mimic" description="Development notes on Mimic, browser automation, and compatibility." lang="en">
+<BaseLayout title="News — Mimic" description="Development notes on Mimic, browser automation, and compatibility." lang="en">
   <div class="blog-surface"><div class="container blog-index">
     <header class="blog-intro">
       <div>
-      <h1>Blog</h1>
+      <h1>News</h1>
       <p>Development notes on Mimic, browser automation, and compatibility.</p>
       </div>
       <BlogSourceLink />
     </header>
-    <section class="blog-posts" aria-label="Blog posts">
+    <section class="blog-posts" aria-label="News posts">
       {posts.map((post) => (
         <a class:list={["post-card", { "post-card-text": !post.data.cover }]} href={`${base}blog/${post.id}/`}>
           <div class="post-copy">
