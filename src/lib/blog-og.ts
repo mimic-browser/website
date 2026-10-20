@@ -74,7 +74,7 @@ export async function createBlogOg(data: BlogOgData) {
   }
   const brandWidth = await add("mimic", 32, 72, 61, ink, true);
   await add(".boo", 32, 72 + brandWidth + 1, 61, blue, true);
-  await add("Blog", 23, 1128, 69, muted, false, true);
+  await add("News", 23, 1128, 69, muted, false, true);
   const height = (title.lines.length - 1) * title.lineHeight + title.size;
   const top = Math.round(174 + (304 - height) / 2);
   for (const [index, line] of title.lines.entries()) {
